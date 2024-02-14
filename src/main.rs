@@ -25,10 +25,14 @@ mod gui;
 mod gamelog;
 mod spawner;
 mod inventory_system;
-use inventory_system::{ ItemCollectionSystem, ItemUseSystem, ItemDropSystem, ItemUnequipSystem };
+use inventory_system::{ItemCollectionSystem, ItemUseSystem, ItemDropSystem, ItemUnequipSystem};
 pub mod saveload_system;
 mod random_table;
 use random_table::RandomTable;
+mod particle_system;
+use particle_system::{ParticleBuilder, ParticleSpawnSystem};
+mod hunger_system;
+use hunger_system::HungerSystem;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum RunState { 
@@ -43,6 +47,7 @@ pub enum RunState {
     ShowTargeting { range : i32, item : Entity},
     MainMenu { menu_selection : gui::MainMenuSelection },
     SaveGame,
+    MagicMapReveal { row: i32 },
     GameOver
 }
 
@@ -70,6 +75,10 @@ impl State {
         drop_items.run_now(&self.ecs);
         let mut unequip_items = ItemUnequipSystem{};
         unequip_items.run_now(&self.ecs);
+        let mut hunger = HungerSystem{};
+        hunger.run_now(&self.ecs);
+        let mut particles = ParticleSpawnSystem{};
+        particles.run_now(&self.ecs);
 
         self.ecs.maintain();
     }
@@ -223,6 +232,7 @@ impl GameState for State {
         }
 
         ctx.cls();
+        particle_system::cull_dead_particles(&mut self.ecs, ctx);
 
         match newrunstate {
             RunState::MainMenu{..} => {}
@@ -258,7 +268,10 @@ impl GameState for State {
             RunState::PlayerTurn => {
                 self.run_systems();
                 self.ecs.maintain();
-                newrunstate = RunState::MonsterTurn;
+                match *self.ecs.fetch::<RunState>() {
+                    RunState::MagicMapReveal{ .. } => newrunstate = RunState::MagicMapReveal{ row: 0 },
+                    _ => newrunstate = RunState::MonsterTurn
+                }
             }
             RunState::MonsterTurn => {
                 self.run_systems();
@@ -322,6 +335,18 @@ impl GameState for State {
                     }
                 }
             }
+            RunState::MagicMapReveal{row} => {
+                let mut map = self.ecs.fetch_mut::<Map>();
+                for x in 0..MAPWIDTH {
+                    let idx = map.xy_idx(x as i32, row);
+                    map.revealed_tiles[idx] = true;
+                }
+                if row as usize == MAPHEIGHT-1 {
+                    newrunstate = RunState::MonsterTurn;
+                } else {
+                    newrunstate = RunState::MagicMapReveal{ row: row+1 };
+                }
+            }
             RunState::MainMenu{ .. } => {
                 let result = gui::main_menu(self, ctx);
                 match result {
@@ -373,6 +398,7 @@ fn main() -> rltk::BError {
     use rltk::RltkBuilder;
     let mut context = RltkBuilder::simple80x50()
         .with_title("Taverns of Stoner Doom")
+        .with_fps_cap(30.0)
         .build()?;
     context.with_post_scanlines(true);
     let mut gs = State {
@@ -404,8 +430,12 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Equipped>();
     gs.ecs.register::<Equippable>();
     gs.ecs.register::<MeleePowerBonus>();
-    gs.ecs.register::<DefenseBonus>();
+    gs.ecs.register::<DefenceBonus>();
     gs.ecs.register::<WantsToUnequipItem>();
+    gs.ecs.register::<ParticleLifetime>();
+    gs.ecs.register::<MagicMapper>();
+    gs.ecs.register::<HungerClock>();
+    gs.ecs.register::<ProvidesFood>();
 
     // store global resources
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
@@ -418,6 +448,7 @@ fn main() -> rltk::BError {
         spawner::spawn_room(&mut gs.ecs, room, 1);
     }
 
+    gs.ecs.insert(ParticleBuilder::new());
     gs.ecs.insert(map);
     gs.ecs.insert(Point::new(player_x, player_y));
     gs.ecs.insert(player_entity);

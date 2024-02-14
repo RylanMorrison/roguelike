@@ -1,9 +1,10 @@
 use specs::prelude::*;
-use crate::{Confusion, Equippable};
+use crate::{particle_system::ParticleBuilder, Confusion, Equippable};
 
 use super::{WantsToPickupItem, Name, InBackpack, Position, gamelog::GameLog, WantsToUseItem,
     Consumable, ProvidesHealing, CombatStats, WantsToDropItem, InflictsDamage, Map, SufferDamage,
-    AreaOfEffect, Equipped, WantsToUnequipItem};
+    AreaOfEffect, Equipped, WantsToUnequipItem, MagicMapper, RunState, HungerState, ProvidesFood, 
+    HungerClock};
 
 pub struct ItemCollectionSystem {}
 
@@ -44,7 +45,7 @@ impl<'a> System<'a> for ItemUseSystem {
     type SystemData = ( 
         ReadExpect<'a, Entity>,
         WriteExpect<'a, GameLog>,
-        ReadExpect<'a, Map>,
+        WriteExpect<'a, Map>,
         Entities<'a>,
         WriteStorage<'a, WantsToUseItem>,
         ReadStorage<'a, Name>,
@@ -57,16 +58,24 @@ impl<'a> System<'a> for ItemUseSystem {
         WriteStorage<'a, Confusion>,
         ReadStorage<'a, Equippable>,
         WriteStorage<'a, Equipped>,
-        WriteStorage<'a, InBackpack>
+        WriteStorage<'a, InBackpack>,
+        WriteExpect<'a, ParticleBuilder>,
+        ReadStorage<'a, Position>,
+        ReadStorage<'a, MagicMapper>,
+        WriteExpect<'a, RunState>,
+        WriteStorage<'a, HungerClock>,
+        ReadStorage<'a, ProvidesFood>
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player_entity, mut gamelog, map, 
+        let (player_entity, mut gamelog, mut map, 
             entities, mut wants_use, names,
             consumables, healing, inflict_damage,
             mut combat_stats, mut suffer_damage, aoe,
             mut confused, equippable, mut equipped, 
-            mut backpack) = data;
+            mut backpack, mut particle_builder,
+            positions, magic_mapper, mut runstate,
+            mut hunger_clocks, provides_food) = data;
 
         for (entity, useitem) in (&entities, &wants_use).join() {
             let mut used_item = true;
@@ -94,6 +103,7 @@ impl<'a> System<'a> for ItemUseSystem {
                                 for mob in map.tile_content[idx].iter() {
                                     targets.push(*mob);
                                 }
+                                particle_builder.add_request(tile_idx.x, tile_idx.y, rltk::RGB::named(rltk::ORANGE), rltk::RGB::named(rltk::BLACK), rltk::to_cp437('░'), 200.0);
                             }
                         }
                     }
@@ -150,10 +160,32 @@ impl<'a> System<'a> for ItemUseSystem {
                             if entity == *player_entity {
                                 gamelog.entries.push(format!("You drink the {}, healing {} hp.", names.get(useitem.item).unwrap().name, healer.heal_amount));
                             }
+                            let pos = positions.get(*target);
+                            if let Some(pos) = pos {
+                                particle_builder.add_request(pos.x, pos.y, rltk::RGB::named(rltk::GREEN), rltk::RGB::named(rltk::BLACK), rltk::to_cp437('♥'), 200.0);
+                            }
+                            used_item = true;
                         }
                     }
                 }
             }
+
+            // food
+            let item_provides_food = provides_food.get(useitem.item);
+            match item_provides_food {
+                None => {}
+                Some(_) => {
+                    let target = targets[0];
+                    let hunger = hunger_clocks.get_mut(target);
+                    if let Some(hunger) = hunger {
+                        hunger.state = HungerState::WellFed;
+                        hunger.duration = 20;
+                        gamelog.entries.push(format!("You eat the {}.", names.get(useitem.item).unwrap().name));
+                    }
+                    used_item = true;
+                }
+            }
+
 
             // damaging
             let item_damages = inflict_damage.get(useitem.item);
@@ -167,6 +199,11 @@ impl<'a> System<'a> for ItemUseSystem {
                             let mob_name = names.get(*mob).unwrap();
                             let item_name = names.get(useitem.item).unwrap();
                             gamelog.entries.push(format!("You use {} on {}, inflicting {} damage.", item_name.name, mob_name.name, damage.damage));
+
+                            let pos = positions.get(*mob);
+                            if let Some(pos) = pos {
+                                particle_builder.add_request(pos.x, pos.y, rltk::RGB::named(rltk::RED), rltk::RGB::named(rltk::BLACK), rltk::to_cp437('‼'), 200.0);
+                            }
                         }
                         used_item = true;
                     }
@@ -187,13 +224,30 @@ impl<'a> System<'a> for ItemUseSystem {
                                 let mob_name = names.get(*mob).unwrap();
                                 let item_name = names.get(useitem.item).unwrap();
                                 gamelog.entries.push(format!("You use {} on {}, confusing them.", item_name.name, mob_name.name));
+                                
+                                let pos = positions.get(*mob);
+                                if let Some(pos) = pos {
+                                    particle_builder.add_request(pos.x, pos.y, rltk::RGB::named(rltk::MAGENTA), rltk::RGB::named(rltk::BLACK), rltk::to_cp437('?'), 200.0);
+                                }
                             }
+                            used_item = true;
                         }
                     }
                 }
             }
             for mob in add_confusion.iter() {
                 confused.insert(mob.0, Confusion{ turns: mob.1 }).expect("Unable to insert status");
+            }
+
+            // magic mapping
+            let is_mapper = magic_mapper.get(useitem.item);
+            match is_mapper {
+                None => {}
+                Some(_) => {
+                    gamelog.entries.push("The map is revealed to you!".to_string());
+                    used_item = true;
+                    *runstate = RunState::MagicMapReveal{ row : 0 };
+                }
             }
             
             if used_item {

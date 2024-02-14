@@ -1,10 +1,28 @@
 use rltk::{RGB, Rltk, Point, VirtualKeyCode};
 use specs::prelude::*;
 use super::{CombatStats, Player, gamelog::GameLog, Map, Name, Position, State, InBackpack,
-    Viewshed, RunState, Equipped};
+    Viewshed, RunState, Equipped, HungerClock, HungerState};
 
 pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
     ctx.draw_box(0, 43, 79, 6, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK));
+
+    let combat_stats = ecs.read_storage::<CombatStats>();
+    let players = ecs.read_storage::<Player>();
+    let hunger_clock = ecs.read_storage::<HungerClock>();
+
+    for (_player, stats, hunger) in (&players, &combat_stats, &hunger_clock).join() {
+        let health = format!(" HP: {} / {} ", stats.hp, stats.max_hp);
+        ctx.print_color(12, 43, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), &health);
+
+        ctx.draw_bar_horizontal(28, 43, 51, stats.hp, stats.max_hp, RGB::named(rltk::RED), RGB::named(rltk::BLACK));
+
+        match hunger.state {
+            HungerState::WellFed => ctx.print_color(71, 42, RGB::named(rltk::GREEN), RGB::named(rltk::BLACK), "Well Fed"),
+            HungerState::Normal => ctx.print_color(71, 42, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Normal"),
+            HungerState::Hungry => ctx.print_color(71, 42, RGB::named(rltk::ORANGE), RGB::named(rltk::BLACK), "Hungry"),
+            HungerState::Starving => ctx.print_color(71, 42, RGB::named(rltk::RED), RGB::named(rltk::BLACK), "Starving"),
+        }
+    }
 
     let map = ecs.fetch::<Map>();
     let depth = format!("Depth: {}", map.depth);
@@ -228,7 +246,7 @@ pub fn main_menu(gs : &mut State, ctx : &mut Rltk) -> MainMenuResult {
     let save_exists = super::saveload_system::does_save_exist();
     let runstate = gs.ecs.fetch::<RunState>();
 
-    ctx.print_color_centered(15, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Rust Roguelike Tutorial");
+    ctx.print_color_centered(15, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Taverns of Stoner Doom");
 
     if let RunState::MainMenu{ menu_selection : selection } = *runstate {
         // menu items and selection highlighting
@@ -342,6 +360,7 @@ pub enum GameOverResult {
 }
 
 pub fn game_over(ctx: &mut Rltk) -> GameOverResult {
+    ctx.draw_box_double(14, 13, 52, 10, RGB::named(rltk::WHEAT), RGB::named(rltk::BLACK));
     ctx.print_color_centered(15, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), "Your journey has ended!");
     ctx.print_color_centered(17, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "One day, we'll tell you all about how you did.");
     ctx.print_color_centered(18, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "That day, sadly, is not in this chapter..");

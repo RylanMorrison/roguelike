@@ -1,9 +1,9 @@
 use rltk::{VirtualKeyCode, Rltk, Point};
 use specs::prelude::*;
 use std::cmp::{max, min};
-use crate::{CombatStats, WantsToMelee, WantsToPickupItem};
-
-use super::{Position, Player, Viewshed, State, Map, RunState, Item, gamelog::GameLog, TileType, Monster};
+use super::{Position, Player, Viewshed, State, Map, RunState, Item, gamelog::GameLog, 
+    TileType, Monster, ParticleBuilder, CombatStats, WantsToMelee, WantsToPickupItem,
+    HungerState, HungerClock};
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut positions = ecs.write_storage::<Position>();
@@ -107,6 +107,8 @@ pub fn skip_turn(ecs: &mut World) -> RunState {
     let viewsheds = ecs.read_storage::<Viewshed>();
     let monsters = ecs.read_storage::<Monster>();
     let worldmap = ecs.fetch::<Map>();
+    let positions = ecs.read_storage::<Position>();
+    let mut particle_builder = ecs.fetch_mut::<ParticleBuilder>();
 
     // prevent skip turn healing if monsters are nearby
     let mut can_heal = true;
@@ -124,11 +126,27 @@ pub fn skip_turn(ecs: &mut World) -> RunState {
         }
     }
 
+    let hunger_clocks = ecs.read_storage::<HungerClock>();
+    let hunger = hunger_clocks.get(*player_entity);
+    if let Some(hunger) = hunger {
+        match hunger.state {
+            HungerState::Hungry => can_heal = false,
+            HungerState::Starving => can_heal = false,
+            _ => {}
+        }
+    }
+
     // heal player when turn is skipped
     if can_heal {
         let mut health_components = ecs.write_storage::<CombatStats>();
         let player_hp = health_components.get_mut(*player_entity).unwrap();
-        player_hp.hp = i32::min(player_hp.hp + 1, player_hp.max_hp);
+        if player_hp.hp < player_hp.max_hp {
+            player_hp.hp = i32::min(player_hp.hp + 1, player_hp.max_hp);
+            let pos = positions.get(*player_entity);
+            if let Some(pos) = pos {
+                particle_builder.add_request(pos.x, pos.y, rltk::RGB::named(rltk::GREEN), rltk::RGB::named(rltk::BLACK), rltk::to_cp437('♥'), 200.0);
+            }
+        }
     }
 
     RunState::PlayerTurn
