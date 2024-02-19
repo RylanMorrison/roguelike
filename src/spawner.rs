@@ -8,7 +8,8 @@ use super::{
     Monster, BlocksTile, Rect, Item, ProvidesHealing, map::MAPWIDTH, 
     Consumable, Ranged, InflictsDamage, Confusion, SerializeMe,
     AreaOfEffect, RandomTable, DefenceBonus, EquipmentSlot, Equippable,
-    MagicMapper, MeleePowerBonus, HungerClock, HungerState, ProvidesFood};
+    MagicMapper, MeleePowerBonus, HungerClock, HungerState, ProvidesFood,
+    Map, TileType};
 
 const MAX_MONSTERS: i32 = 4;
 
@@ -87,56 +88,73 @@ fn monster<S : ToString>(ecs: &mut World, x: i32, y: i32, glyph: rltk::FontCharT
         .build();
 }
 
-pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
-    let spawn_table = room_table(map_depth);
-    let mut spawn_points : HashMap<usize, String> = HashMap::new();
-
-    // store where to spawn things
+pub fn spawn_room(map: &Map, rng: &mut RandomNumberGenerator, room: &Rect, map_depth: i32, spawn_list: &mut Vec<(usize, String)>) {
+    let mut possible_targets: Vec<usize> = Vec::new();
     {
-        let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-        let num_spawns = rng.roll_dice(1, MAX_MONSTERS + 3) + (map_depth - 1) - 3;
-
-        for _ in 0 .. num_spawns {
-            let mut added = false;
-            let mut tries = 0;
-            while !added && tries < 20 {
-                let x = (room.x1 + rng.roll_dice(1, i32::abs(room.x2 - room.x1))) as usize;
-                let y = (room.y1 + rng.roll_dice(1, i32::abs(room.y2 - room.y1))) as usize;
-                let idx = (y * MAPWIDTH) + x;
-                if !spawn_points.contains_key(&idx) {
-                    spawn_points.insert(idx, spawn_table.roll(&mut rng));
-                    added = true;
-                } else {
-                    tries += 1;
+        for y in room.y1 + 1 .. room.y2 {
+            for x in room.x1 + 1 .. room.x2 {
+                let idx = map.xy_idx(x, y);
+                if map.tiles[idx] == TileType::Floor {
+                    possible_targets.push(idx);
                 }
             }
+        }
+    }
+    spawn_region(map, rng, &possible_targets, map_depth, spawn_list);
+}
+
+// TODO: don't spawn on player
+pub fn spawn_region(map: &Map, rng: &mut RandomNumberGenerator, area: &[usize], map_depth: i32, spawn_list: &mut Vec<(usize, String)>) {
+    let spawn_table = room_table(map_depth);
+    let mut spawn_points: HashMap<usize, String> = HashMap::new();
+    let mut areas: Vec<usize> = Vec::from(area);
+
+    {
+        // use min to avoid spawning more entites than we have room for
+        let num_spawns = i32::min(areas.len() as i32, rng.roll_dice(1, MAX_MONSTERS + 3) + (map_depth - 1) - 3);
+        if num_spawns == 0 { return; }
+
+        for _i in 0 .. num_spawns {
+            let array_index = if areas.len() == 1 { 
+                0usize 
+            } else {
+                (rng.roll_dice(1, areas.len() as i32)-1) as usize
+            };
+            let map_idx = areas[array_index];
+            spawn_points.insert(map_idx, spawn_table.roll(rng));
+            areas.remove(array_index); // avoid picking the area again
         }
     }
 
     // actually spawn things
     for spawn in spawn_points.iter() {
-        let x = (*spawn.0 % MAPWIDTH) as i32;
-        let y = (*spawn.0 / MAPWIDTH) as i32;
+        spawn_list.push((*spawn.0, spawn.1.to_string()));
+    }
+}
 
-        match spawn.1.as_ref() {
-            "Goblin" => goblin(ecs, x, y),
-            "Orc" => orc(ecs, x, y),
-            "Ogre" => ogre(ecs, x, y),
-            "Demon" => demon(ecs, x, y),
-            "Health Potion" => health_potion(ecs, x, y),
-            "Fireball Scroll" => fireball_scroll(ecs, x, y),
-            "Confusion Scroll" => confusion_scroll(ecs, x, y),
-            "Magic Missile Scroll" => magic_missile_scroll(ecs, x, y),
-            "Dagger" => dagger(ecs, x, y),
-            "Shield" => shield(ecs, x, y),
-            "Leather Helmet" => leather_helmet(ecs, x, y),
-            "Sword" => sword(ecs, x, y),
-            "Tower Shield" => tower_shield(ecs, x, y),
-            "Iron Helmet" => iron_helmet(ecs, x, y),
-            "Magic Mapping Scroll" => magic_mapping_scroll(ecs, x, y),
-            "Food Ration" => food_ration(ecs, x, y),
-            _ => {}
-        }
+// spawn an entity using (location, name)
+pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
+    let x = (*spawn.0 % MAPWIDTH) as i32;
+    let y = (*spawn.0 / MAPWIDTH) as i32;
+
+    match spawn.1.as_ref() {
+        "Goblin" => goblin(ecs, x, y),
+        "Orc" => orc(ecs, x, y),
+        "Ogre" => ogre(ecs, x, y),
+        "Demon" => demon(ecs, x, y),
+        "Health Potion" => health_potion(ecs, x, y),
+        "Fireball Scroll" => fireball_scroll(ecs, x, y),
+        "Confusion Scroll" => confusion_scroll(ecs, x, y),
+        "Magic Missile Scroll" => magic_missile_scroll(ecs, x, y),
+        "Dagger" => dagger(ecs, x, y),
+        "Shield" => shield(ecs, x, y),
+        "Leather Helmet" => leather_helmet(ecs, x, y),
+        "Sword" => sword(ecs, x, y),
+        "Tower Shield" => tower_shield(ecs, x, y),
+        "Iron Helmet" => iron_helmet(ecs, x, y),
+        "Magic Mapping Scroll" => magic_mapping_scroll(ecs, x, y),
+        "Food Ration" => food_ration(ecs, x, y),
+        _ => {}
     }
 }
 
@@ -259,7 +277,7 @@ fn dagger(ecs: &mut World, x: i32, y: i32) {
         .with(Position{ x, y })
         .with(Renderable{
             glyph: rltk::to_cp437('/'),
-            fg: RGB::named(rltk::CYAN),
+            fg: RGB::named(rltk::WHITE),
             bg: RGB::named(rltk::BLACK),
             render_order: 2
         })
@@ -277,7 +295,7 @@ fn shield(ecs: &mut World, x: i32, y: i32) {
         .with(Position{ x, y })
         .with(Renderable{
             glyph: rltk::to_cp437('0'),
-            fg: RGB::named(rltk::CYAN),
+            fg: RGB::named(rltk::WHITE),
             bg: RGB::named(rltk::BLACK),
             render_order: 2
         })
@@ -295,7 +313,7 @@ fn leather_helmet(ecs: &mut World, x: i32, y: i32) {
         .with(Position{ x, y })
         .with(Renderable{
             glyph: rltk::to_cp437('^'),
-            fg: RGB::named(rltk::CYAN),
+            fg: RGB::named(rltk::WHITE),
             bg: RGB::named(rltk::BLACK),
             render_order: 2
         })

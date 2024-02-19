@@ -102,6 +102,24 @@ fn draw_tooltips(ecs: &World, ctx : &mut Rltk) {
     }
 }
 
+pub fn item_colour(name: &str) -> (u8, u8, u8) {
+    match name {
+        "Health Potion" => rltk::MAGENTA,
+        "Magic Missile Scroll" => rltk::CYAN,
+        "Fireball Scroll" => rltk::ORANGE,
+        "Confusion Scroll" => rltk::PINK,
+        "Magic Mapping Scroll" => rltk::CYAN3,
+        "Food Ration" => rltk::GREEN,
+        "Dagger" => rltk::WHITE,
+        "Shield" => rltk::WHITE,
+        "Leather Helmet" => rltk::WHITE,
+        "Sword" => rltk::YELLOW,
+        "Tower Shield" => rltk::YELLOW,
+        "Iron Helmet" => rltk::YELLOW,
+        _ => rltk::WHITE
+    }
+}
+
 #[derive(PartialEq, Copy, Clone)]
 pub enum ItemMenuResult { Cancel, NoResponse, Selected }
 
@@ -127,7 +145,7 @@ pub fn show_inventory(gs : &mut State, ctx : &mut Rltk) -> (ItemMenuResult, Opti
         ctx.set(18, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97+j as rltk::FontCharType);
         ctx.set(19, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), rltk::to_cp437(')'));
 
-        ctx.print(21, y, &name.name.to_string());
+        ctx.print_color(21, y, RGB::named(item_colour(&name.name)), RGB::named(rltk::BLACK), &name.name.to_string());
         equippable.push(entity);
         y += 1;
         j += 1;
@@ -171,7 +189,7 @@ pub fn drop_item_menu(gs : &mut State, ctx : &mut Rltk) -> (ItemMenuResult, Opti
         ctx.set(18, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97+j as rltk::FontCharType);
         ctx.set(19, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), rltk::to_cp437(')'));
 
-        ctx.print(21, y, &name.name.to_string());
+        ctx.print_color(21, y, RGB::named(item_colour(&name.name)), RGB::named(rltk::BLACK), &name.name.to_string());
         equippable.push(entity);
         y += 1;
         j += 1;
@@ -331,7 +349,7 @@ pub fn unequip_item_menu(gs : &mut State, ctx : &mut Rltk) -> (ItemMenuResult, O
         ctx.set(18, y, RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK), 97+j as rltk::FontCharType);
         ctx.set(19, y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), rltk::to_cp437(')'));
 
-        ctx.print(21, y, &name.name.to_string());
+        ctx.print_color(21, y, RGB::named(item_colour(&name.name)), RGB::named(rltk::BLACK), &name.name.to_string());
         equippable.push(entity);
         y += 1;
         j += 1;
