@@ -16,7 +16,7 @@ impl<'a> System<'a> for HungerSystem {
     fn run(&mut self, data: Self::SystemData) {
         let (entities, mut hunger_clock, player_entity, runstate, mut suffer_damage, mut gamelog) = data;
 
-        for (entity, mut clock) in (&entities, &mut hunger_clock).join() {
+        for (entity, clock) in (&entities, &mut hunger_clock).join() {
             let mut proceed = false;
 
             match *runstate {

@@ -4,6 +4,7 @@ use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 
 mod components;
+mod camera;
 pub use components::*;
 mod map;
 pub use map::*;
@@ -92,25 +93,23 @@ impl State {
     }
 
     fn generate_world_map(&mut self, new_depth: i32) {
-        let mut builder = map_builders::random_builder(new_depth);
-        builder.build_map();
-
-        if SHOW_MAPGEN_VISUALIZER {
-            self.mapgen_index = 0;
-            self.mapgen_timer = 0.0;
-            self.mapgen_history.clear();
-            self.mapgen_history = builder.get_snapshot_history();
-        }
+        self.mapgen_index = 0;
+        self.mapgen_timer = 0.0;
+        self.mapgen_history.clear();
+        let mut rng = self.ecs.write_resource::<rltk::RandomNumberGenerator>();
+        let mut builder = map_builders::random_builder(new_depth, &mut rng, 80, 50);
+        builder.build_map(&mut rng);
+        std::mem::drop(rng);
+        self.mapgen_history = builder.build_data.history.clone();
         
         let player_start;
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
-            *worldmap_resource = builder.get_map();
-            player_start = builder.get_starting_position();
+            *worldmap_resource = builder.build_data.map.clone();
+            player_start = builder.build_data.starting_position.as_mut().unwrap().clone();
         }
 
-        // spawn rooms
-        builder.spawn_entities(&mut self.ecs);
+        builder.spawn_entites(&mut self.ecs);
 
         // place the player
         // Place the player and update resources
@@ -237,23 +236,10 @@ impl GameState for State {
 
         match newrunstate {
             RunState::MainMenu{..} => {}
+            RunState::GameOver{..} => {}
             _ => {
-                draw_map(&self.ecs.fetch::<Map>(), ctx);
-
-                {
-                    let positions = self.ecs.read_storage::<Position>();
-                    let renderables = self.ecs.read_storage::<Renderable>();
-                    let map = self.ecs.fetch::<Map>();
-
-                    let mut data = (&positions, &renderables).join().collect::<Vec<_>>();
-                    data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order) );
-                    for (pos, render) in data.iter() {
-                        let idx = map.xy_idx(pos.x, pos.y);
-                        if map.visible_tiles[idx] { ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph) }
-                    }
-
-                    gui::draw_ui(&self.ecs, ctx);
-                }
+                camera::render_camera(&self.ecs, ctx);
+                gui::draw_ui(&self.ecs, ctx);
             }
         }
 
@@ -261,10 +247,12 @@ impl GameState for State {
             RunState::MapGeneration => {
                 if SHOW_MAPGEN_VISUALIZER {
                     ctx.cls();
-                    draw_map(&self.mapgen_history[self.mapgen_index], ctx);
+                    if self.mapgen_index < self.mapgen_history.len() {
+                        camera::render_debug_map(&self.mapgen_history[self.mapgen_index], ctx);
+                    }
 
                     self.mapgen_timer += ctx.frame_time_ms;
-                    if self.mapgen_timer > 300.0 {
+                    if self.mapgen_timer > 200.0 {
                         self.mapgen_timer = 0.0;
                         self.mapgen_index += 1;
                         if self.mapgen_index >= self.mapgen_history.len() {
@@ -355,11 +343,11 @@ impl GameState for State {
             }
             RunState::MagicMapReveal{row} => {
                 let mut map = self.ecs.fetch_mut::<Map>();
-                for x in 0..MAPWIDTH {
+                for x in 0..map.width {
                     let idx = map.xy_idx(x as i32, row);
                     map.revealed_tiles[idx] = true;
                 }
-                if row as usize == MAPHEIGHT-1 {
+                if row == map.height-1 {
                     newrunstate = RunState::MonsterTurn;
                 } else {
                     newrunstate = RunState::MagicMapReveal{ row: row+1 };
@@ -397,7 +385,8 @@ impl GameState for State {
                     gui::GameOverResult::NoSelection => {}
                     gui::GameOverResult::QuitToMenu => {
                         self.game_over_cleanup();
-                        newrunstate = RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame };
+                        newrunstate = RunState::MapGeneration;
+                        self.mapgen_next_state = Some(RunState::MainMenu{ menu_selection: gui::MainMenuSelection::NewGame });
                     }
                 }
             }
@@ -457,9 +446,11 @@ let mut gs = State {
     gs.ecs.register::<MagicMapper>();
     gs.ecs.register::<HungerClock>();
     gs.ecs.register::<ProvidesFood>();
+    gs.ecs.register::<BlocksVisibility>();
+    gs.ecs.register::<Door>();
 
     // store global resources
-    gs.ecs.insert(Map::new(1));
+    gs.ecs.insert(Map::new(1, 64, 64));
     gs.ecs.insert(Point::new(0, 0));
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
     gs.ecs.insert(rltk::RandomNumberGenerator::new());

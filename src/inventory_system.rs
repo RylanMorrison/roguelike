@@ -68,7 +68,7 @@ impl<'a> System<'a> for ItemUseSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player_entity, mut gamelog, mut map, 
+        let (player_entity, mut gamelog, map, 
             entities, mut wants_use, names,
             consumables, healing, inflict_damage,
             mut combat_stats, mut suffer_damage, aoe,

@@ -5,11 +5,11 @@ use std::collections::HashMap;
 
 use super::{
     CombatStats, Player, Renderable, Name, Position, Viewshed, 
-    Monster, BlocksTile, Rect, Item, ProvidesHealing, map::MAPWIDTH, 
-    Consumable, Ranged, InflictsDamage, Confusion, SerializeMe,
-    AreaOfEffect, RandomTable, DefenceBonus, EquipmentSlot, Equippable,
-    MagicMapper, MeleePowerBonus, HungerClock, HungerState, ProvidesFood,
-    Map, TileType};
+    Monster, BlocksTile, Rect, Item, ProvidesHealing, Consumable, 
+    Ranged, InflictsDamage, Confusion, SerializeMe, AreaOfEffect, 
+    RandomTable, DefenceBonus, EquipmentSlot, Equippable, MagicMapper, 
+    MeleePowerBonus, HungerClock, HungerState, ProvidesFood, Map, 
+    TileType, BlocksVisibility, Door};
 
 const MAX_MONSTERS: i32 = 4;
 
@@ -104,7 +104,7 @@ pub fn spawn_room(map: &Map, rng: &mut RandomNumberGenerator, room: &Rect, map_d
 }
 
 // TODO: don't spawn on player
-pub fn spawn_region(map: &Map, rng: &mut RandomNumberGenerator, area: &[usize], map_depth: i32, spawn_list: &mut Vec<(usize, String)>) {
+pub fn spawn_region(_map: &Map, rng: &mut RandomNumberGenerator, area: &[usize], map_depth: i32, spawn_list: &mut Vec<(usize, String)>) {
     let spawn_table = room_table(map_depth);
     let mut spawn_points: HashMap<usize, String> = HashMap::new();
     let mut areas: Vec<usize> = Vec::from(area);
@@ -134,8 +134,11 @@ pub fn spawn_region(map: &Map, rng: &mut RandomNumberGenerator, area: &[usize], 
 
 // spawn an entity using (location, name)
 pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
-    let x = (*spawn.0 % MAPWIDTH) as i32;
-    let y = (*spawn.0 / MAPWIDTH) as i32;
+    let map = ecs.fetch::<Map>();
+    let width = map.width as usize;
+    let x = (*spawn.0 % width) as i32;
+    let y = (*spawn.0 / width) as i32;
+    std::mem::drop(map);
 
     match spawn.1.as_ref() {
         "Goblin" => goblin(ecs, x, y),
@@ -154,6 +157,7 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
         "Iron Helmet" => iron_helmet(ecs, x, y),
         "Magic Mapping Scroll" => magic_mapping_scroll(ecs, x, y),
         "Food Ration" => food_ration(ecs, x, y),
+        "Door" => door(ecs, x, y),
         _ => {}
     }
 }
@@ -379,6 +383,25 @@ fn iron_helmet(ecs: &mut World, x: i32, y: i32) {
         .build();
 }
 
+// world
+fn door(ecs: &mut World, x: i32, y: i32) {
+    ecs
+        .create_entity()
+        .with(Position{ x, y })
+        .with(Renderable{
+            glyph: rltk::to_cp437('+'),
+            fg: RGB::named(rltk::CHOCOLATE),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2
+        })
+        .with(Name{ name: "Door".to_string() })
+        .with(BlocksTile{})
+        .with(BlocksVisibility{})
+        .with(Door{open: false})
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
+
 // spawn table
 fn room_table(map_depth: i32) -> RandomTable {
     RandomTable::new()
@@ -393,9 +416,9 @@ fn room_table(map_depth: i32) -> RandomTable {
         .add("Dagger", 3)
         .add("Shield", 3)
         .add("Leather Helmet", 3)
-        .add("Sword", map_depth - 3)
-        .add("Tower Shield", map_depth - 3)
-        .add("Iron Helmet", map_depth - 3)
+        .add("Sword", map_depth - 4)
+        .add("Tower Shield", map_depth - 4)
+        .add("Iron Helmet", map_depth - 4)
         .add("Magic Mapping Scroll", 2)
         .add("Food Ration", 10)
 }

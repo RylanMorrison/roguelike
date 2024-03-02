@@ -11,7 +11,7 @@ pub const GUARDED_WEAPON: PrefabRoom = PrefabRoom{
     template: GUARDED_WEAPON_MAP,
     width: 5,
     height: 5,
-    first_depth: 0,
+    first_depth: 4,
     last_depth: 100
 };
 
@@ -27,7 +27,7 @@ pub const GUARDED_SHIELD: PrefabRoom = PrefabRoom{
     template: GUARDED_SHIELD_MAP,
     width: 5,
     height: 5,
-    first_depth: 0,
+    first_depth: 4,
     last_depth: 100
 };
 
@@ -50,11 +50,11 @@ pub const OGRE_TRIO: PrefabRoom = PrefabRoom{
 const OGRE_TRIO_MAP: &str = "
           
  ######## 
- #      # 
+ # %  % # 
  #  O   # 
-    O   # 
+    O % # 
  #  O   # 
- #      # 
+ # %  % # 
  ######## 
           
 ";

@@ -1,6 +1,8 @@
 use specs::prelude::*;
-use super::{Viewshed, Position, Map, Player};
-use rltk::{field_of_view, Point};
+use crate::BlocksVisibility;
+
+use super::{Viewshed, Position, Map, Player, gamelog::GameLog, Name};
+use rltk::{field_of_view, Point, RandomNumberGenerator};
 
 pub struct VisibilitySystem {}
 
@@ -10,11 +12,23 @@ impl<'a> System<'a> for VisibilitySystem {
         Entities<'a>,
         WriteStorage<'a, Viewshed>,
         WriteStorage<'a, Position>,
-        ReadStorage<'a, Player>
+        ReadStorage<'a, Player>,
+        WriteExpect<'a, RandomNumberGenerator>,
+        WriteExpect<'a, GameLog>,
+        ReadStorage<'a, Name>,
+        ReadStorage<'a, BlocksVisibility>
     );
 
     fn run(&mut self, data : Self::SystemData) {
-        let (mut map, entities, mut viewshed, pos, player) = data;
+        let (mut map, entities, mut viewshed, pos, player,
+            mut rng, mut log, names, blocks_visibility) = data;
+        
+        map.view_blocked.clear();
+        for (block_pos, _block) in (&pos, &blocks_visibility).join() {
+            let idx = map.xy_idx(block_pos.x, block_pos.y);
+            map.view_blocked.insert(idx);
+        }
+        
         for(ent, viewshed, pos) in (&entities, &mut viewshed, &pos).join() {
             viewshed.dirty = false;
             viewshed.visible_tiles.clear();

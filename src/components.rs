@@ -178,3 +178,11 @@ pub struct HungerClock {
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct ProvidesFood {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct BlocksVisibility {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Door {
+    pub open: bool
+}
