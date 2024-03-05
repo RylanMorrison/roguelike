@@ -40,7 +40,7 @@ impl AreaStartingPosition {
         // collect all available floor tiles and calculate the distance to the preferred starting point
         let mut available_floors: Vec<(usize, f32)> = Vec::new();
         for (idx, tiletype) in build_data.map.tiles.iter().enumerate() {
-            if *tiletype == TileType::Floor {
+            if *tiletype == TileType::Floor || *tiletype == TileType::WoodFloor || *tiletype == TileType::Grass {
                 available_floors.push(
                     (
                         idx,

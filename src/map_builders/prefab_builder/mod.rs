@@ -39,15 +39,11 @@ impl PrefabBuilder {
     }
 
     pub fn constant(level: PrefabLevel) -> Box<PrefabBuilder> {
-        Box::new(PrefabBuilder {
-            mode: PrefabMode::Constant{level}
-        })
+        PrefabBuilder::new(PrefabMode::Constant{level})
     }
 
     pub fn sectional(section: prefab_sections::PrefabSection) -> Box<PrefabBuilder> {
-        Box::new(PrefabBuilder {
-            mode: PrefabMode::Sectional{section},
-        })
+        PrefabBuilder::new(PrefabMode::Sectional{section})
     }
 
     pub fn vaults() -> Box<PrefabBuilder> {

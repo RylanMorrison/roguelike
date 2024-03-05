@@ -1,5 +1,6 @@
-use super::{MetaMapBuilder, BuilderMap, TileType};
+use super::{BuilderMap, MetaMapBuilder, TileType};
 use rltk::RandomNumberGenerator;
+use super::area_starting_points::{AreaStartingPosition, XStart, YStart};
 
 pub struct CullUnreachable {}
 
@@ -14,7 +15,10 @@ impl CullUnreachable {
         Box::new(CullUnreachable{})
     }
 
-    fn build(&mut self, _rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
+        // use central starting point for culling unreachable areas
+        AreaStartingPosition::new(XStart::CENTER, YStart::CENTER).build_map(rng, build_data);
+
         let starting_pos = build_data.starting_position.as_ref().unwrap().clone();
         let start_idx = build_data.map.xy_idx(
             starting_pos.x,

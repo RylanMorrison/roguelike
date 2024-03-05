@@ -1,60 +1,67 @@
 use super::{Map, Rect, TileType, Position, spawner, SHOW_MAPGEN_VISUALIZER};
-use rltk::RandomNumberGenerator;
 use specs::prelude::*;
+use rltk::RandomNumberGenerator;
 mod simple_map;
-use simple_map::SimpleMapBuilder;
 mod bsp_dungeon;
-use bsp_dungeon::BspDungeonBuilder;
 mod bsp_interior;
-use bsp_interior::BspInteriorBuilder;
 mod cellular_automata;
-use cellular_automata::CellularAutomataBuilder;
 mod drunkard;
-use drunkard::DrunkardsWalkBuilder;
 mod maze;
-use maze::MazeBuilder;
-mod common;
-use common::*;
 mod dla;
-use dla::DLABuilder;
+mod common;
 mod voronoi;
-use voronoi::VoronoiCellBuilder;
 mod prefab_builder;
-use prefab_builder::PrefabBuilder;
 mod room_based_spawner;
-use room_based_spawner::RoomBasedSpawner;
-mod room_based_stairs;
-use room_based_stairs::RoomBasedStairs;
 mod room_based_starting_position;
-use room_based_starting_position::RoomBasedStartingPosition;
+mod room_based_stairs;
 mod area_starting_points;
-use area_starting_points::{AreaStartingPosition, XStart, YStart};
 mod cull_unreachable;
-use cull_unreachable::CullUnreachable;
 mod voronoi_spawning;
-use voronoi_spawning::VoronoiSpawning;
 mod distant_exit;
-use distant_exit::DistantExit;
 mod room_exploder;
-use room_exploder::RoomExploder;
 mod room_corner_rounding;
-use room_corner_rounding::RoomCornerRounder;
 mod corridors_dogleg;
-use corridors_dogleg::DoglegCorridors;
 mod corridors_bsp;
-use corridors_bsp::BspCorridors;
-mod rooms_corridors_nearest;
-use rooms_corridors_nearest::NearestCorridors;
 mod room_sorter;
-use room_sorter::{RoomSorter, RoomSort};
 mod room_draw;
-use room_draw::RoomDrawer;
+mod rooms_corridors_nearest;
 mod corridors_lines;
-use corridors_lines::StraightLineCorridors;
 mod corridor_spawner;
-use corridor_spawner::CorridorSpawner;
 mod door_placement;
+mod town;
+mod forest;
+mod limestone_caverns;
+use town::town_builder;
+use forest::forest_builder;
+use limestone_caverns::limestone_cavern_builder;
+use distant_exit::DistantExit;
+use simple_map::SimpleMapBuilder;
+use bsp_dungeon::BspDungeonBuilder;
+use bsp_interior::BspInteriorBuilder;
+use cellular_automata::CellularAutomataBuilder;
+use drunkard::DrunkardsWalkBuilder;
+use voronoi::VoronoiCellBuilder;
+use prefab_builder::PrefabBuilder;
+use room_based_spawner::RoomBasedSpawner;
+use room_based_starting_position::RoomBasedStartingPosition;
+use room_based_stairs::RoomBasedStairs;
+use area_starting_points::{AreaStartingPosition, XStart, YStart};
+use cull_unreachable::CullUnreachable;
+use voronoi_spawning::VoronoiSpawning;
+use maze::MazeBuilder;
+use dla::DLABuilder;
+use common::*;
+use room_exploder::RoomExploder;
+use room_corner_rounding::RoomCornerRounder;
+use corridors_dogleg::DoglegCorridors;
+use corridors_bsp::BspCorridors;
+use room_sorter::{RoomSorter, RoomSort};
+use room_draw::RoomDrawer;
+use rooms_corridors_nearest::NearestCorridors;
+use corridors_lines::StraightLineCorridors;
+use corridor_spawner::CorridorSpawner;
 use door_placement::DoorPlacement;
+
 
 pub struct BuilderMap {
     pub spawn_list: Vec<(usize, String)>,
@@ -94,13 +101,13 @@ pub struct BuilderChain {
 }
 
 impl BuilderChain {
-    pub fn new(new_depth: i32, width: i32, height: i32) -> BuilderChain {
+    pub fn new<S: ToString>(name: S, new_depth: i32, width: i32, height: i32) -> BuilderChain {
         BuilderChain{
             starter: None,
             builders: Vec::new(),
             build_data: BuilderMap {
                 spawn_list: Vec::new(),
-                map: Map::new(new_depth, width, height),
+                map: Map::new(name, new_depth, width, height),
                 starting_position: None,
                 rooms: None,
                 corridors: None,
@@ -144,8 +151,17 @@ impl BuilderChain {
     }
 }
 
-pub fn random_builder(new_depth: i32, rng: &mut rltk::RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
-    let mut builder = BuilderChain::new(new_depth, width, height);
+pub fn level_builder(new_depth: i32, rng: &mut RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
+    match new_depth {
+        0 => town_builder(new_depth, rng, width, height),
+        1 => forest_builder(new_depth, rng, width, height),
+        2 => limestone_cavern_builder(new_depth, rng, width, height),
+        _ => random_builder(new_depth, rng, width, height)
+    }
+}
+
+pub fn random_builder(new_depth: i32, rng: &mut RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
+    let mut builder = BuilderChain::new("New Map", new_depth, width, height);
     let type_roll = rng.roll_dice(1, 2);
     match type_roll {
         1 => random_room_builder(rng, &mut builder),
@@ -206,6 +222,10 @@ fn random_room_builder(rng: &mut RandomNumberGenerator, builder: &mut BuilderCha
         }
     }
 
+    // set the start position to the center for culling unreachable areas
+    builder.with(AreaStartingPosition::new(XStart::CENTER, YStart::CENTER));
+    builder.with(CullUnreachable::new());
+
     let start_roll = rng.roll_dice(1, 2);
     match start_roll {
         // randomly pick a way to determine the player start
@@ -253,11 +273,11 @@ fn random_shape_builder(new_depth: i32, rng: &mut RandomNumberGenerator, builder
     }
     builder.start_with(starter);
 
-    // set the player start to the center and cull unreachable areas
+    // set the start position to the center for culling unreachable areas
     builder.with(AreaStartingPosition::new(XStart::CENTER, YStart::CENTER));
     builder.with(CullUnreachable::new());
 
-    // reset the player start the a random position
+    // reset the player start to a random position
     let (start_x, start_y) = random_start_position(rng);
     builder.with(AreaStartingPosition::new(start_x, start_y));
 

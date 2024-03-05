@@ -2,16 +2,20 @@ use rltk::{VirtualKeyCode, Rltk, Point};
 use specs::prelude::*;
 use std::cmp::{max, min};
 
-use super::{Position, Player, Viewshed, State, Map, RunState, Item, gamelog::GameLog, 
-    TileType, Monster, ParticleBuilder, CombatStats, WantsToMelee, WantsToPickupItem,
-    HungerState, HungerClock, Door, BlocksVisibility, BlocksTile, Renderable};
+use crate::{spatial, InBackpack, WantsToUseItem};
+use crate::raws::{Reaction, faction_reaction, RAWS};
 
-pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
+use super::{Position, Player, Viewshed, State, Map, RunState, Item, gamelog::GameLog, 
+    TileType, particle_system::ParticleBuilder, Pools, WantsToMelee, WantsToPickupItem,
+    HungerState, HungerClock, Door, BlocksVisibility, BlocksTile, Renderable, EntityMoved,
+    Consumable, Ranged, Faction};
+
+pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
     let mut positions = ecs.write_storage::<Position>();
-    let players = ecs.write_storage::<Player>();
+    let players = ecs.read_storage::<Player>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
     let mut playerpos = ecs.write_resource::<Point>();
-    let combat_stats = ecs.read_storage::<CombatStats>();
+    let pools = ecs.read_storage::<Pools>();
     let map = ecs.fetch::<Map>();
     let entities = ecs.entities();
     let mut wants_to_melee = ecs.write_storage::<WantsToMelee>();
@@ -19,36 +23,88 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut blocks_visibility = ecs.write_storage::<BlocksVisibility>();
     let mut blocks_movement = ecs.write_storage::<BlocksTile>();
     let mut renderables = ecs.write_storage::<Renderable>();
+    let factions = ecs.read_storage::<Faction>();
+    let mut entity_moved = ecs.write_storage::<EntityMoved>();
+    let mut swap_entities: Vec<(Entity, i32, i32)> = Vec::new();
+    let mut result = RunState::AwaitingInput;
 
     for (entity, _player, pos, viewshed) in (&entities, &players, &mut positions, &mut viewsheds).join() {
-        if pos.x + delta_x < 1 || pos.x + delta_x > map.width-1 || pos.y + delta_y < 1 || pos.y + delta_y > map.height-1 { return; }
+        if pos.x + delta_x < 1 || pos.x + delta_x > map.width-1 || pos.y + delta_y < 1 || pos.y + delta_y > map.height-1 { return RunState::AwaitingInput; }
         let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
 
-        for potential_target in map.tile_content[destination_idx].iter() {
-            let target = combat_stats.get(*potential_target);
-            if let Some(_target) = target {
-                wants_to_melee.insert(entity, WantsToMelee { target: *potential_target }).expect("Add target failed");
-                return;
+        result = spatial::for_each_tile_content_with_gamemode(destination_idx, |potential_target| {
+            let mut hostile = true;
+            if pools.get(potential_target).is_some() {
+                if let Some(faction) = factions.get(potential_target) {
+                    let reaction = faction_reaction(
+                        &faction.name,
+                        "Player",
+                        &RAWS.lock().unwrap()
+                    );
+                    if reaction != Reaction::Attack { hostile = false; }
+                }
             }
-            let door = doors.get_mut(*potential_target);
+            if !hostile {
+                // record that entity should be swapped
+                swap_entities.push((potential_target, pos.x, pos.y));
+
+                // move the player
+                pos.x = min(map.width-1, max(0, pos.x + delta_x));
+                pos.y = min(map.height-1, max(0, pos.y + delta_y));
+                entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
+
+                viewshed.dirty = true;
+                playerpos.x = pos.x;
+                playerpos.y = pos.y;
+            } else {
+                let target = pools.get(potential_target);
+                if let Some(_target) = target {
+                    wants_to_melee.insert(entity, WantsToMelee { target: potential_target }).expect("Add target failed");
+                    return Some(RunState::Ticking);
+                }
+            }
+            
+            let door = doors.get_mut(potential_target);
             if let Some(door) = door {
                 door.open = true;
-                blocks_visibility.remove(*potential_target);
-                blocks_movement.remove(*potential_target);
-                let glyph = renderables.get_mut(*potential_target).unwrap();
+                blocks_visibility.remove(potential_target);
+                blocks_movement.remove(potential_target);
+                let glyph = renderables.get_mut(potential_target).unwrap();
                 glyph.glyph = rltk::to_cp437('/');
                 viewshed.dirty = true;
+                result = RunState::Ticking;
             }
-        }
-        if !map.blocked[destination_idx] {
+            None
+        });
+
+        if !spatial::is_blocked(destination_idx) {
+            let old_idx = map.xy_idx(pos.x, pos.y);
             pos.x = min(map.width-1 , max(0, pos.x + delta_x));
             pos.y = min(map.height-1, max(0, pos.y + delta_y));
+            let new_idx = map.xy_idx(pos.x, pos.y);
+            entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
+            spatial::move_entity(entity, old_idx, new_idx);
 
+            viewshed.dirty = true;
             playerpos.x = pos.x;
             playerpos.y = pos.y;
-            viewshed.dirty = true;
+            result = RunState::Ticking;
         }
     }
+
+    for se in swap_entities.iter() {
+        let their_pos = positions.get_mut(se.0);
+        if let Some(their_pos) = their_pos {
+            let old_idx = map.xy_idx(their_pos.x, their_pos.y);
+            their_pos.x = se.1;
+            their_pos.y = se.2;
+            let new_idx = map.xy_idx(their_pos.x, their_pos.y);
+            spatial::move_entity(se.0, old_idx, new_idx);
+            result = RunState::Ticking;
+        }
+    }
+
+    result
 }
 
 fn get_item(ecs: &mut World) {
@@ -75,51 +131,98 @@ fn get_item(ecs: &mut World) {
 }
 
 pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
+    // hotkeys
+    if ctx.shift && ctx.key.is_some() {
+        let key: Option<i32> =
+            match ctx.key.unwrap() {
+                VirtualKeyCode::Key1 => Some(1),
+                VirtualKeyCode::Key2 => Some(2),
+                VirtualKeyCode::Key3 => Some(3),
+                VirtualKeyCode::Key4 => Some(4),
+                VirtualKeyCode::Key5 => Some(5),
+                VirtualKeyCode::Key6 => Some(6),
+                VirtualKeyCode::Key7 => Some(7),
+                VirtualKeyCode::Key8 => Some(8),
+                VirtualKeyCode::Key9 => Some(9),
+                _ => None
+        };
+        if let Some(key) = key {
+            return use_consumable_hotkey(gs, key-1);
+        }
+    }
+
     match ctx.key {
         None => { return RunState::AwaitingInput } // Nothing happened
         Some(key) => match key {
-            VirtualKeyCode::H => try_move_player(-1, 0, &mut gs.ecs), // move east
-            VirtualKeyCode::L => try_move_player(1, 0, &mut gs.ecs), // move west
-            VirtualKeyCode::K => try_move_player(0, -1, &mut gs.ecs), // move north
-            VirtualKeyCode::J => try_move_player(0, 1, &mut gs.ecs), // move south
-            VirtualKeyCode::Y => try_move_player(-1, -1, &mut gs.ecs), // move north-east
-            VirtualKeyCode::U => try_move_player(1, -1, &mut gs.ecs), // move north-west
-            VirtualKeyCode::B => try_move_player(-1, 1, &mut gs.ecs), // move south-east
-            VirtualKeyCode::N => try_move_player(1, 1, &mut gs.ecs), // move south-west
+            VirtualKeyCode::H => return try_move_player(-1, 0, &mut gs.ecs), // move east
+            VirtualKeyCode::L => return try_move_player(1, 0, &mut gs.ecs), // move west
+            VirtualKeyCode::K => return try_move_player(0, -1, &mut gs.ecs), // move north
+            VirtualKeyCode::J => return try_move_player(0, 1, &mut gs.ecs), // move south
+            VirtualKeyCode::Y => return try_move_player(-1, -1, &mut gs.ecs), // move north-east
+            VirtualKeyCode::U => return try_move_player(1, -1, &mut gs.ecs), // move north-west
+            VirtualKeyCode::B => return try_move_player(-1, 1, &mut gs.ecs), // move south-east
+            VirtualKeyCode::N => return try_move_player(1, 1, &mut gs.ecs), // move south-west
             VirtualKeyCode::Space => return skip_turn(&mut gs.ecs),
-            VirtualKeyCode::Period => { // go to next depth
-                if try_next_level(&mut gs.ecs) {
-                    return RunState::NextLevel;
-                }
-            } // move south-west
+            VirtualKeyCode::Period => return try_transition_level(&mut gs.ecs),
             VirtualKeyCode::G => get_item(&mut gs.ecs), // pickup item
             VirtualKeyCode::I => return RunState::ShowInventory, // open inventory
             VirtualKeyCode::D => return RunState::ShowDropItem, // open item dropper
             VirtualKeyCode::R => return RunState::ShowUnequipItem, // open unequip menu
             VirtualKeyCode::Escape => return RunState::SaveGame, // open main menu and save the game
+            VirtualKeyCode::Backslash => return RunState::ShowCheatMenu,
             _ => { return RunState::AwaitingInput }
         },
     }
-    RunState::PlayerTurn
+    RunState::Ticking
 }
 
-pub fn try_next_level(ecs: &mut World) -> bool {
+fn use_consumable_hotkey(gs: &mut State, key: i32) -> RunState {
+    let consumables = gs.ecs.read_storage::<Consumable>();
+    let backpack = gs.ecs.read_storage::<InBackpack>();
+    let player_entity = gs.ecs.fetch::<Entity>();
+    let entities = gs.ecs.entities();
+    let mut carried_consumables = Vec::new();
+
+    for (entity, carried_by, _consumable) in (&entities, &backpack, &consumables).join() {
+        if carried_by.owner == *player_entity {
+            carried_consumables.push(entity);
+        }
+    }
+
+    if (key as usize) < carried_consumables.len() {
+        if let Some(ranged) = gs.ecs.read_storage::<Ranged>().get(carried_consumables[key as usize]) {
+            return RunState::ShowTargeting { range: ranged.range, item: carried_consumables[key as usize] };
+        }
+        let mut intent = gs.ecs.write_storage::<WantsToUseItem>();
+        intent.insert(
+            *player_entity,
+            WantsToUseItem{ item: carried_consumables[key as usize], target: None }
+        ).expect("Unable to insert intent");
+        return RunState::Ticking;
+    }
+    RunState::Ticking
+}
+
+pub fn try_transition_level(ecs: &mut World) -> RunState {
     let player_pos = ecs.fetch::<Point>();
     let map = ecs.fetch::<Map>();
     let player_idx = map.xy_idx(player_pos.x, player_pos.y);
-    if map.tiles[player_idx] == TileType::DownStairs {
-        return true;
-    } else {
-        let mut gamelog = ecs.fetch_mut::<GameLog>();
-        gamelog.entries.push("There is no way down from here.".to_string());
-        return false;
+
+    match map.tiles[player_idx] {
+        TileType::DownStairs => RunState::NextLevel,
+        TileType::UpStairs => RunState::PreviousLevel,
+        _ => {
+            let mut gamelog = ecs.fetch_mut::<GameLog>();
+            gamelog.entries.push("There is nowhere to go from here.".to_string());
+            RunState::Ticking
+        }
     }
 }
 
 pub fn skip_turn(ecs: &mut World) -> RunState {
     let player_entity = ecs.fetch::<Entity>();
     let viewsheds = ecs.read_storage::<Viewshed>();
-    let monsters = ecs.read_storage::<Monster>();
+    let factions = ecs.read_storage::<Faction>();
     let worldmap = ecs.fetch::<Map>();
     let positions = ecs.read_storage::<Position>();
     let mut particle_builder = ecs.fetch_mut::<ParticleBuilder>();
@@ -129,15 +232,22 @@ pub fn skip_turn(ecs: &mut World) -> RunState {
     let viewshed = viewsheds.get(*player_entity).unwrap();
     for tile in viewshed.visible_tiles.iter() {
         let idx = worldmap.xy_idx(tile.x, tile.y);
-        for entity_id in worldmap.tile_content[idx].iter() {
-            let mob = monsters.get(*entity_id);
-            match mob {
+        spatial::for_each_tile_content(idx, |entity_id| {
+            let faction = factions.get(entity_id);
+            match faction {
                 None => {},
-                Some(_) => {
-                    can_heal = false;
+                Some(faction) => {
+                    let reaction = faction_reaction(
+                        &faction.name,
+                        "Player",
+                        &RAWS.lock().unwrap()
+                    );
+                    if reaction == Reaction::Attack {
+                        can_heal = false;
+                    }
                 }
             }
-        }
+        });
     }
 
     let hunger_clocks = ecs.read_storage::<HungerClock>();
@@ -152,10 +262,10 @@ pub fn skip_turn(ecs: &mut World) -> RunState {
 
     // heal player when turn is skipped
     if can_heal {
-        let mut health_components = ecs.write_storage::<CombatStats>();
-        let player_hp = health_components.get_mut(*player_entity).unwrap();
-        if player_hp.hp < player_hp.max_hp {
-            player_hp.hp = i32::min(player_hp.hp + 1, player_hp.max_hp);
+        let mut pools = ecs.write_storage::<Pools>();
+        let player_pool = pools.get_mut(*player_entity).unwrap();
+        if player_pool.hit_points.current < player_pool.hit_points.max {
+            player_pool.hit_points.current = i32::min(player_pool.hit_points.current + 1, player_pool.hit_points.max);
             let pos = positions.get(*player_entity);
             if let Some(pos) = pos {
                 particle_builder.add_request(pos.x, pos.y, rltk::RGB::named(rltk::GREEN), rltk::RGB::named(rltk::BLACK), rltk::to_cp437('♥'), 200.0);
@@ -163,5 +273,5 @@ pub fn skip_turn(ecs: &mut World) -> RunState {
         }
     }
 
-    RunState::PlayerTurn
+    RunState::Ticking
 }

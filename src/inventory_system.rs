@@ -1,8 +1,9 @@
+use rltk::RandomNumberGenerator;
 use specs::prelude::*;
-use crate::{particle_system::ParticleBuilder, Confusion, Equippable};
-
+use crate::{particle_system::ParticleBuilder, Confusion, EquipmentSlot, Equippable};
+use crate::{raws, spatial};
 use super::{WantsToPickupItem, Name, InBackpack, Position, gamelog::GameLog, WantsToUseItem,
-    Consumable, ProvidesHealing, CombatStats, WantsToDropItem, InflictsDamage, Map, SufferDamage,
+    Consumable, ProvidesHealing, Pools, WantsToDropItem, InflictsDamage, Map, SufferDamage,
     AreaOfEffect, Equipped, WantsToUnequipItem, MagicMapper, RunState, HungerState, ProvidesFood, 
     HungerClock};
 
@@ -52,7 +53,7 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadStorage<'a, Consumable>,
         ReadStorage<'a, ProvidesHealing>,
         ReadStorage<'a, InflictsDamage>,
-        WriteStorage<'a, CombatStats>,
+        WriteStorage<'a, Pools>,
         WriteStorage<'a, SufferDamage>,
         ReadStorage<'a, AreaOfEffect>,
         WriteStorage<'a, Confusion>,
@@ -64,18 +65,19 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadStorage<'a, MagicMapper>,
         WriteExpect<'a, RunState>,
         WriteStorage<'a, HungerClock>,
-        ReadStorage<'a, ProvidesFood>
+        ReadStorage<'a, ProvidesFood>,
+        WriteExpect<'a, RandomNumberGenerator>
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (player_entity, mut gamelog, map, 
             entities, mut wants_use, names,
             consumables, healing, inflict_damage,
-            mut combat_stats, mut suffer_damage, aoe,
+            mut pools, mut suffer_damage, aoe,
             mut confused, equippable, mut equipped, 
             mut backpack, mut particle_builder,
             positions, magic_mapper, mut runstate,
-            mut hunger_clocks, provides_food) = data;
+            mut hunger_clocks, provides_food, mut rng) = data;
 
         for (entity, useitem) in (&entities, &wants_use).join() {
             let mut used_item = true;
@@ -90,9 +92,7 @@ impl<'a> System<'a> for ItemUseSystem {
                         None => {
                             // single target
                             let idx = map.xy_idx(target.x, target.y);
-                            for mob in map.tile_content[idx].iter() {
-                                targets.push(*mob);
-                            }
+                            spatial::for_each_tile_content(idx, |mob| targets.push(mob) );
                         }
                         Some(area_effect) => {
                             // AoE
@@ -100,9 +100,7 @@ impl<'a> System<'a> for ItemUseSystem {
                             blast_tiles.retain(|p| p.x > 0 && p.x < map.width-1 && p.y > 0 && p.y < map.height-1 );
                             for tile_idx in blast_tiles.iter() {
                                 let idx = map.xy_idx(tile_idx.x, tile_idx.y);
-                                for mob in map.tile_content[idx].iter() {
-                                    targets.push(*mob);
-                                }
+                                spatial::for_each_tile_content(idx, |mob| targets.push(mob));
                                 particle_builder.add_request(tile_idx.x, tile_idx.y, rltk::RGB::named(rltk::ORANGE), rltk::RGB::named(rltk::BLACK), rltk::to_cp437('░'), 200.0);
                             }
                         }
@@ -118,19 +116,31 @@ impl<'a> System<'a> for ItemUseSystem {
                     let target_slot = can_equip.slot;
                     let target = targets[0];
 
-                    // unequip any currently equipped item
+                    // unequip currently equipped item
                     let mut to_unequip : Vec<Entity> = Vec::new();
-                    for (item_entity, already_equipped, name) in (&entities, &equipped, &names).join() {
-                        if already_equipped.owner == target && already_equipped.slot == target_slot {
-                            to_unequip.push(item_entity);
-                            if target == *player_entity {
-                                gamelog.entries.push(format!("You unequip {}.", name.name));
+                    for (item_entity, already_equipped) in (&entities, &equipped).join() {
+                        if already_equipped.owner == target {
+                            if already_equipped.slot == target_slot {
+                                to_unequip.push(item_entity);
+                            } else if already_equipped.slot == EquipmentSlot::TwoHanded {
+                                // unequip two handed if main hand or off hand is equipped
+                                if target_slot == EquipmentSlot::MainHand || target_slot == EquipmentSlot::OffHand {
+                                    to_unequip.push(item_entity);
+                                }
+                            } else if target_slot == EquipmentSlot::TwoHanded {
+                                // unequip both main hand and off hand if two handed is equipped
+                                if already_equipped.slot == EquipmentSlot::MainHand || already_equipped.slot == EquipmentSlot::OffHand {
+                                    to_unequip.push(item_entity);
+                                }
                             }
                         }
                     }
                     for item in to_unequip.iter() {
                         equipped.remove(*item);
                         backpack.insert(*item, InBackpack{ owner: target }).expect("Unable to insert backpack entry");
+                        if target == *player_entity {
+                            gamelog.entries.push(format!("You unequip {}.", &names.get(*item).unwrap().name));
+                        }
                     }
 
                     // equip the item
@@ -148,15 +158,15 @@ impl<'a> System<'a> for ItemUseSystem {
                 None => {}
                 Some(healer) => {
                     for target in targets.iter() {
-                        let stats = combat_stats.get_mut(*target);
-                        if let Some(stats) = stats {
-                            if stats.hp == stats.max_hp {
+                        let pool = pools.get_mut(*target);
+                        if let Some(pool) = pool {
+                            if pool.hit_points.current == pool.hit_points.max {
                                 // prevent wastage
                                 gamelog.entries.push("You are already full health.".to_string());
                                 used_item = false;
                                 continue;
                             } 
-                            stats.hp = i32::min(stats.max_hp, stats.hp + healer.heal_amount);
+                            pool.hit_points.current = i32::min(pool.hit_points.max, pool.hit_points.current + healer.heal_amount);
                             if entity == *player_entity {
                                 gamelog.entries.push(format!("You drink the {}, healing {} hp.", names.get(useitem.item).unwrap().name, healer.heal_amount));
                             }
@@ -186,19 +196,21 @@ impl<'a> System<'a> for ItemUseSystem {
                 }
             }
 
-
             // damaging
             let item_damages = inflict_damage.get(useitem.item);
             match item_damages {
                 None => {}
                 Some(damage) => {
                     used_item = false;
+                    let (n_dice, dice_type, dice_bonus) = raws::parse_dice_string(damage.damage.as_str());
+                    let damage_roll = rng.roll_dice(n_dice, dice_type) + dice_bonus;
+
                     for mob in targets.iter() {
-                        SufferDamage::new_damage(&mut suffer_damage, *mob, damage.damage);
+                        SufferDamage::new_damage(&mut suffer_damage, *mob, damage_roll, true);
                         if entity == *player_entity {
                             let mob_name = names.get(*mob).unwrap();
                             let item_name = names.get(useitem.item).unwrap();
-                            gamelog.entries.push(format!("You use {} on {}, inflicting {} damage.", item_name.name, mob_name.name, damage.damage));
+                            gamelog.entries.push(format!("You use {} on {}, inflicting {} damage.", item_name.name, mob_name.name, damage_roll));
 
                             let pos = positions.get(*mob);
                             if let Some(pos) = pos {

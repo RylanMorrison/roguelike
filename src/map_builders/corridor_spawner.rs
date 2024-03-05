@@ -17,15 +17,17 @@ impl CorridorSpawner {
     fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
         if let Some(corridors) = &build_data.corridors {
             for c in corridors.iter() {
-                let depth = build_data.map.depth;
-                spawner::spawn_region(&build_data.map,
-                    rng,
-                    &c,
-                    depth,
-                    &mut build_data.spawn_list);
+                if c.len() > 6 { // only consider long corridors for spawning
+                    let depth = build_data.map.depth;
+                    spawner::spawn_region(&build_data.map,
+                        rng,
+                        &c,
+                        depth,
+                        &mut build_data.spawn_list);
+                }
             }
         } else {
-            panic!("Corridor Based Spawning only workds after corridors have been created!");
+            panic!("Corridor Based Spawning only works after corridors have been created!");
         }
     }
 }

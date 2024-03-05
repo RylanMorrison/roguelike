@@ -1,0 +1,1093 @@
+{
+    "spawn_table": [ 
+        { "name": "Deer", "weight": 14, "min_depth": 1, "max_depth": 1 },
+        { "name": "Wolf", "weight": 13, "min_depth": 1, "max_depth": 2 },
+        { "name": "Bat", "weight": 14, "min_depth": 2, "max_depth": 3 },
+        { "name": "Bandit", "weight": 10, "min_depth": 1, "max_depth": 2 },
+        { "name": "Kobold", "weight": 12, "min_depth": 1, "max_depth": 2 },
+        { "name": "Goblin", "weight": 10, "min_depth": 3, "max_depth": 5 },
+        { "name": "Orc", "weight": 1, "min_depth": 3, "max_depth": 100, "add_map_depth_to_weight": true },
+        { "name": "Large Spider", "weight": 8, "min_depth": 2, "max_depth": 3 },
+        { "name": "Gelatinous Cube", "weight": 10, "min_depth": 2, "max_depth": 2 },
+        { "name": "Ogre", "weight": 3, "min_depth": 6, "max_depth": 100 },
+        { "name": "Demon", "weight": 3, "min_depth": 9, "max_depth": 100 },
+
+        { "name": "Health Potion", "weight": 7, "min_depth": 1, "max_depth": 100 },
+        { "name": "Greater Health Potion", "weight": 2, "min_depth": 6, "max_depth": 100 },
+        { "name": "Fireball Scroll", "weight": 2, "min_depth": 2, "max_depth": 100},
+        { "name": "Confusion Scroll", "weight": 2, "min_depth": 2, "max_depth": 100},
+        { "name": "Magic Missile Scroll", "weight": 4, "min_depth": 2, "max_depth": 100 },
+        { "name": "Magic Mapping Scroll", "weight": 2, "min_depth": 2, "max_depth": 100 },
+        { "name": "Food Ration", "weight": 5, "min_depth": 3, "max_depth": 100 },
+
+        { "name": "Dagger", "weight": 3, "min_depth": 1, "max_depth": 3 },
+        { "name": "Forest Axe", "weight": 3, "min_depth": 1, "max_depth": 3 },
+        { "name": "Longsword", "weight": 2, "min_depth": 4, "max_depth": 8 },
+        { "name": "Battle Axe", "weight": 2, "min_depth": 4, "max_depth": 8 },
+        { "name": "Greatsword", "weight": 2, "min_depth": 7, "max_depth": 100 },
+        { "name": "Executioner Axe", "weight": 2, "min_depth": 7, "max_depth": 100 },
+        
+        { "name": "Wooden Shield", "weight": 3, "min_depth": 1, "max_depth": 5 },
+        { "name": "Tower Shield", "weight": 2, "min_depth": 4, "max_depth": 100 },
+        { "name": "Bulwark Shield", "weight": 2, "min_depth": 7, "max_depth": 100 },
+        { "name": "Leather Helmet", "weight": 3, "min_depth": 1, "max_depth": 5 },
+        { "name": "Leather Armour", "weight": 3, "min_depth": 1, "max_depth": 5 },
+        { "name": "Leather Boots", "weight": 3, "min_depth": 1, "max_depth": 5 },
+        { "name": "Iron Helmet", "weight": 2, "min_depth": 4, "max_depth": 8 },
+        { "name": "Iron Breastplate", "weight": 2, "min_depth": 4, "max_depth": 8 },
+        { "name": "Iron Greaves", "weight": 2, "min_depth": 4, "max_depth": 8 },
+        { "name": "Mithril Helmet", "weight": 1, "min_depth": 7, "max_depth": 100 },
+        { "name": "Mithril Plate", "weight": 1, "min_depth": 7, "max_depth": 100 },
+        { "name": "Mithril Greaves", "weight": 1, "min_depth": 7, "max_depth": 100 }
+    ],
+
+    "loot_tables": [
+        {
+            "name": "Animal",
+            "drops": [
+                { "name": "Hide", "weight": 1 },
+                { "name": "Meat", "weight": 10 }
+            ]
+        },
+        {
+            "name": "Lesser Monster",
+            "drops": [
+                { "name": "Food Ration", "weight": 5 },
+                { "name": "Magic Missile Scroll", "weight": 5 },
+                { "name": "Health Potion", "weight": 2 },
+                { "name": "Wooden Shield", "weight": 1 },
+                { "name": "Leather Helmet", "weight": 3 },
+                { "name": "Leather Armour", "weight": 1 },
+                { "name": "Leather Boots", "weight": 3 }
+            ]
+        },
+        {
+            "name": "Greater Monster",
+            "drops": [
+                { "name": "Confusion Scroll", "weight": 8 },
+                { "name": "Fireball Scroll", "weight": 8 },
+                { "name": "Greater Health Potion", "weight": 8 },
+                { "name": "Magic Mapping Scroll", "weight": 6 },
+                { "name": "Tower Shield", "weight": 4 },
+                { "name": "Bulwark Shield", "weight": 1 },
+                { "name": "Iron Helmet", "weight": 4 },
+                { "name": "Iron Breastplate", "weight": 3 },
+                { "name": "Iron Greaves", "weight": 4 },
+                { "name": "Mithril Helmet", "weight": 1 },
+                { "name": "Mithril Plate", "weight": 1 },
+                { "name": "Mithril Greaves", "weight": 1 }
+            ]
+        }
+    ],
+
+    "faction_table": [
+        { "name": "Player", "responses": {} },
+        { "name": "Mindless", "responses": { "default": "attack" } },
+        { "name": "Townsfolk", "responses": { 
+                "default": "flee",
+                "Player": "ignore",
+                "Townsfolk": "ignore"
+            } 
+        },
+        { "name": "Bandits", "responses": {
+                "default": "attack",
+                "Bandits": "ignore"
+            }
+        },
+        { "name": "Horde", "responses": {
+                "default": "attack",
+                "Horde": "ignore"
+            }
+        },
+        { "name": "Carnivores", "responses": {
+                "default": "attack",
+                "Carnivores": "ignore"
+            }
+        },
+        { "name": "Herbivores", "responses": {
+                "default": "flee",
+                "Herbivores": "ignore"
+            }
+        }
+    ],
+    
+    "items": [
+        {
+            "name": "Meat",
+            "renderable": {
+                "glyph": "%",
+                "fg": "#00FF00",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects" : {
+                    "provides_food": ""
+                }
+            }
+        },
+        {
+            "name": "Hide",
+            "renderable": {
+                "glyph": "%",
+                "fg": "#A52A2A",
+                "bg": "#000000",
+                "order": 2
+            }
+        },
+
+        {
+            "name": "Health Potion",
+            "renderable": {
+                "glyph": "¡",
+                "fg": "#FF00FF",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "healing": "8"
+                }
+            }
+        },
+        {
+            "name": "Greater Health Potion",
+            "renderable": {
+                "glyph": "¡",
+                "fg": "#ff0080",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "healing": "14"
+                }
+            }
+        },
+        {
+            "name": "Magic Missile Scroll",
+            "renderable": {
+                "glyph": "?",
+                "fg": "#00c8ff",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "ranged": "6",
+                    "damage": "3d4"
+                }
+            }
+        },
+        {
+            "name": "Fireball Scroll",
+            "renderable": {
+                "glyph": "?",
+                "fg": "#db7d35",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "ranged": "6",
+                    "damage": "3d8",
+                    "aoe": "3"
+                }
+            }
+        },
+        {
+            "name": "Confusion Scroll",
+            "renderable": {
+                "glyph": "?",
+                "fg": "#FFC0CB",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "ranged": "6",
+                    "confusion": "4"
+                }
+            }
+        },
+        {
+            "name": "Magic Mapping Scroll",
+            "renderable": {
+                "glyph": "?",
+                "fg": "#3174d9",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "magic_mapping": ""
+                }
+            }
+        },
+        {
+            "name": "Food Ration",
+            "renderable": {
+                "glyph": "%",
+                "fg": "#00FF00",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "provides_food": "",
+                    "healing": "4"
+                }
+            }
+        },
+
+        {
+            "name": "Dagger",
+            "renderable": {
+                "glyph": "/",
+                "fg": "#FFFFFF",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "1d6",
+                "hit_bonus": 1,
+                "slot": "Main Hand"
+            }
+        },
+        {
+            "name": "Forest Axe",
+            "renderable": {
+                "glyph": "¶",
+                "fg": "#FFFFFF",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Strength",
+                "base_damage": "1d10",
+                "hit_bonus": -1,
+                "slot": "Main Hand"
+            }
+        },
+        {
+            "name": "Family Longsword",
+            "renderable": {
+                "glyph": "/",
+                "fg": "#934e05",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "2d6-1",
+                "hit_bonus": -1,
+                "slot": "Main Hand"
+            }
+        },
+        {
+            "name": "Longsword",
+            "renderable": {
+                "glyph": "/",
+                "fg": "#0091ff",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "2d6+1",
+                "hit_bonus": 1,
+                "slot": "Main Hand"
+            }
+        },
+        {
+            "name": "Battle Axe",
+            "renderable": {
+                "glyph": "¶",
+                "fg": "#0091ff",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Strength",
+                "base_damage": "2d8+1",
+                "hit_bonus": -1,
+                "slot": "Main Hand"
+            }
+        },
+        {
+            "name": "Greatsword",
+            "renderable": {
+                "glyph": "/",
+                "fg": "#FFFF00",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "2d6+4",
+                "hit_bonus": 2,
+                "slot": "Two Handed"
+            }
+        },
+        {
+            "name": "Executioner Axe",
+            "renderable": {
+                "glyph": "¶",
+                "fg": "#FFFF00",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Strength",
+                "base_damage": "2d10+4",
+                "hit_bonus": -2,
+                "slot": "Two Handed"
+            }
+        },
+
+        {
+            "name": "Wooden Shield",
+            "renderable": {
+                "glyph": "0",
+                "fg": "#FFFFFF",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 1.0,
+                "slot": "Off Hand"
+            }
+        },
+        {
+            "name": "Tower Shield",
+            "renderable": {
+                "glyph": "0",
+                "fg": "#0091ff",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 2.0,
+                "slot": "Off Hand"
+            }
+        },
+        {
+            "name": "Bulwark Shield",
+            "renderable": {
+                "glyph": "0",
+                "fg": "#FFFF00",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 3.0,
+                "slot": "Off Hand"
+            }
+        },
+        {
+            "name": "Orc Axe",
+            "weapon": {
+                "range": "melee",
+                "attribute": "Strength",
+                "base_damage": "1d8",
+                "hit_bonus": -1,
+                "slot": "Main Hand"
+            }
+        },
+        {
+            "name": "Ogre Club",
+            "weapon": {
+                "range": "melee",
+                "attribute": "Strength",
+                "base_damage": "2d8",
+                "hit_bonus": -2,
+                "slot": "Main Hand"
+            }
+        },
+            
+        {
+            "name": "Leather Helmet",
+            "renderable": {
+                "glyph": "(",
+                "fg": "#FFFFFF",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 0.1,
+                "slot": "Head"
+            }
+        },
+        {
+            "name": "Leather Armour",
+            "renderable": {
+                "glyph": "(",
+                "fg": "#FFFFFF",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 1.0,
+                "slot": "Body"
+            }
+        },
+        {
+            "name": "Leather Boots",
+            "renderable": {
+                "glyph": "(",
+                "fg": "#FFFFFF",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 0.1,
+                "slot": "Feet"
+            }
+        },
+        {
+            "name": "Iron Helmet",
+            "renderable": {
+                "glyph": "[",
+                "fg": "#0091ff",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 0.3,
+                "slot": "Head"
+            }
+        },
+        {
+            "name": "Iron Breastplate",
+            "renderable": {
+                "glyph": "[",
+                "fg": "#0091ff",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 2.0,
+                "slot": "Body"
+            }
+        },
+        {
+            "name": "Iron Greaves",
+            "renderable": {
+                "glyph": "[",
+                "fg": "#0091ff",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 0.3,
+                "slot": "Feet"
+            }
+        },
+        {
+            "name": "Mithril Helmet",
+            "renderable": {
+                "glyph": "[",
+                "fg": "#FFFF00",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 0.5,
+                "slot": "Head"
+            }
+        },
+        {
+            "name": "Mithril Plate",
+            "renderable": {
+                "glyph": "[",
+                "fg": "#FFFF00",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 3.0,
+                "slot": "Body"
+            }
+        },
+        {
+            "name": "Mithril Greaves",
+            "renderable": {
+                "glyph": "[",
+                "fg": "#FFFF00",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 0.5,
+                "slot": "Feet"
+            }
+        }
+    ],
+
+    "mobs": [
+        {
+            "name": "Rat",
+            "renderable": {
+                "glyph": "r",
+                "fg": "#FF0000",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 4,
+            "movement": "static",
+            "faction": "Carnivores",
+            "attributes": {
+                "strength": 3,
+                "dexterity": 3,
+                "constitution": 3
+            },
+            "skills": {
+                "melee": -1,
+                "defence": -1
+            },
+            "natural" : {
+                "attacks" : [
+                    { "name" : "bite", "hit_bonus" : 0, "damage" : "1d4" }
+                ]   
+            }
+        },
+        {
+            "name": "Bat",
+            "renderable": {
+                "glyph": "b",
+                "fg": "#FF0000",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 6,
+            "movement": "random",
+            "faction": "Herbivores",
+            "attributes": {
+                "strength": 3,
+                "dexterity": 3,
+                "constitution": 3
+            },
+            "skills": {
+                "melee": -1,
+                "defence": -1
+            },
+            "natural" : {
+                "armour_class": 11,
+                "attacks" : [
+                    { "name" : "bite", "hit_bonus" : 0, "damage" : "1d4" }
+                ]   
+            },
+            "loot_table": "Animal"
+        },
+        {
+            "name": "Deer",
+            "renderable": {
+                "glyph": "d",
+                "fg": "#FFFF00",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 8,
+            "movement": "random",
+            "faction": "Herbivores",
+            "attributes": {
+                "strength": 4,
+                "dexterity": 4,
+                "constitution": 4
+            },
+            "natural" : {
+                "attacks" : [
+                    { "name" : "butt", "hit_bonus" : 0, "damage" : "2d2" }
+                ]   
+            },
+            "loot_table": "Animal"
+        },
+        {
+            "name": "Wolf",
+            "renderable": {
+                "glyph": "w",
+                "fg": "#FF0000",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 8,
+            "movement": "static",
+            "faction": "Carnivores",
+            "attributes": {
+                "strength": 6,
+                "dexterity": 6,
+                "constitution": 4
+            },
+            "natural" : {
+                "armour_class": 12,
+                "attacks" : [
+                    { "name" : "bite", "hit_bonus" : 1, "damage" : "1d6" }
+                ]   
+            },
+            "loot_table": "Animal"
+        },
+        {
+            "name": "Kobold",
+            "renderable": {
+                "glyph": "k",
+                "fg": "#FF0000",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 6,
+            "movement": "static",
+            "faction": "Horde",
+            "attributes": {
+                "strength": 6,
+                "dexterity": 6,
+                "constitution": 4
+            },
+            "equipped": [],
+            "loot_table": "Lesser Monster"
+        },
+        {
+            "name": "Bandit",
+            "renderable": {
+                "glyph": "☻",
+                "fg": "#FF0000",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 6,
+            "movement": "static",
+            "faction": "Bandits",
+            "quips": [
+                "Stand and deliver!",
+                "Your belongings or your life!"
+            ],
+            "attributes": {},
+            "equipped": [ 
+                "Dagger", 
+                "Leather Armour", 
+                "Leather Boots"],
+            "loot_table": "Lesser Monster",
+            "light": {
+                "range": 6,
+                "colour": "#FFFF55"
+            }
+        },
+        {
+            "name": "Goblin",
+            "renderable": {
+                "glyph": "g",
+                "fg": "#FF0000",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 8,
+            "movement": "static",
+            "faction": "Horde",
+            "attributes": {
+                "strength": 8,
+                "dexterity": 8,
+                "constitution": 7
+            },
+            "equipped": [],
+            "loot_table": "Lesser Monster"
+        },
+        {
+            "name": "Orc",
+            "level": 2,
+            "renderable": {
+                "glyph": "o",
+                "fg": "#FF0000",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 8,
+            "movement": "static",
+            "faction": "Horde",
+            "quips": [
+                "For the horde!",
+                "Taste my axe!",
+                "WAAAAAAAAAGH!"
+            ],
+            "attributes": {
+                "strength": 12
+            },
+            "skills": {
+                "melee": 2
+            },
+            "natural": {
+                "armour_class": 12
+            },
+            "equipped": ["Orc Axe", "Leather Armour"],
+            "loot_table": "Lesser Monster"
+        },
+        {
+            "name": "Large Spider",
+            "level": 2,
+            "renderable": {
+                "glyph": "s",
+                "fg": "#FF0000",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 6,
+            "movement": "static",
+            "faction": "Carnivores",
+            "attributes": {},
+            "natural": {
+                "armour_class": 12,
+                "attacks": [
+                    { "name": "bite", "hit_bonus": 1, "damage": "1d12" }
+                ]
+            }
+        },
+        {
+            "name": "Gelatinous Cube",
+            "level": 2,
+            "renderable": {
+                "glyph": "▄",
+                "fg": "#FF0000",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 4,
+            "movement": "static",
+            "faction": "Mindless",
+            "attributes": {},
+            "natural": {
+                "armour_class": 12,
+                "attacks": [
+                    { "name": "engulf", "hit_bonus": 0, "damage": "1d8" }
+                ]
+            },
+            "loot_table": "Lesser Monster",
+            "light": {
+                "range": 4,
+                "colour": "#550000"
+            }
+        },
+        {
+            "name": "Ogre",
+            "level": 3,
+            "renderable": {
+                "glyph": "O",
+                "fg": "#FF0000",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 6,
+            "movement": "static",
+            "faction": "Horde",
+            "quips": [
+                "Me will feast on your flesh!",
+                "RAAAAAAARGH!",
+                "You is doomed!"
+            ],
+            "attributes": {
+                "strength": 15,
+                "dexterity": 10,
+                "constitution": 15,
+                "intelligence": 5
+            },
+            "skills": {
+                "melee": 2,
+                "defence": 2
+            },
+            "natural" : {
+                "armour_class": 13
+            },
+            "equipped": ["Ogre Club"],
+            "loot_table": "Greater Monster"
+        },
+        {
+            "name": "Demon",
+            "level": 4,
+            "renderable": {
+                "glyph": "D",
+                "fg": "#FF0000",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 10,
+            "movement": "static",
+            "faction": "Horde",
+            "quips": [
+                "I will devour your soul!",
+                "Do you flee like a coward?",
+                "You will be ash!"
+            ],
+            "attributes": {
+                "strength": 16,
+                "dexterity": 15,
+                "constitution": 13,
+                "intelligence": 13
+            },
+            "skills": {
+                "melee": 3,
+                "magic": 3
+            },
+            "natural" : {
+                "armour_class": 12,
+                "attacks": [
+                    { "name" : "burn soul", "hit_bonus" : 2, "damage" : "3d6+2" }
+                ]
+            },
+            "equipped": ["Mithril Plate"],
+            "loot_table": "Greater Monster"
+        },
+        {
+            "name": "Barkeep",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#EE82EE",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 4,
+            "movement": "static",
+            "faction": "Townsfolk",
+            "attributes": {
+                "intelligence": 13
+            },
+            "skills": {
+                "melee": 2
+            }
+        },
+        {
+            "name": "Shady Salesman",
+            "renderable": {
+                "glyph": "h",
+                "fg": "#EE82EE",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 4,
+            "movement": "static",
+            "faction": "Townsfolk",
+            "attributes": {}
+        },
+        {
+            "name": "Patron",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#AAAAAA",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 2,
+            "movement": "random",
+            "faction": "Townsfolk",
+            "quips": [
+                "Quiet down, it's too early!",
+                "Ooh I think I've drunk too much.",
+                "Still saving the world, eh?"
+            ],
+            "attributes": {}
+        },
+        {
+            "name": "Priest",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#EE82EE",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 4,
+            "movement": "static",
+            "faction": "Townsfolk",
+            "quips": [
+                "The divine remembers donations.",
+                "Where did I put the holy water?",
+                "Tell me what troubles you my child."
+            ],
+            "attributes": {}
+        },
+        {
+            "name": "Parishioner",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#AAAAAA",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 4,
+            "movement": "static",
+            "faction": "Townsfolk",
+            "quips": [
+                "Praise Jebus!",
+                "Forgive me for I have sinned.",
+                "Oh lawd!"
+            ],
+            "attributes": {}
+        },
+        {
+            "name": "Peasant",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#999999",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 4,
+            "movement": "random_waypoint",
+            "faction": "Townsfolk",
+            "quips": [
+                "Lovely day, eh?",
+                "Nice weather.", 
+                "Hello!"
+            ],
+            "attributes": {}
+        },
+        {
+            "name": "Dock Worker",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#999999",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 4,
+            "movement": "static",
+            "faction": "Townsfolk",
+            "quips": [
+                "Lovely day, eh?",
+                "Nice weather.", 
+                "Hello!"
+            ],
+            "attributes": {}
+        },
+        {
+            "name": "Fisher",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#999999",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 4,
+            "movement": "static",
+            "faction": "Townsfolk",
+            "quips": [
+                "They're biting today!",
+                "I caught something, but it wasn't a fish!",
+                "Looks like rain."
+            ],
+            "attributes": {}
+        },
+        {
+            "name": "Wannabe Pirate",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#AA9999",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 3,
+            "movement": "static",
+            "faction": "Townsfolk",
+            "quips": [ 
+                "Arrr!",
+                "Grog!", 
+                "Booze!"
+            ],
+            "attributes": {}
+        },
+        {
+            "name": "Drunk",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#AA9999",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 2,
+            "movement": "random",
+            "faction": "Townsfolk",
+            "quips": [
+                "Hic",
+                "Need... more... booze!",
+                "Spare a copper?"
+            ],
+            "attributes": {}
+        }
+    ],
+
+    "props": [
+        {
+            "name": "Door",
+            "renderable": {
+                "glyph": "+",
+                "fg": "#805A46",
+                "bg": "#000000",
+                "order": 2
+            },
+            "blocks_tile": true,
+            "blocks_visibility": true,
+            "door_open": true
+        },
+        {
+            "name": "Keg",
+            "renderable": {
+                "glyph": "φ",
+                "fg": "#AAAAAA",
+                "bg": "#000000",
+                "order": 2
+            }
+        },
+        {
+            "name": "Table",
+            "renderable": {
+                "glyph": "╦",
+                "fg": "#AAAAAA",
+                "bg": "#000000",
+                "order": 2
+            }
+        },
+        {
+            "name": "Chair",
+            "renderable": {
+                "glyph": "└",
+                "fg": "#AAAAAA",
+                "bg": "#000000",
+                "order": 2
+            }
+        },
+        {
+            "name": "Candle",
+            "renderable": {
+                "glyph": "Ä",
+                "fg": "#FFA500",
+                "bg": "#000000",
+                "order": 2
+            }
+        }
+    ]
+}
