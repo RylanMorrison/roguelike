@@ -29,6 +29,8 @@ pub fn save_game(_ecs : &mut World) {
 #[cfg(not(target_arch = "wasm32"))]
 pub fn save_game(ecs : &mut World) {
     // Create helper
+
+    use std::fmt::Debug;
     let mapcopy = ecs.get_mut::<super::map::Map>().unwrap().clone();
     let dungeon_master = ecs.get_mut::<super::map::MasterDungeonMap>().unwrap().clone();
     let savehelper = ecs
@@ -50,12 +52,16 @@ pub fn save_game(ecs : &mut World) {
         let mut serializer = serde_json::Serializer::new(writer);
         // TODO: specs::error::NoError used by serializer is deprecated
         serialize_individually!(ecs, serializer, data, Position, Renderable, Player, Viewshed, Name,
-            BlocksTile, Pools, SufferDamage, WantsToMelee, Item, Consumable, Ranged, InflictsDamage,
-            AreaOfEffect, Confusion, ProvidesHealing, InBackpack, WantsToPickupItem, WantsToUseItem,
+            BlocksTile, Pools, WantsToMelee, Item, Consumable, Ranged, Damage, AreaOfEffect, 
+            Confusion, Healing, InBackpack, WantsToPickupItem, WantsToUseItem, SingleActivation,
             WantsToDropItem, SerializationHelper, Equippable, MeleeWeapon, Wearable, WantsToUnequipItem,
-            ParticleLifetime, MagicMapper, HungerClock, BlocksVisibility, Door, EntityMoved, Quips, 
+            ParticleLifetime, MagicMapping, HungerClock, BlocksVisibility, Door, EntityMoved, Quips, 
             Attributes, Skills, NaturalAttackDefence, LootTable, OtherLevelPosition, DMSerializationHelper, 
-            LightSource, Initiative, MyTurn, Faction, WantsToApproach, WantsToFlee, MoveMode, Chasing
+            LightSource, Initiative, MyTurn, Faction, WantsToApproach, WantsToFlee, MoveMode, Chasing,
+            EquipmentChanged, Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport,
+            Food, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, Duration, StatusEffect,
+            KnownSpells, Spell, WantsToCastSpell, RestoresMana, TeachesSpell, Slow, DamageOverTime,
+            SpecialAbilities, TileSize, PendingLevelUp, SkillBonus
         );
     }
 
@@ -102,12 +108,16 @@ pub fn load_game(ecs: &mut World) {
         let mut d = (&mut ecs.entities(), &mut ecs.write_storage::<SimpleMarker<SerializeMe>>(), &mut ecs.write_resource::<SimpleMarkerAllocator<SerializeMe>>());
         // TODO: specs::error::NoError used by deserializer is deprecated
         deserialize_individually!(ecs, de, d, Position, Renderable, Player, Viewshed, Name,
-            BlocksTile, Pools, SufferDamage, WantsToMelee, Item, Consumable, Ranged, InflictsDamage,
-            AreaOfEffect, Confusion, ProvidesHealing, InBackpack, WantsToPickupItem, WantsToUseItem,
+            BlocksTile, Pools, WantsToMelee, Item, Consumable, Ranged, Damage, AreaOfEffect, 
+            Confusion, Healing, InBackpack, WantsToPickupItem, WantsToUseItem, SingleActivation,
             WantsToDropItem, SerializationHelper, Equippable, MeleeWeapon, Wearable, WantsToUnequipItem,
-            ParticleLifetime, MagicMapper, HungerClock, BlocksVisibility, Door, EntityMoved, Quips, 
+            ParticleLifetime, MagicMapping, HungerClock, BlocksVisibility, Door, EntityMoved, Quips, 
             Attributes, Skills, NaturalAttackDefence, LootTable, OtherLevelPosition, DMSerializationHelper, 
-            LightSource, Initiative, MyTurn, Faction, WantsToApproach, WantsToFlee, MoveMode, Chasing
+            LightSource, Initiative, MyTurn, Faction, WantsToApproach, WantsToFlee, MoveMode, Chasing,
+            EquipmentChanged, Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport,
+            Food, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, Duration, StatusEffect,
+            KnownSpells, Spell, WantsToCastSpell, RestoresMana, TeachesSpell, Slow, DamageOverTime,
+            SpecialAbilities, TileSize, PendingLevelUp, SkillBonus
         );
     }
 

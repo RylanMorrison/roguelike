@@ -4,6 +4,7 @@ mod prop_structs;
 mod spawn_table_structs;
 mod loot_structs;
 mod faction_structs;
+mod spell_structs;
 mod rawmaster;
 
 use item_structs::*;
@@ -11,11 +12,13 @@ use mob_structs::*;
 use prop_structs::*;
 use spawn_table_structs::*;
 use loot_structs::*;
+pub use spell_structs::*;
 pub use faction_structs::*;
 pub use rawmaster::*;
 
 use serde::Deserialize;
 use std::sync::Mutex;
+use std::collections::HashMap;
 
 rltk::embedded_resource!(RAW_FILE, "../../raws/spawns.json");
 
@@ -26,16 +29,20 @@ lazy_static! {
 #[derive(Deserialize, Debug)]
 pub struct RenderableData {
     pub glyph: String,
-    pub fg: String,
+    pub fg: Option<String>,
     pub bg: String,
-    pub order: i32
+    pub order: i32,
+    pub x_size: Option<i32>,
+    pub y_size: Option<i32>
 }
 
 #[derive(Deserialize, Debug)]
 pub struct Raws {
     pub items: Vec<ItemData>,
+    pub item_class_colours: HashMap<String, String>,
     pub mobs: Vec<MobData>,
     pub props: Vec<PropData>,
+    pub spells: Vec<SpellData>,
     pub spawn_table: Vec<SpawnTableEntry>,
     pub loot_tables: Vec<LootTableData>,
     pub faction_table: Vec<FactionData>

@@ -19,7 +19,10 @@ pub struct MobData {
     pub natural: Option<MobNaturalData>,
     pub loot_table: Option<String>,
     pub light: Option<MobLight>,
-    pub movement: String
+    pub movement: String,
+    pub gold: Option<String>,
+    pub vendor: Option<Vec<String>>,
+    pub abilities: Option<Vec<MobAbilityData>>
 }
 
 #[derive(Deserialize, Debug)]
@@ -47,4 +50,12 @@ pub struct NaturalAttackData {
 pub struct MobLight {
     pub range: i32,
     pub colour: String
+}
+
+#[derive(Deserialize, Debug)]
+pub struct MobAbilityData {
+    pub spell: String,
+    pub chance: f32,
+    pub range: f32,
+    pub min_range: f32
 }

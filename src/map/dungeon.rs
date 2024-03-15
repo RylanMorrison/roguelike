@@ -22,7 +22,7 @@ impl MasterDungeonMap {
 
     pub fn get_map(&self, depth: i32) -> Option<Map> {
         if self.maps.contains_key(&depth) {
-            let mut result = self.maps[&depth].clone();
+            let result = self.maps[&depth].clone();
             return Some(result)
         }
         None
@@ -45,7 +45,7 @@ pub fn level_transition(ecs: &mut World, new_depth: i32, offset: i32) -> Option<
 /// Transition the player down to a new depth
 fn transition_to_new_map(ecs: &mut World, new_depth: i32) -> Vec<Map> {
     let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-    let mut builder = level_builder(new_depth, &mut rng, 80, 50);
+    let mut builder = level_builder(new_depth, &mut rng, 100, 80);
     builder.build_map(&mut rng);
 
     if new_depth > 1 {

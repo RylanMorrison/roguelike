@@ -1,5 +1,6 @@
 use specs::prelude::*;
-use super::{HungerClock, RunState, HungerState, SufferDamage, gamelog::GameLog, MyTurn};
+use super::{HungerClock, HungerState, gamelog::GameLog, MyTurn, Map};
+use crate::effects::{add_effect, EffectType, Targets};
 
 pub struct HungerSystem {}
 
@@ -8,16 +9,16 @@ impl<'a> System<'a> for HungerSystem {
         Entities<'a>,
         WriteStorage<'a, HungerClock>,
         ReadExpect<'a, Entity>,
-        ReadExpect<'a, RunState>,
-        WriteStorage<'a, SufferDamage>,
         WriteExpect<'a, GameLog>,
-        ReadStorage<'a, MyTurn>
+        ReadStorage<'a, MyTurn>,
+        ReadExpect<'a, Map>
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (entities, mut hunger_clock, player_entity,
-            _runstate, mut suffer_damage, mut gamelog,
-            turns) = data;
+            mut gamelog, turns, map) = data;
+
+        if map.depth == 0 { return; }
 
         for (entity, clock, _myturn) in (&entities, &mut hunger_clock, &turns).join() {
             // only processes if it is the entities turn
@@ -49,7 +50,11 @@ impl<'a> System<'a> for HungerSystem {
                         if entity == *player_entity {
                             gamelog.entries.push("Tummy hurts! You suffer 1 hp damage.".to_string());
                         }
-                        SufferDamage::new_damage(&mut suffer_damage, entity, 1, false);
+                        add_effect(
+                            None,
+                            EffectType::Damage{ amount: 1 },
+                            Targets::Single{ target: entity }
+                        )
                     }
                 }
             }

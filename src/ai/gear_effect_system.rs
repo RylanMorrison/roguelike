@@ -1,0 +1,166 @@
+use specs::prelude::*;
+use crate::{attr_bonus, gamelog::GameLog, AttributeBonus, Attributes, EquipmentChanged, Equipped, InBackpack, Item, MeleeWeapon, 
+    Pools, Slow, StatusEffect, Wearable, Skills, SkillBonus};
+use std::collections::HashMap;
+
+#[derive(Debug)]
+struct ItemUpdate {
+    weight: f32,
+    initiative: f32,
+    strength: i32,
+    dexterity: i32,
+    constitution: i32,
+    intelligence: i32,
+    melee: i32,
+    defence: i32,
+    magic: i32
+}
+
+pub struct GearEffectSystem {}
+
+impl<'a> System<'a> for GearEffectSystem {
+    type SystemData = (
+        WriteStorage<'a, EquipmentChanged>,
+        Entities<'a>,
+        ReadStorage<'a, Item>,
+        ReadStorage<'a, InBackpack>,
+        ReadStorage<'a, Equipped>,
+        WriteStorage<'a, Pools>,
+        WriteStorage<'a, Attributes>,
+        ReadExpect<'a, Entity>,
+        WriteExpect<'a, GameLog>,
+        ReadStorage<'a, AttributeBonus>,
+        ReadStorage<'a, StatusEffect>,
+        ReadStorage<'a, Slow>,
+        ReadStorage<'a, MeleeWeapon>,
+        ReadStorage<'a, Wearable>,
+        WriteStorage<'a, Skills>,
+        ReadStorage<'a, SkillBonus>
+    );
+
+    fn run(&mut self, data: Self::SystemData) {
+        let (mut equip_dirty, entities, items, backpacks, wielded,
+            mut pools, mut attributes, player, mut gamelog, 
+            attribute_bonuses, statuses, slowed, weapons, wearables,
+            mut skills, skill_bonuses) = data;
+
+        if equip_dirty.is_empty() { return; }
+
+        // build the map of who needs updating
+        let mut to_update: HashMap<Entity, ItemUpdate> = HashMap::new();
+        for (entity, _dirty) in (&entities, &equip_dirty).join() {
+            to_update.insert(entity, ItemUpdate{
+                weight: 0.0,
+                initiative: 0.0,
+                strength: 0,
+                dexterity: 0,
+                constitution: 0,
+                intelligence: 0,
+                melee: 0,
+                defence: 0,
+                magic: 0
+            });
+        }
+        equip_dirty.clear();
+
+        // total up equipped items
+        for (item, equipped, entity) in (&items, &wielded, &entities).join() {
+            if to_update.contains_key(&equipped.owner) {
+                let totals = to_update.get_mut(&equipped.owner).unwrap();
+                totals.weight += item.weight_lbs;
+                totals.initiative += item.initiative_penalty;
+                if let Some(attr) = attribute_bonuses.get(entity) {
+                    totals.strength += attr.strength.unwrap_or(0);
+                    totals.dexterity += attr.dexterity.unwrap_or(0);
+                    totals.constitution += attr.constitution.unwrap_or(0);
+                    totals.intelligence += attr.intelligence.unwrap_or(0);
+                }
+                if let Some(skill) = skill_bonuses.get(entity) {
+                    totals.melee += skill.melee.unwrap_or(0);
+                    totals.defence += skill.defence.unwrap_or(0);
+                    totals.magic += skill.magic.unwrap_or(0);
+                }
+            }
+        }
+
+        // calculate base damage
+        let mut base_damage: String = "1 - 4".to_string();
+        for (weapon, _equipped) in (&weapons, &wielded).join() {
+            // TODO display extra damage from attributes and skills
+            base_damage = format!("{} - {}", weapon.damage_n_dice + weapon.damage_bonus, weapon.damage_n_dice * weapon.damage_die_type + weapon.damage_bonus); // should only be one
+        }
+
+        // calculate total armour class
+        let mut total_armour_class: f32 = 10.0; // TODO use entity's armour class from pools
+        for (wearable, _equipped) in (&wearables, &wielded).join() {
+            // TODO display extra armour class from attributes and skills
+            total_armour_class += wearable.armour_class;
+        }
+
+        // total up carried items
+        for (item, carried, entity) in (&items, &backpacks, &entities).join() {
+            if to_update.contains_key(&carried.owner) {
+                let totals = to_update.get_mut(&carried.owner).unwrap();
+                totals.weight += item.weight_lbs;
+                totals.initiative += item.initiative_penalty;
+            }
+        }
+
+        // total up status effect modifiers
+        for (status, bonus) in (&statuses, &attribute_bonuses).join() {
+            if to_update.contains_key(&status.target) {
+                let totals = to_update.get_mut(&status.target).unwrap();
+                totals.strength += bonus.strength.unwrap_or(0);
+                totals.dexterity += bonus.dexterity.unwrap_or(0);
+                totals.constitution += bonus.constitution.unwrap_or(0);
+                totals.intelligence += bonus.intelligence.unwrap_or(0);
+            }
+        }
+
+        // total up haste/slow
+        for (status, slow) in (&statuses, &slowed).join() {
+            if to_update.contains_key(&status.target) {
+                let totals = to_update.get_mut(&status.target).unwrap();
+                totals.initiative += slow.initiative_penalty;
+            }
+        }
+
+        // apply to pools
+        for (entity, item) in to_update.iter() {
+            if let Some(pool) = pools.get_mut(*entity) {
+                pool.total_weight = item.weight;
+                pool.total_initiative_penalty = item.initiative;
+                pool.total_armour_class = total_armour_class as i32;
+                pool.base_damage = base_damage.clone();
+
+                // TODO health and mana bonuses
+                if let Some(attr) = attributes.get_mut(*entity) {
+                    attr.strength.modifiers = item.strength;
+                    attr.dexterity.modifiers = item.dexterity;
+                    attr.constitution.modifiers = item.constitution;
+                    attr.intelligence.modifiers = item.intelligence;
+
+                    attr.strength.bonus = attr_bonus(attr.strength.base + attr.strength.modifiers);
+                    attr.dexterity.bonus = attr_bonus(attr.dexterity.base + attr.dexterity.modifiers);
+                    attr.constitution.bonus = attr_bonus(attr.constitution.base + attr.constitution.modifiers);
+                    attr.intelligence.bonus = attr_bonus(attr.intelligence.base + attr.intelligence.modifiers);
+                    
+                    let carry_capacity_lbs = (attr.strength.base + attr.strength.modifiers) * 15;
+                    if pool.total_weight as i32 > carry_capacity_lbs {
+                        // overburdened
+                        pool.total_initiative_penalty += 4.0;
+                        if *entity == *player {
+                            gamelog.entries.push("You are overburdened!".to_string());
+                        }
+                    }
+                }
+
+                if let Some(skill) = skills.get_mut(*entity) {
+                    skill.melee.modifiers = item.melee;
+                    skill.defence.modifiers = item.defence;
+                    skill.magic.modifiers = item.magic;
+                }
+            }
+        }
+    }
+}

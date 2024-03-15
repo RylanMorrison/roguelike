@@ -1,31 +1,44 @@
 {
     "spawn_table": [ 
-        { "name": "Deer", "weight": 14, "min_depth": 1, "max_depth": 1 },
         { "name": "Wolf", "weight": 13, "min_depth": 1, "max_depth": 2 },
-        { "name": "Bat", "weight": 14, "min_depth": 2, "max_depth": 3 },
         { "name": "Bandit", "weight": 10, "min_depth": 1, "max_depth": 2 },
         { "name": "Kobold", "weight": 12, "min_depth": 1, "max_depth": 2 },
         { "name": "Goblin", "weight": 10, "min_depth": 3, "max_depth": 5 },
         { "name": "Orc", "weight": 1, "min_depth": 3, "max_depth": 100, "add_map_depth_to_weight": true },
-        { "name": "Large Spider", "weight": 8, "min_depth": 2, "max_depth": 3 },
+        { "name": "Large Spider", "weight": 2, "min_depth": 2, "max_depth": 4 },
         { "name": "Gelatinous Cube", "weight": 10, "min_depth": 2, "max_depth": 2 },
         { "name": "Ogre", "weight": 3, "min_depth": 6, "max_depth": 100 },
         { "name": "Demon", "weight": 3, "min_depth": 9, "max_depth": 100 },
 
-        { "name": "Health Potion", "weight": 7, "min_depth": 1, "max_depth": 100 },
-        { "name": "Greater Health Potion", "weight": 2, "min_depth": 6, "max_depth": 100 },
+        { "name": "Health Potion", "weight": 7, "min_depth": 1, "max_depth": 10 },
+        { "name": "Greater Health Potion", "weight": 2, "min_depth": 5, "max_depth": 100 },
+        { "name": "Potion of Strength", "weight": 2, "min_depth": 4, "max_depth": 100 },
+        { "name": "Potion of Dexterity", "weight": 2, "min_depth": 4, "max_depth": 100 },
+        { "name": "Potion of Constitution", "weight": 2, "min_depth": 4, "max_depth": 100 },
+        { "name": "Potion of Intelligence", "weight": 2, "min_depth": 4, "max_depth": 100 },
+        { "name": "Mana Potion", "weight": 7, "min_depth": 1, "max_depth": 100 },
         { "name": "Fireball Scroll", "weight": 2, "min_depth": 2, "max_depth": 100},
         { "name": "Confusion Scroll", "weight": 2, "min_depth": 2, "max_depth": 100},
         { "name": "Magic Missile Scroll", "weight": 4, "min_depth": 2, "max_depth": 100 },
         { "name": "Magic Mapping Scroll", "weight": 2, "min_depth": 2, "max_depth": 100 },
+        { "name": "Town Portal Scroll", "weight": 2, "min_depth": 4, "max_depth": 100 },
+        { "name": "Rod of Fireballs", "weight": 1, "min_depth": 7, "max_depth": 100 },
         { "name": "Food Ration", "weight": 5, "min_depth": 3, "max_depth": 100 },
 
         { "name": "Dagger", "weight": 3, "min_depth": 1, "max_depth": 3 },
         { "name": "Forest Axe", "weight": 3, "min_depth": 1, "max_depth": 3 },
-        { "name": "Longsword", "weight": 2, "min_depth": 4, "max_depth": 8 },
-        { "name": "Battle Axe", "weight": 2, "min_depth": 4, "max_depth": 8 },
-        { "name": "Greatsword", "weight": 2, "min_depth": 7, "max_depth": 100 },
-        { "name": "Executioner Axe", "weight": 2, "min_depth": 7, "max_depth": 100 },
+        { "name": "Bronze Longsword", "weight": 3, "min_depth": 3, "max_depth": 8 },
+        { "name": "Steel Longsword", "weight": 2, "min_depth": 5, "max_depth": 8 },
+        { "name": "Mithril Longsword", "weight": 1, "min_depth": 7, "max_depth": 8 },
+        { "name": "Bronze Battleaxe", "weight": 3, "min_depth": 3, "max_depth": 8 },
+        { "name": "Steel Battleaxe", "weight": 2, "min_depth": 5, "max_depth": 8 },
+        { "name": "Mithril Battleaxe", "weight": 1, "min_depth": 7, "max_depth": 8 },
+        { "name": "Bronze Greatsword", "weight": 3, "min_depth": 3, "max_depth": 100 },
+        { "name": "Steel Greatsword", "weight": 2, "min_depth": 5, "max_depth": 100 },
+        { "name": "Mithril Greatsword", "weight": 1, "min_depth": 7, "max_depth": 100 },
+        { "name": "Bronze Greataxe", "weight": 3, "min_depth": 3, "max_depth": 100 },
+        { "name": "Steel Greataxe", "weight": 2, "min_depth": 5, "max_depth": 100 },
+        { "name": "Mithril Greataxe", "weight": 1, "min_depth": 7, "max_depth": 100 },
         
         { "name": "Wooden Shield", "weight": 3, "min_depth": 1, "max_depth": 5 },
         { "name": "Tower Shield", "weight": 2, "min_depth": 4, "max_depth": 100 },
@@ -33,12 +46,15 @@
         { "name": "Leather Helmet", "weight": 3, "min_depth": 1, "max_depth": 5 },
         { "name": "Leather Armour", "weight": 3, "min_depth": 1, "max_depth": 5 },
         { "name": "Leather Boots", "weight": 3, "min_depth": 1, "max_depth": 5 },
-        { "name": "Iron Helmet", "weight": 2, "min_depth": 4, "max_depth": 8 },
-        { "name": "Iron Breastplate", "weight": 2, "min_depth": 4, "max_depth": 8 },
-        { "name": "Iron Greaves", "weight": 2, "min_depth": 4, "max_depth": 8 },
+        { "name": "Leather Gloves", "weight": 3, "min_depth": 1, "max_depth": 5 },
+        { "name": "Iron Helmet", "weight": 2, "min_depth": 4, "max_depth": 100 },
+        { "name": "Iron Breastplate", "weight": 2, "min_depth": 4, "max_depth": 100 },
+        { "name": "Iron Greaves", "weight": 2, "min_depth": 4, "max_depth": 100 },
+        { "name": "Iron Gauntlets", "weight": 2, "min_depth": 4, "max_depth": 100 },
         { "name": "Mithril Helmet", "weight": 1, "min_depth": 7, "max_depth": 100 },
         { "name": "Mithril Plate", "weight": 1, "min_depth": 7, "max_depth": 100 },
-        { "name": "Mithril Greaves", "weight": 1, "min_depth": 7, "max_depth": 100 }
+        { "name": "Mithril Greaves", "weight": 1, "min_depth": 7, "max_depth": 100 },
+        { "name": "Mithril Gauntlets", "weight": 1, "min_depth": 7, "max_depth": 100 }
     ],
 
     "loot_tables": [
@@ -110,96 +126,281 @@
             }
         }
     ],
+
+    "spells": [
+        {
+            "name": "Zap",
+            "mana_cost": 1,
+            "effects": {
+                "ranged": "6",
+                "damage": "1d10",
+                "particle_line" : "▓;#00FFFF;400.0"
+            }
+        },
+        {
+            "name": "Ray of Sickness",
+            "mana_cost": 3,
+            "effects": {
+                "ranged": "6",
+                "damage": "2d6",
+                "damage_over_time": "4",
+                "duration": "5",
+                "particle_line": "▓;#00FF00;400.0"
+            }
+        },
+        {
+            "name": "Fireball",
+            "mana_cost": 5,
+            "effects": {
+                "ranged": "6",
+                "damage": "2d10",
+                "area_of_effect": "3",
+                "damage_over_time": "2",
+                "duration": "3",
+                "particle": "*;#FFA500;200.0"
+            }
+        },
+        {
+            "name": "Web",
+            "mana_cost": 2,
+            "effects": {
+                "ranged": "6",
+                "slow": "10",
+                "area_of_effect": "3",
+                "duration": "5",
+                "particle_line" : "☼;#FFFFFF;400.0"
+            }
+        },
+        {
+            "name": "Drain Soul",
+            "mana_cost": 2,
+            "effects": {
+                "ranged": "6",
+                "particle_line" : "☼;#c045f1;400.0",
+                "slow": "10",
+                "duration": "5",
+                "damage": "4d8",
+                "healing": "10"
+            }
+        }
+    ],
+
+    "item_class_colours": {
+        "common": "#FFFFFF",
+        "rare": "#00FFFF",
+        "legendary": "#fcd269",
+        "set": "#00FF00",
+        "unique": "#FF00FF"
+    },
     
     "items": [
         {
             "name": "Meat",
             "renderable": {
                 "glyph": "%",
-                "fg": "#00FF00",
                 "bg": "#000000",
                 "order": 2
             },
             "consumable": {
                 "effects" : {
-                    "provides_food": ""
+                    "food": ""
                 }
-            }
+            },
+            "weight_lbs": 3.0,
+            "base_value": 5,
+            "class": "common"
         },
         {
             "name": "Hide",
             "renderable": {
                 "glyph": "%",
-                "fg": "#A52A2A",
                 "bg": "#000000",
                 "order": 2
-            }
+            },
+            "weight_lbs": 3.0,
+            "base_value": 15,
+            "class": "common"
         },
 
         {
             "name": "Health Potion",
             "renderable": {
                 "glyph": "¡",
-                "fg": "#FF00FF",
                 "bg": "#000000",
                 "order": 2
             },
             "consumable": {
                 "effects": {
-                    "healing": "8"
+                    "healing": "10"
                 }
-            }
+            },
+            "weight_lbs": 0.5,
+            "base_value": 40,
+            "vendor_category": "alchemy",
+            "class": "common"
         },
         {
             "name": "Greater Health Potion",
             "renderable": {
                 "glyph": "¡",
-                "fg": "#ff0080",
                 "bg": "#000000",
                 "order": 2
             },
             "consumable": {
                 "effects": {
-                    "healing": "14"
+                    "healing": "24"
                 }
+            },
+            "weight_lbs": 1.0,
+            "base_value": 80,
+            "vendor_category": "alchemy",
+            "class": "rare"
+        },
+        {
+            "name": "Potion of Strength",
+            "renderable": {
+                "glyph": "¡",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "particle": "!;#FF0000;200.0",
+                    "duration": "15"
+                }
+            },
+            "weight_lbs": 0.5,
+            "base_value": 100,
+            "vendor_category": "alchemy",
+            "class": "common",
+            "attribute_bonuses": {
+                "strength": 5
             }
         },
+        {
+            "name": "Potion of Dexterity",
+            "renderable": {
+                "glyph": "¡",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "particle": "!;#FF0000;200.0",
+                    "duration": "15"
+                }
+            },
+            "weight_lbs": 0.5,
+            "base_value": 100,
+            "vendor_category": "alchemy",
+            "class": "common",
+            "attribute_bonuses": {
+                "dexterity": 5
+            }
+        },
+        {
+            "name": "Potion of Constitution",
+            "renderable": {
+                "glyph": "¡",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "particle": "!;#FF0000;200.0",
+                    "duration": "15"
+                }
+            },
+            "weight_lbs": 0.5,
+            "base_value": 100,
+            "vendor_category": "alchemy",
+            "class": "common",
+            "attribute_bonuses": {
+                "constitution": 5
+            }
+        },
+        {
+            "name": "Potion of Intelligence",
+            "renderable": {
+                "glyph": "¡",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "particle": "!;#FF0000;200.0",
+                    "duration": "15"
+                }
+            },
+            "weight_lbs": 0.5,
+            "base_value": 100,
+            "vendor_category": "alchemy",
+            "class": "common",
+            "attribute_bonuses": {
+                "intelligence": 5
+            }
+        },
+        {
+            "name": "Mana Potion",
+            "renderable": {
+                "glyph" : "!",
+                "bg" : "#000000",
+                "order" : 2
+            },
+            "consumable": {
+                "effects": {
+                    "mana": "4"
+                }
+            },
+            "weight_lbs": 0.5,
+            "base_value": 50,
+            "vendor_category": "alchemy",
+            "class": "common"
+        },
+
         {
             "name": "Magic Missile Scroll",
             "renderable": {
                 "glyph": "?",
-                "fg": "#00c8ff",
                 "bg": "#000000",
                 "order": 2
             },
             "consumable": {
                 "effects": {
                     "ranged": "6",
-                    "damage": "3d4"
+                    "damage": "3d6",
+                    "particle_line": "*;#00FFFF;200.0"
                 }
-            }
+            },
+            "weight_lbs": 0.5,
+            "base_value": 60,
+            "vendor_category": "scrolls",
+            "class": "common"
         },
         {
             "name": "Fireball Scroll",
             "renderable": {
                 "glyph": "?",
-                "fg": "#db7d35",
                 "bg": "#000000",
                 "order": 2
             },
             "consumable": {
                 "effects": {
                     "ranged": "6",
-                    "damage": "3d8",
-                    "aoe": "3"
+                    "damage": "2d10",
+                    "area_of_effect": "3",
+                    "particle": "*;#FFA500;200.0"
                 }
-            }
+            },
+            "weight_lbs": 0.5,
+            "base_value": 100,
+            "vendor_category": "scrolls",
+            "class": "common"
         },
         {
             "name": "Confusion Scroll",
             "renderable": {
                 "glyph": "?",
-                "fg": "#FFC0CB",
                 "bg": "#000000",
                 "order": 2
             },
@@ -208,13 +409,16 @@
                     "ranged": "6",
                     "confusion": "4"
                 }
-            }
+            },
+            "weight_lbs": 0.5,
+            "base_value": 100,
+            "vendor_category": "scrolls",
+            "class": "common"
         },
         {
             "name": "Magic Mapping Scroll",
             "renderable": {
                 "glyph": "?",
-                "fg": "#3174d9",
                 "bg": "#000000",
                 "order": 2
             },
@@ -222,29 +426,145 @@
                 "effects": {
                     "magic_mapping": ""
                 }
-            }
+            },
+            "weight_lbs": 0.5,
+            "base_value": 150,
+            "vendor_category": "scrolls",
+            "class": "common"
         },
         {
-            "name": "Food Ration",
+            "name": "Town Portal Scroll",
             "renderable": {
-                "glyph": "%",
-                "fg": "#00FF00",
+                "glyph": "?",
                 "bg": "#000000",
                 "order": 2
             },
             "consumable": {
                 "effects": {
-                    "provides_food": "",
+                    "town_portal": ""
+                }
+            },
+            "weight_lbs": 0.5,
+            "base_value": 50,
+            "vendor_category": "scrolls",
+            "class": "common"
+        },
+        {
+            "name": "Beginner Lightning Magic",
+            "renderable": {
+                "glyph": "&",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "teach_spell": "Zap"
+                }
+            },
+            "weight_lbs": 0.5,
+            "base_value": 150,
+            "vendor_category": "scrolls",
+            "class": "common"
+        },
+        {
+            "name": "Intermediate Poison Magic",
+            "renderable": {
+                "glyph": "&",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "teach_spell": "Ray of Sickness"
+                }
+            },
+            "weight_lbs": 0.5,
+            "base_value": 300,
+            "vendor_category": "scrolls",
+            "class": "rare"
+        },
+        {
+            "name": "Intermediate Fire Magic",
+            "renderable": {
+                "glyph": "&",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "teach_spell": "Fireball"
+                }
+            },
+            "weight_lbs": 0.5,
+            "base_value": 500,
+            "vendor_category": "scrolls",
+            "class": "rare"
+        },
+        {
+            "name": "Rod of Fireballs",
+            "renderable": {
+                "glyph": "|",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "ranged": "6",
+                    "damage": "2d10",
+                    "area_of_effect": "3",
+                    "particle": "▓;#FFA500;200.0"
+                },
+                "charges": 5
+            },
+            "weight_lbs": 1.0,
+            "base_value": 500,
+            "class": "rare",
+            "vendor_category": "scrolls"
+        },
+
+        {
+            "name": "Food Ration",
+            "renderable": {
+                "glyph": "%",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "food": "",
                     "healing": "4"
                 }
-            }
+            },
+            "weight_lbs": 2.0,
+            "base_value": 40,
+            "vendor_category": "food",
+            "class": "common"
         },
 
         {
             "name": "Dagger",
             "renderable": {
                 "glyph": "/",
-                "fg": "#FFFFFF",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "1d4",
+                "hit_bonus": 1,
+                "slot": "Main Hand"
+            },
+            "weight_lbs": 1.0,
+            "base_value": 50,
+            "initiative_penalty": 0,
+            "class": "common",
+            "vendor_category": "weapons"
+        },
+        {
+            "name": "Acid King Dagger",
+            "renderable": {
+                "glyph": "/",
                 "bg": "#000000",
                 "order": 2
             },
@@ -252,15 +572,297 @@
                 "range": "melee",
                 "attribute": "Dexterity",
                 "base_damage": "1d6",
-                "hit_bonus": 1,
-                "slot": "Main Hand"
+                "hit_bonus": 2,
+                "slot": "Main Hand",
+                "proc_target": "Target",
+                "proc_chance": 0.6,
+                "proc_effects": {
+                    "damage_over_time": "10",
+                    "duration": "4"
+                }
+            },
+            "weight_lbs": 6.0,
+            "base_value": 1000,
+            "initiative_penalty": 0.2,
+            "class": "unique",
+            "vendor_category": "weapons",
+            "attribute_bonuses": {
+                "dexterity": 1
             }
         },
         {
             "name": "Forest Axe",
             "renderable": {
                 "glyph": "¶",
-                "fg": "#FFFFFF",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Strength",
+                "base_damage": "1d6",
+                "hit_bonus": 0,
+                "slot": "Main Hand"
+            },
+            "weight_lbs": 2.0,
+            "base_value": 50,
+            "initiative_penalty": 0,
+            "class": "common"
+        },
+        {
+            "name": "Family Longsword",
+            "renderable": {
+                "glyph": "/",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "1d8-1",
+                "hit_bonus": -1,
+                "slot": "Main Hand"
+            },
+            "weight_lbs": 3.0,
+            "base_value": 30,
+            "initiative_penalty": 0.1,
+            "class": "unique",
+            "skill_bonuses": {
+                "defence": 1
+            }
+        },
+        {
+            "name": "Bronze Longsword",
+            "renderable": {
+                "glyph": "/",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "1d8",
+                "hit_bonus": 1,
+                "slot": "Main Hand"
+            },
+            "weight_lbs": 3.0,
+            "base_value": 50,
+            "initiative_penalty": 0.1,
+            "class": "common",
+            "vendor_category": "weapons"
+        },
+        {
+            "name": "Steel Longsword",
+            "renderable": {
+                "glyph": "/",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "1d8+2",
+                "hit_bonus": 1,
+                "slot": "Main Hand"
+            },
+            "weight_lbs": 4.0,
+            "base_value": 250,
+            "initiative_penalty": 0.2,
+            "class": "rare",
+            "vendor_category": "weapons"
+        },
+        {
+            "name": "Mithril Longsword",
+            "renderable": {
+                "glyph": "/",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "1d8+4",
+                "hit_bonus": 2,
+                "slot": "Main Hand"
+            },
+            "weight_lbs": 5.0,
+            "base_value": 500,
+            "initiative_penalty": 0.3,
+            "class": "legendary",
+            "vendor_category": "weapons",
+            "skill_bonuses": {
+                "melee": 1
+            }
+        },
+        {
+            "name": "Red Fang",
+            "renderable": {
+                "glyph": "/",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "2d6+4",
+                "hit_bonus": 2,
+                "slot": "Main Hand",
+                "proc_chance": 0.6,
+                "proc_target": "Target",
+                "proc_effects": {
+                    "damage": "1d4",
+                    "slow": "10",
+                    "duration": "3",
+                    "particle": "*;#f90000;200.0"
+                }
+            },
+            "weight_lbs": 5.0,
+            "base_value": 2000,
+            "initiative_penalty": 0.3,
+            "class": "unique",
+            "vendor_category": "weapons",
+            "attribute_bonuses": {
+                "dexterity": 1
+            },
+            "skill_bonuses": {
+                "melee": 1
+            }
+        },
+        {
+            "name": "Fir Staff",
+            "renderable": {
+                "glyph": "|",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "1d6",
+                "hit_bonus": 0,
+                "slot": "Two Handed"
+            },
+            "weight_lbs": 5.0,
+            "base_value": 150,
+            "initiative_penalty": 0.1,
+            "class": "common",
+            "vendor_category": "weapons",
+            "skill_bonuses": {
+                "magic": 1
+            }
+        },
+        {
+            "name": "Birch Staff",
+            "renderable": {
+                "glyph": "|",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "1d6",
+                "hit_bonus": 0,
+                "slot": "Two Handed"
+            },
+            "weight_lbs": 5.0,
+            "base_value": 400,
+            "initiative_penalty": 0.1,
+            "class": "rare",
+            "vendor_category": "weapons",
+            "skill_bonuses": {
+                "magic": 2
+            }
+        },
+        {
+            "name": "Oak Staff",
+            "renderable": {
+                "glyph": "|",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "1d6",
+                "hit_bonus": 0,
+                "slot": "Two Handed"
+            },
+            "weight_lbs": 5.0,
+            "base_value": 800,
+            "initiative_penalty": 0.1,
+            "class": "legendary",
+            "vendor_category": "weapons",
+            "skill_bonuses": {
+                "magic": 3
+            },
+            "attribute_bonuses": {
+                "intelligence": 1
+            }
+        },
+        {
+            "name": "Earth Staff",
+            "renderable": {
+                "glyph": "|",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "1d6",
+                "hit_bonus": 0,
+                "slot": "Two Handed"
+            },
+            "weight_lbs": 5.0,
+            "base_value": 1500,
+            "initiative_penalty": 0.1,
+            "class": "unique",
+            "vendor_category": "weapons",
+            "skill_bonuses": {
+                "melee": -4,
+                "magic": 5,
+                "defence": 4
+            },
+            "attribute_bonuses": {
+                "intelligence": 2
+            }
+        },
+        {
+            "name": "Elder Staff",
+            "renderable": {
+                "glyph": "|",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "1d6",
+                "hit_bonus": 0,
+                "slot": "Two Handed"
+            },
+            "weight_lbs": 5.0,
+            "base_value": 2000,
+            "initiative_penalty": 0.1,
+            "class": "unique",
+            "vendor_category": "weapons",
+            "skill_bonuses": {
+                "melee": -5,
+                "magic": 8,
+                "defence": -5
+            },
+            "attribute_bonuses": {
+                "intelligence": 4,
+                "strength": -3,
+                "dexterity": -3,
+                "constitution": -3
+            }
+        },
+        {
+            "name": "Bronze Battleaxe",
+            "renderable": {
+                "glyph": "¶",
                 "bg": "#000000",
                 "order": 2
             },
@@ -270,86 +872,223 @@
                 "base_damage": "1d10",
                 "hit_bonus": -1,
                 "slot": "Main Hand"
-            }
+            },
+            "weight_lbs": 4.0,
+            "base_value": 100,
+            "initiative_penalty": 0.2,
+            "class": "common",
+            "vendor_category": "weapons"
         },
         {
-            "name": "Family Longsword",
+            "name": "Steel Battleaxe",
             "renderable": {
-                "glyph": "/",
-                "fg": "#934e05",
+                "glyph": "¶",
                 "bg": "#000000",
                 "order": 2
             },
             "weapon": {
                 "range": "melee",
-                "attribute": "Dexterity",
-                "base_damage": "2d6-1",
+                "attribute": "Strength",
+                "base_damage": "1d10+2",
                 "hit_bonus": -1,
                 "slot": "Main Hand"
+            },
+            "weight_lbs": 5.0,
+            "base_value": 250,
+            "initiative_penalty": 0.3,
+            "class": "rare",
+            "vendor_category": "weapons"
+        },
+        {
+            "name": "Mithril Battleaxe",
+            "renderable": {
+                "glyph": "¶",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Strength",
+                "base_damage": "1d10+4",
+                "hit_bonus": 0,
+                "slot": "Main Hand"
+            },
+            "weight_lbs": 5.0,
+            "base_value": 500,
+            "initiative_penalty": 0.3,
+            "class": "legendary",
+            "vendor_category": "weapons",
+            "skill_bonuses": {
+                "magic": -1,
+                "melee": 1
             }
         },
         {
-            "name": "Longsword",
+            "name": "Bronze Greatsword",
             "renderable": {
                 "glyph": "/",
-                "fg": "#0091ff",
                 "bg": "#000000",
                 "order": 2
             },
             "weapon": {
                 "range": "melee",
                 "attribute": "Dexterity",
-                "base_damage": "2d6+1",
+                "base_damage": "2d10",
                 "hit_bonus": 1,
-                "slot": "Main Hand"
-            }
-        },
-        {
-            "name": "Battle Axe",
-            "renderable": {
-                "glyph": "¶",
-                "fg": "#0091ff",
-                "bg": "#000000",
-                "order": 2
+                "slot": "Two Handed"
             },
-            "weapon": {
-                "range": "melee",
-                "attribute": "Strength",
-                "base_damage": "2d8+1",
-                "hit_bonus": -1,
-                "slot": "Main Hand"
-            }
+            "weight_lbs": 6.0,
+            "base_value": 300,
+            "initiative_penalty": 0.4,
+            "class": "common",
+            "vendor_category": "weapons"
         },
         {
-            "name": "Greatsword",
+            "name": "Steel Greatsword",
             "renderable": {
                 "glyph": "/",
-                "fg": "#FFFF00",
                 "bg": "#000000",
                 "order": 2
             },
             "weapon": {
                 "range": "melee",
                 "attribute": "Dexterity",
-                "base_damage": "2d6+4",
-                "hit_bonus": 2,
+                "base_damage": "2d10+2",
+                "hit_bonus": 1,
                 "slot": "Two Handed"
+            },
+            "weight_lbs": 7.0,
+            "base_value": 500,
+            "initiative_penalty": 0.5,
+            "class": "rare",
+            "vendor_category": "weapons",
+            "skill_bonuses": {
+                "magic": -1
             }
         },
         {
-            "name": "Executioner Axe",
+            "name": "Mithril Greatsword",
+            "renderable": {
+                "glyph": "/",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "2d10+4",
+                "hit_bonus": 1,
+                "slot": "Two Handed"
+            },
+            "weight_lbs": 7.0,
+            "base_value": 800,
+            "initiative_penalty": 0.5,
+            "class": "legendary",
+            "vendor_category": "weapons",
+            "skill_bonuses": {
+                "magic": -2,
+                "melee": 1
+            }
+        },
+        {
+            "name": "Bronze Greataxe",
             "renderable": {
                 "glyph": "¶",
-                "fg": "#FFFF00",
                 "bg": "#000000",
                 "order": 2
             },
             "weapon": {
                 "range": "melee",
                 "attribute": "Strength",
-                "base_damage": "2d10+4",
+                "base_damage": "2d13",
                 "hit_bonus": -2,
                 "slot": "Two Handed"
+            },
+            "weight_lbs": 7.0,
+            "base_value": 300,
+            "initiative_penalty": 0.4,
+            "class": "common",
+            "vendor_category": "weapons"
+        },
+        {
+            "name": "Steel Greataxe",
+            "renderable": {
+                "glyph": "¶",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Strength",
+                "base_damage": "1d13+2",
+                "hit_bonus": -2,
+                "slot": "Two Handed"
+            },
+            "weight_lbs": 8.0,
+            "base_value": 500,
+            "initiative_penalty": 0.5,
+            "class": "rare",
+            "vendor_category": "weapons",
+            "skill_bonuses": {
+                "magic": -1
+            }
+        },
+        {
+            "name": "Mithril Greataxe",
+            "renderable": {
+                "glyph": "¶",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Strength",
+                "base_damage": "1d13+4",
+                "hit_bonus": -1,
+                "slot": "Two Handed"
+            },
+            "weight_lbs": 8.0,
+            "base_value": 800,
+            "initiative_penalty": 0.5,
+            "class": "legendary",
+            "vendor_category": "weapons",
+            "skill_bonuses": {
+                "melee": 1,
+                "magic": -2
+            }
+        },
+        {
+            "name": "High on Fireaxe",
+            "renderable": {
+                "glyph": "¶",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Strength",
+                "base_damage": "2d8+2",
+                "hit_bonus": -1,
+                "slot": "Two Handed",
+                "proc_chance": 0.5,
+                "proc_target": "Target",
+                "proc_effects": {
+                    "damage": "1d6",
+                    "area_of_effect": "1",
+                    "particle": "*;#FFA500;200.0"
+                }
+            },
+            "weight_lbs": 8.0,
+            "base_value": 1400,
+            "initiative_penalty": 0.6,
+            "class": "unique",
+            "vendor_category": "weapons",
+            "attribute_bonuses": {
+                "strength": 2
+            },
+            "skill_bonuses": {
+                "melee": 2,
+                "defence": -2
             }
         },
 
@@ -357,49 +1096,57 @@
             "name": "Wooden Shield",
             "renderable": {
                 "glyph": "0",
-                "fg": "#FFFFFF",
-                "bg": "#000000",
-                "order": 2
-            },
-            "wearable": {
-                "armour_class": 1.0,
-                "slot": "Off Hand"
-            }
-        },
-        {
-            "name": "Tower Shield",
-            "renderable": {
-                "glyph": "0",
-                "fg": "#0091ff",
                 "bg": "#000000",
                 "order": 2
             },
             "wearable": {
                 "armour_class": 2.0,
                 "slot": "Off Hand"
-            }
+            },
+            "weight_lbs": 6.0,
+            "base_value": 100,
+            "initiative_penalty": 0.2,
+            "class": "common",
+            "vendor_category": "wearables"
+        },
+        {
+            "name": "Tower Shield",
+            "renderable": {
+                "glyph": "0",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 2.0,
+                "slot": "Off Hand"
+            },
+            "weight_lbs": 8.0,
+            "base_value": 250,
+            "initiative_penalty": 0.3,
+            "class": "rare",
+            "vendor_category": "wearables"
         },
         {
             "name": "Bulwark Shield",
             "renderable": {
                 "glyph": "0",
-                "fg": "#FFFF00",
                 "bg": "#000000",
                 "order": 2
             },
             "wearable": {
                 "armour_class": 3.0,
                 "slot": "Off Hand"
-            }
-        },
-        {
-            "name": "Orc Axe",
-            "weapon": {
-                "range": "melee",
-                "attribute": "Strength",
-                "base_damage": "1d8",
-                "hit_bonus": -1,
-                "slot": "Main Hand"
+            },
+            "weight_lbs": 7.0,
+            "base_value": 500,
+            "initiative_penalty": 0.4,
+            "class": "legendary",
+            "vendor_category": "wearables",
+            "attribute_bonuses": {
+                "constitution": 1
+            },
+            "skill_bonuses": {
+                "defence": 1
             }
         },
         {
@@ -407,127 +1154,271 @@
             "weapon": {
                 "range": "melee",
                 "attribute": "Strength",
-                "base_damage": "2d8",
+                "base_damage": "2d12+4",
                 "hit_bonus": -2,
-                "slot": "Main Hand"
-            }
+                "slot": "Two Handed"
+            },
+            "weight_lbs": 10.0,
+            "base_value": 20,
+            "initiative_penalty": 4,
+            "class": "common"
         },
             
         {
             "name": "Leather Helmet",
             "renderable": {
                 "glyph": "(",
-                "fg": "#FFFFFF",
                 "bg": "#000000",
                 "order": 2
             },
             "wearable": {
                 "armour_class": 0.1,
                 "slot": "Head"
-            }
+            },
+            "weight_lbs": 10.0,
+            "base_value": 50,
+            "initiative_penalty": 0.1,
+            "class": "common",
+            "vendor_category": "wearables"
         },
         {
             "name": "Leather Armour",
             "renderable": {
                 "glyph": "(",
-                "fg": "#FFFFFF",
                 "bg": "#000000",
                 "order": 2
             },
             "wearable": {
                 "armour_class": 1.0,
                 "slot": "Body"
-            }
+            },
+            "weight_lbs": 10.0,
+            "base_value": 80,
+            "initiative_penalty": 0.1,
+            "class": "common",
+            "vendor_category": "wearables"
         },
         {
             "name": "Leather Boots",
             "renderable": {
                 "glyph": "(",
-                "fg": "#FFFFFF",
                 "bg": "#000000",
                 "order": 2
             },
             "wearable": {
                 "armour_class": 0.1,
                 "slot": "Feet"
-            }
+            },
+            "weight_lbs": 10.0,
+            "base_value": 50,
+            "initiative_penalty": 0.1,
+            "class": "common",
+            "vendor_category": "wearables"
+        },
+        {
+            "name": "Leather Gloves",
+            "renderable": {
+                "glyph": "(",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 0.1,
+                "slot": "Hands"
+            },
+            "weight_lbs": 10.0,
+            "base_value": 50,
+            "initiative_penalty": 0.1,
+            "class": "common",
+            "vendor_category": "wearables"
         },
         {
             "name": "Iron Helmet",
             "renderable": {
                 "glyph": "[",
-                "fg": "#0091ff",
                 "bg": "#000000",
                 "order": 2
             },
             "wearable": {
                 "armour_class": 0.3,
                 "slot": "Head"
+            },
+            "weight_lbs": 15.0,
+            "base_value": 150,
+            "initiative_penalty": 0.2,
+            "class": "rare",
+            "vendor_category": "wearables",
+            "skill_bonuses": {
+                "magic": -1
             }
         },
         {
             "name": "Iron Breastplate",
             "renderable": {
                 "glyph": "[",
-                "fg": "#0091ff",
                 "bg": "#000000",
                 "order": 2
             },
             "wearable": {
                 "armour_class": 2.0,
                 "slot": "Body"
+            },
+            "weight_lbs": 20.0,
+            "base_value": 250,
+            "initiative_penalty": 0.2,
+            "class": "rare",
+            "vendor_category": "wearables",
+            "skill_bonuses": {
+                "magic": -1
             }
         },
         {
             "name": "Iron Greaves",
             "renderable": {
                 "glyph": "[",
-                "fg": "#0091ff",
                 "bg": "#000000",
                 "order": 2
             },
             "wearable": {
                 "armour_class": 0.3,
                 "slot": "Feet"
+            },
+            "weight_lbs": 15.0,
+            "base_value": 150,
+            "initiative_penalty": 0.2,
+            "class": "rare",
+            "vendor_category": "wearables",
+            "skill_bonuses": {
+                "magic": -1
+            }
+        },
+        {
+            "name": "Iron Gauntlets",
+            "renderable": {
+                "glyph": "[",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 0.3,
+                "slot": "Hands"
+            },
+            "weight_lbs": 15.0,
+            "base_value": 150,
+            "initiative_penalty": 0.2,
+            "class": "rare",
+            "vendor_category": "wearables",
+            "skill_bonuses": {
+                "magic": -1
             }
         },
         {
             "name": "Mithril Helmet",
             "renderable": {
                 "glyph": "[",
-                "fg": "#FFFF00",
                 "bg": "#000000",
                 "order": 2
             },
             "wearable": {
                 "armour_class": 0.5,
                 "slot": "Head"
+            },
+            "weight_lbs": 20.0,
+            "base_value": 300,
+            "initiative_penalty": 0.3,
+            "class": "legendary",
+            "vendor_category": "wearables",
+            "skill_bonuses": {
+                "magic": -2
             }
         },
         {
             "name": "Mithril Plate",
             "renderable": {
                 "glyph": "[",
-                "fg": "#FFFF00",
                 "bg": "#000000",
                 "order": 2
             },
             "wearable": {
                 "armour_class": 3.0,
                 "slot": "Body"
+            },
+            "weight_lbs": 20.0,
+            "base_value": 500,
+            "initiative_penalty": 0.3,
+            "class": "legendary",
+            "vendor_category": "wearables",
+            "skill_bonuses": {
+                "defence": 1,
+                "magic": -2
             }
         },
         {
             "name": "Mithril Greaves",
             "renderable": {
                 "glyph": "[",
-                "fg": "#FFFF00",
                 "bg": "#000000",
                 "order": 2
             },
             "wearable": {
                 "armour_class": 0.5,
                 "slot": "Feet"
+            },
+            "weight_lbs": 20.0,
+            "base_value": 300,
+            "initiative_penalty": 0.3,
+            "class": "legendary",
+            "vendor_category": "wearables",
+            "skill_bonuses": {
+                "magic": -2
+            }
+        },
+        {
+            "name": "Mithril Gauntlets",
+            "renderable": {
+                "glyph": "[",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 0.5,
+                "slot": "Hands"
+            },
+            "weight_lbs": 20.0,
+            "base_value": 300,
+            "initiative_penalty": 0.3,
+            "class": "legendary",
+            "vendor_category": "wearables",
+            "skill_bonuses": {
+                "magic": -2
+            }
+        },
+        {
+            "name": "Mammoth Plate",
+            "renderable": {
+                "glyph": "[",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 4.0,
+                "slot": "Body"
+            },
+            "weight_lbs": 40.0,
+            "base_value": 2000,
+            "initiative_penalty": 0.6,
+            "class": "unique",
+            "vendor_category": "wearables",
+            "skill_bonuses": {
+                "melee": -2,
+                "defence": 5,
+                "magic": -5
+            },
+            "attribute_bonuses": {
+                "constitution": 5,
+                "strength": 2,
+                "dexterity": -5,
+                "intelligence": -2
             }
         }
     ],
@@ -550,68 +1441,11 @@
                 "dexterity": 3,
                 "constitution": 3
             },
-            "skills": {
-                "melee": -1,
-                "defence": -1
-            },
             "natural" : {
                 "attacks" : [
                     { "name" : "bite", "hit_bonus" : 0, "damage" : "1d4" }
                 ]   
             }
-        },
-        {
-            "name": "Bat",
-            "renderable": {
-                "glyph": "b",
-                "fg": "#FF0000",
-                "bg": "#000000",
-                "order": 1
-            },
-            "blocks_tile": true,
-            "vision_range": 6,
-            "movement": "random",
-            "faction": "Herbivores",
-            "attributes": {
-                "strength": 3,
-                "dexterity": 3,
-                "constitution": 3
-            },
-            "skills": {
-                "melee": -1,
-                "defence": -1
-            },
-            "natural" : {
-                "armour_class": 11,
-                "attacks" : [
-                    { "name" : "bite", "hit_bonus" : 0, "damage" : "1d4" }
-                ]   
-            },
-            "loot_table": "Animal"
-        },
-        {
-            "name": "Deer",
-            "renderable": {
-                "glyph": "d",
-                "fg": "#FFFF00",
-                "bg": "#000000",
-                "order": 1
-            },
-            "blocks_tile": true,
-            "vision_range": 8,
-            "movement": "random",
-            "faction": "Herbivores",
-            "attributes": {
-                "strength": 4,
-                "dexterity": 4,
-                "constitution": 4
-            },
-            "natural" : {
-                "attacks" : [
-                    { "name" : "butt", "hit_bonus" : 0, "damage" : "2d2" }
-                ]   
-            },
-            "loot_table": "Animal"
         },
         {
             "name": "Wolf",
@@ -650,6 +1484,7 @@
             "vision_range": 6,
             "movement": "static",
             "faction": "Horde",
+            "gold": "1d4",
             "attributes": {
                 "strength": 6,
                 "dexterity": 6,
@@ -670,6 +1505,7 @@
             "vision_range": 6,
             "movement": "static",
             "faction": "Bandits",
+            "gold": "1d6",
             "quips": [
                 "Stand and deliver!",
                 "Your belongings or your life!"
@@ -678,7 +1514,9 @@
             "equipped": [ 
                 "Dagger", 
                 "Leather Armour", 
-                "Leather Boots"],
+                "Leather Boots",
+                "Leather Gloves",
+                "Leather Helmet"],
             "loot_table": "Lesser Monster",
             "light": {
                 "range": 6,
@@ -697,12 +1535,18 @@
             "vision_range": 8,
             "movement": "static",
             "faction": "Horde",
+            "gold": "1d6",
             "attributes": {
                 "strength": 8,
                 "dexterity": 8,
                 "constitution": 7
             },
-            "equipped": [],
+            "equipped": [
+                "Dagger",
+                "Leather Armour",
+                "Leather Boots",
+                "Leather Helmet"
+            ],
             "loot_table": "Lesser Monster"
         },
         {
@@ -718,6 +1562,7 @@
             "vision_range": 8,
             "movement": "static",
             "faction": "Horde",
+            "gold": "1d6",
             "quips": [
                 "For the horde!",
                 "Taste my axe!",
@@ -732,7 +1577,7 @@
             "natural": {
                 "armour_class": 12
             },
-            "equipped": ["Orc Axe", "Leather Armour"],
+            "equipped": ["Bronze Battleaxe", "Iron Armour", "Leather Boots"],
             "loot_table": "Lesser Monster"
         },
         {
@@ -754,7 +1599,10 @@
                 "attacks": [
                     { "name": "bite", "hit_bonus": 1, "damage": "1d12" }
                 ]
-            }
+            },
+            "abilities": [
+                { "spell": "Web", "chance": 0.2, "range": 6.0, "min_range": 3.0 }
+            ]
         },
         {
             "name": "Gelatinous Cube",
@@ -769,6 +1617,7 @@
             "vision_range": 4,
             "movement": "static",
             "faction": "Mindless",
+            "gold": "1d8",
             "attributes": {},
             "natural": {
                 "armour_class": 12,
@@ -795,15 +1644,16 @@
             "vision_range": 6,
             "movement": "static",
             "faction": "Horde",
+            "gold": "2d8+2",
             "quips": [
                 "Me will feast on your flesh!",
                 "RAAAAAAARGH!",
                 "You is doomed!"
             ],
             "attributes": {
-                "strength": 15,
+                "strength": 16,
                 "dexterity": 10,
-                "constitution": 15,
+                "constitution": 16,
                 "intelligence": 5
             },
             "skills": {
@@ -811,9 +1661,9 @@
                 "defence": 2
             },
             "natural" : {
-                "armour_class": 13
+                "armour_class": 14
             },
-            "equipped": ["Ogre Club"],
+            "equipped": ["Ogre Club", "Iron Armour", "Iron Helmet"],
             "loot_table": "Greater Monster"
         },
         {
@@ -829,6 +1679,7 @@
             "vision_range": 10,
             "movement": "static",
             "faction": "Horde",
+            "gold": "3d8+2",
             "quips": [
                 "I will devour your soul!",
                 "Do you flee like a coward?",
@@ -837,20 +1688,21 @@
             "attributes": {
                 "strength": 16,
                 "dexterity": 15,
-                "constitution": 13,
+                "constitution": 14,
                 "intelligence": 13
             },
             "skills": {
                 "melee": 3,
+                "defence": 3,
                 "magic": 3
             },
             "natural" : {
-                "armour_class": 12,
-                "attacks": [
-                    { "name" : "burn soul", "hit_bonus" : 2, "damage" : "3d6+2" }
-                ]
+                "armour_class": 13
             },
-            "equipped": ["Mithril Plate"],
+            "equipped": ["Mithril Greataxe", "Mithril Plate", "Mithril Helmet"],
+            "abilities": [
+                { "spell": "Drain Soul", "chance": 0.2, "range": 6.0, "min_range": 0.0 }
+            ],
             "loot_table": "Greater Monster"
         },
         {
@@ -870,7 +1722,8 @@
             },
             "skills": {
                 "melee": 2
-            }
+            },
+            "vendor": [ "food" ]
         },
         {
             "name": "Shady Salesman",
@@ -1037,6 +1890,86 @@
                 "Spare a copper?"
             ],
             "attributes": {}
+        },
+        {
+            "name": "Alchemist",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#EE82EE",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 4,
+            "movement": "static",
+            "faction": "Townsfolk",
+            "attributes": {
+                "intelligence": 13
+            },
+            "skills": {
+                "melee": 2
+            },
+            "vendor": [ "alchemy" ]
+        },
+        {
+            "name": "Librarian",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#EE82EE",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 4,
+            "movement": "static",
+            "faction": "Townsfolk",
+            "attributes": {
+                "intelligence": 13
+            },
+            "skills": {
+                "melee": 2
+            },
+            "vendor": [ "scrolls" ]
+        },
+        {
+            "name": "Weaponsmith",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#EE82EE",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 4,
+            "movement": "static",
+            "faction": "Townsfolk",
+            "attributes": {
+                "intelligence": 13
+            },
+            "skills": {
+                "melee": 2
+            },
+            "vendor": [ "weapons" ]
+        },
+        {
+            "name": "Armoursmith",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#EE82EE",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 4,
+            "movement": "static",
+            "faction": "Townsfolk",
+            "attributes": {
+                "intelligence": 13
+            },
+            "skills": {
+                "melee": 2
+            },
+            "vendor": [ "wearables" ]
         }
     ],
 
@@ -1087,6 +2020,47 @@
                 "fg": "#FFA500",
                 "bg": "#000000",
                 "order": 2
+            }
+        },
+        {
+            "name": "Cauldron",
+            "renderable": {
+                "glyph": "O",
+                "fg": "#2401c0",
+                "bg": "#000000",
+                "order": 2
+            }
+        },
+        {
+            "name": "Bookcase",
+            "renderable": {
+                "glyph": "≡",
+                "fg": "#805A46",
+                "bg": "#000000",
+                "order": 2
+            }
+        },
+        {
+            "name": "Potion Rack",
+            "renderable": {
+                "glyph": "W",
+                "fg": "#baa206",
+                "bg": "#000000",
+                "order": 2
+            }
+        },
+        {
+            "name": "Altar",
+            "renderable": {
+                "glyph": "╫",
+                "fg": "#55FF55",
+                "bg": "#000000",
+                "order": 2
+            },
+            "entry_trigger": {
+                "effects": {
+                    "healing": "100"
+                }
             }
         }
     ]

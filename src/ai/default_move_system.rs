@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::{spatial, MyTurn, MoveMode, Movement, Position, Map, Viewshed, EntityMoved, tile_walkable};
+use crate::{spatial, MyTurn, MoveMode, Movement, Position, Map, ApplyMove, tile_walkable};
 use rltk::RandomNumberGenerator;
 
 pub struct DefaultMoveAI {}
@@ -10,18 +10,17 @@ impl<'a> System<'a> for DefaultMoveAI {
         WriteStorage<'a, MoveMode>,
         WriteStorage<'a, Position>,
         WriteExpect<'a, Map>,
-        WriteStorage<'a, Viewshed>,
-        WriteStorage<'a, EntityMoved>,
         WriteExpect<'a, RandomNumberGenerator>,
-        Entities<'a>
+        Entities<'a>,
+        WriteStorage<'a, ApplyMove>
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (mut turns, mut move_mode, mut positions, mut map,
-            mut viewsheds, mut entity_moved, mut rng, entities) = data;
+            mut rng, entities, mut apply_move) = data;
 
         let mut turn_done: Vec<Entity> = Vec::new();
-        for (entity, pos, mode, viewshed, _myturn) in (&entities, &mut positions, &mut move_mode, &mut viewsheds, &turns).join() {
+        for (entity, pos, mode, _myturn) in (&entities, &mut positions, &mut move_mode, &turns).join() {
             match &mut mode.mode {
                 Movement::Static => {},
                 Movement::Random => {
@@ -41,28 +40,17 @@ impl<'a> System<'a> for DefaultMoveAI {
                     && y > 0 && y < map.height - 1 {
                         let dest_idx = map.xy_idx(x, y);
                         if !spatial::is_blocked(dest_idx) {
-                            let idx = map.xy_idx(pos.x, pos.y);
-                            pos.x = x;
-                            pos.y = y;
-                            entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
-                            spatial::move_entity(entity, idx, dest_idx);
-                            viewshed.dirty = true;
+                            apply_move.insert(entity, ApplyMove{ dest_idx }).expect("Unable to insert");
                         }
                     }
                 }
                 Movement::RandomWaypoint{path} => {
                     if let Some(path) = path {
                         // there is a path to follow
-                        let mut idx = map.xy_idx(pos.x, pos.y);
                         if path.len() > 1 {
                             if !spatial::is_blocked(path[1] as usize) {
                                 // follow the path
-                                pos.x = path[1] as i32 % map.width;
-                                pos.y = path[1] as i32 / map.width;
-                                entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
-                                let new_idx = map.xy_idx(pos.x, pos.y);
-                                spatial::move_entity(entity, idx, new_idx);
-                                viewshed.dirty = true;
+                                apply_move.insert(entity, ApplyMove{ dest_idx: path[1] }).expect("Unable to insert");
                                 path.remove(0); // remove the first step in the path
                             }
                             // wait a turn to see if the path clears up

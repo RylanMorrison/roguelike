@@ -1,40 +1,51 @@
 use specs::prelude::*;
-use crate::{MyTurn, Confusion, RunState};
+use crate::{Confusion, MyTurn, RunState, StatusEffect};
+use std::collections::HashSet;
+use crate::effects::{EffectType, Targets, add_effect};
 
 pub struct TurnStatusSystem {}
 
 impl<'a> System<'a> for TurnStatusSystem {
     type SystemData = (
         WriteStorage<'a, MyTurn>,
-        WriteStorage<'a, Confusion>,
+        ReadStorage<'a, Confusion>,
         Entities<'a>,
-        ReadExpect<'a, RunState>
+        ReadExpect<'a, RunState>,
+        ReadStorage<'a, StatusEffect>
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut turns, mut confusion, entities, runstate) = data;
+        let (mut turns, confusion, entities, runstate, 
+            statuses) = data;
 
         if *runstate != RunState::Ticking { return; }
 
-        let mut not_my_turn: Vec<Entity> = Vec::new();
-        let mut not_confused: Vec<Entity> = Vec::new();
-        for (entity, _turn, confused) in (&entities, &mut turns, &mut confusion).join() {
-            confused.turns -= 1;
-            if confused.turns < 1 {
-                // no longer confused
-                not_confused.push(entity);
-            } else {
-                // skip turn
-                not_my_turn.push(entity);
+        let mut entity_turns = HashSet::new();
+        for (entity, _turn) in (&entities, &turns).join() {
+            entity_turns.insert(entity);
+        }
+
+        let mut skip_turn: Vec<Entity> = Vec::new();
+        for (effect_entity, status_effect) in (&entities, &statuses).join() {
+            if entity_turns.contains(&status_effect.target) {
+                if confusion.get(effect_entity).is_some() {
+                    add_effect(
+                        None,
+                        EffectType::Particle{
+                            glyph: rltk::to_cp437('?'),
+                            fg: rltk::RGB::named(rltk::CYAN),
+                            bg: rltk::RGB::named(rltk::BLACK),
+                            lifespan: 200.0
+                        },
+                        Targets::Single{ target: status_effect.target }
+                    );
+                    skip_turn.push(status_effect.target);
+                }
             }
         }
 
-        for e in not_my_turn {
+        for e in skip_turn {
             turns.remove(e);
-        }
-
-        for e in not_confused {
-            confusion.remove(e);
         }
     }
 }

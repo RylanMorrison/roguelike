@@ -1,14 +1,14 @@
 use specs::prelude::*;
 use crate::tile_glyph;
 
-use super::{Map, Position, Renderable, World};
+use super::{Map, Position, Renderable, World, TileSize};
 use rltk::{Point, Rltk, RGB};
 
 const SHOW_BOUNDARIES: bool = true;
 
 pub fn get_screen_bounds(ecs: &World, _ctx: &mut Rltk) -> (i32, i32, i32, i32) {
     let player_pos = ecs.fetch::<Point>();
-    let (x_chars, y_chars) = (48, 44);
+    let (x_chars, y_chars) = (68, 64);
 
     let center_x = (x_chars / 2) as i32;
     let center_y = (y_chars / 2) as i32;
@@ -28,38 +28,55 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
     let map_width = map.width - 1;
     let map_height = map.height - 1;
 
-    let mut y = 0;
-    for ty in min_y..max_y {
-        let mut x = 0;
-        for tx in min_x..max_x {
+    for (y, ty) in (min_y..max_y).enumerate() {
+        for (x, tx) in (min_x..max_x).enumerate() {
             if tx > 0 && tx < map_width && ty > 0 && ty < map_height {
                 let idx = map.xy_idx(tx, ty);
                 if map.revealed_tiles[idx] {
                     let (glyph, fg, bg) = tile_glyph(idx, &*map);
-                    ctx.set(x, y, fg, bg, glyph);
+                    ctx.set(x + 1, y + 1, fg, bg, glyph);
                 }
             } else if SHOW_BOUNDARIES {
-                ctx.set(x, y, RGB::named(rltk::GRAY), RGB::named(rltk::BLACK), rltk::to_cp437('·'));
+                ctx.set(x + 1, y + 1, RGB::named(rltk::GRAY), RGB::named(rltk::BLACK), rltk::to_cp437('·'));
             }
-            x += 1;
         }
-        y += 1;
     }
 
     let positions = ecs.read_storage::<Position>();
     let renderables = ecs.read_storage::<Renderable>();
     let map = ecs.fetch::<Map>();
+    let sizes = ecs.read_storage::<TileSize>();
+    let entities = ecs.entities();
 
-    let mut data = (&positions, &renderables).join().collect::<Vec<_>>();
+    let mut data = (&positions, &renderables, &entities).join().collect::<Vec<_>>();
     data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
-    for (pos, render) in data.iter() {
-        let idx = map.xy_idx(pos.x, pos.y);
-        if map.visible_tiles[idx] {
-            let entity_screen_x = pos.x - min_x;
-            let entity_screen_y = pos.y - min_y;
-            if entity_screen_x > 0 && entity_screen_x < map_width 
+    for (pos, render, entity) in data.iter() {
+        if let Some(size) = sizes.get(*entity) {
+            // render multi-tiled entities
+            for cy in 0..size.y {
+                for cx in 0..size.x {
+                    let tile_x = cx + pos.x;
+                    let tile_y = cy + pos.y;
+                    let idx = map.xy_idx(tile_x, tile_y);
+                    if map.visible_tiles[idx] {
+                        let entity_screen_x = pos.x - min_x;
+                        let entity_screen_y = pos.y - min_y;
+                        if entity_screen_x > 0 && entity_screen_x < map_width 
+                            && entity_screen_y > 0 && entity_screen_y < map_height {
+                            ctx.set(entity_screen_x, entity_screen_y, render.fg, render.bg, render.glyph);
+                        }
+                    }
+                }
+            }
+        } else {
+            let idx = map.xy_idx(pos.x, pos.y);
+            if map.visible_tiles[idx] {
+                let entity_screen_x = pos.x - min_x;
+                let entity_screen_y = pos.y - min_y;
+                if entity_screen_x > 0 && entity_screen_x < map_width
                 && entity_screen_y > 0 && entity_screen_y < map_height {
-                ctx.set(entity_screen_x, entity_screen_y, render.fg, render.bg, render.glyph);
+                    ctx.set(entity_screen_x + 1, entity_screen_y + 1, render.fg, render.bg, render.glyph);
+                }
             }
         }
     }
@@ -80,22 +97,18 @@ pub fn render_debug_map(map: &Map, ctx: &mut Rltk) {
     let map_width = map.width-1;
     let map_height = map.height-1;
 
-    let mut y = 0;
-    for ty in min_y..max_y {
-        let mut x = 0;
-        for tx in min_x..max_x {
+    for (y, ty) in (min_y..max_y).enumerate() {
+        for (x, tx) in (min_x..max_x).enumerate() {
             if tx > 0 && tx < map_width && ty > 0 && ty < map_height {
                 let idx = map.xy_idx(tx, ty);
                 if map.revealed_tiles[idx] {
-                    let (glyph, fg, bg) = tile_glyph(idx, map);
+                    let (glyph, fg, bg) = tile_glyph(idx, &*map);
                     ctx.set(x, y, fg, bg, glyph);
                 }
                 
             } else if SHOW_BOUNDARIES {
                 ctx.set(x, y, RGB::named(rltk::GRAY), RGB::named(rltk::BLACK), rltk::to_cp437('·'));
             }
-            x += 1;
         }
-        y += 1;
     }
 }

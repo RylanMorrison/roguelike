@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::{spatial, Chasing, EntityMoved, Map, MyTurn, Position, Viewshed};
+use crate::{Chasing, Map, MyTurn, Position, ApplyMove, TileSize};
 use std::collections::HashMap;
 
 pub struct ChaseAI {}
@@ -10,14 +10,14 @@ impl<'a> System<'a> for ChaseAI {
         WriteStorage<'a, Chasing>,
         WriteStorage<'a, Position>,
         WriteExpect<'a, Map>,
-        WriteStorage<'a, Viewshed>,
-        WriteStorage<'a, EntityMoved>,
-        Entities<'a>
+        Entities<'a>,
+        WriteStorage<'a, ApplyMove>,
+        ReadStorage<'a, TileSize>
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut turns, mut chasing, mut positions, mut map,
-            mut viewsheds, mut entity_moved, entities) = data;
+        let (mut turns, mut chasing, mut positions, 
+            mut map, entities, mut apply_move, tile_sizes) = data;
         
         let mut targets: HashMap<Entity, (i32, i32)> = HashMap::new();
         let mut end_chase: Vec<Entity> = Vec::new();
@@ -36,22 +36,27 @@ impl<'a> System<'a> for ChaseAI {
         end_chase.clear();
 
         let mut turn_done: Vec<Entity> = Vec::new();
-        for (entity, pos, _chase, viewshed, _myturn) in (&entities, &mut positions, &chasing, &mut viewsheds, &turns).join() {
+        for (entity, pos, _chase, _myturn) in (&entities, &mut positions, &chasing, &turns).join() {
             let target_pos = targets[&entity];
-            let path = rltk::a_star_search(
-                map.xy_idx(pos.x, pos.y) as i32,
-                map.xy_idx(target_pos.0, target_pos.1) as i32,
-                &mut *map
-            );
+            let path;
+            if let Some(size) = tile_sizes.get(entity) {
+                // prevent large entities from moving into spaces too small for them to fit
+                let mut map_copy = map.clone();
+                map_copy.populate_blocked_multi(size.x, size.y);
+                path = rltk::a_star_search(
+                    map_copy.xy_idx(pos.x, pos.y),
+                    map_copy.xy_idx(target_pos.0, target_pos.1),
+                    &mut map_copy
+                );
+            } else {
+                path = rltk::a_star_search(
+                    map.xy_idx(pos.x, pos.y),
+                    map.xy_idx(target_pos.0, target_pos.1),
+                    &mut *map
+                );
+            }
             if path.success && path.steps.len() > 1 && path.steps.len() < 15 {
-                // there is a path and the target isn't too far away
-                let mut idx = map.xy_idx(pos.x, pos.y);
-                pos.x = path.steps[1] as i32 % map.width;
-                pos.y = path.steps[1] as i32 / map.width;
-                entity_moved.insert(entity, EntityMoved{}).expect("Unable to insert marker");
-                let new_idx = map.xy_idx(pos.x, pos.y);
-                viewshed.dirty = true;
-                spatial::move_entity(entity, idx, new_idx);
+                apply_move.insert(entity, ApplyMove{ dest_idx: path.steps[1] }).expect("Unable to insert");
             } else {
                 end_chase.push(entity);
             }

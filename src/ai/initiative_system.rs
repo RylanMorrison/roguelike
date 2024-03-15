@@ -1,5 +1,6 @@
 use specs::prelude::*;
-use crate::{Initiative, Position, MyTurn, Attributes, RunState};
+use crate::{Attributes, Duration, EquipmentChanged, Initiative, MyTurn, Pools, Position, RunState, StatusEffect, DamageOverTime};
+use crate::effects::{add_effect, EffectType, Targets};
 use rltk::{RandomNumberGenerator, Point};
 
 pub struct InitiativeSystem {}
@@ -14,12 +15,18 @@ impl<'a> System<'a> for InitiativeSystem {
         ReadStorage<'a, Attributes>,
         WriteExpect<'a, RunState>,
         ReadExpect<'a, Entity>,
-        ReadExpect<'a, Point>
+        ReadExpect<'a, Point>,
+        ReadStorage<'a, Pools>,
+        WriteStorage<'a, Duration>,
+        WriteStorage<'a, EquipmentChanged>,
+        ReadStorage<'a, StatusEffect>,
+        ReadStorage<'a, DamageOverTime>
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (mut initiatives, positions, mut turns, entities, mut rng,
-            attributes, mut runstate, player, player_pos) = data;
+            attributes, mut runstate, player, player_pos, pools,
+            mut durations, mut dirty, statuses, dots) = data;
 
         if *runstate != RunState::Ticking { return; }
         turns.clear();
@@ -37,6 +44,11 @@ impl<'a> System<'a> for InitiativeSystem {
                     initiative.current -= attr.dexterity.bonus;
                 }
 
+                // apply penalties from equipment
+                if let Some(pools) = pools.get(entity) {
+                    initiative.current += f32::floor(pools.total_initiative_penalty) as i32;
+                }
+
                 if entity == *player {
                     *runstate = RunState::AwaitingInput;
                 } else {
@@ -52,6 +64,26 @@ impl<'a> System<'a> for InitiativeSystem {
 
                 if myturn {
                     turns.insert(entity, MyTurn{}).expect("Unable to insert turn");
+                }
+            }
+        }
+
+        // handle durations
+        if *runstate == RunState::AwaitingInput {
+            for (effect_entity, duration, status) in (&entities, &mut durations, &statuses).join() {
+                if entities.is_alive(status.target) {
+                    duration.turns -= 1;
+                    if let Some(dot) = dots.get(effect_entity) {
+                        add_effect(
+                            None,
+                            EffectType::Damage{ amount: dot.damage },
+                            Targets::Single{ target: status.target }
+                        );
+                    }
+                    if duration.turns < 1 {
+                        dirty.insert(status.target, EquipmentChanged{}).expect("Unable to insert");
+                        entities.delete(effect_entity).expect("Unable to delete");
+                    }
                 }
             }
         }

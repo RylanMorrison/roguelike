@@ -291,8 +291,8 @@ impl PrefabBuilder {
         let mut rng = RandomNumberGenerator::new();
         let roll = rng.roll_dice(1, 3);
         match roll {
-            1 => "Dagger".to_string(),
-            _ => "Sword".to_string()
+            1 => "Mithril Longsword".to_string(),
+            _ => "Iron Longsword".to_string()
         }
     }
 
@@ -300,8 +300,8 @@ impl PrefabBuilder {
         let mut rng = RandomNumberGenerator::new();
         let roll = rng.roll_dice(1, 3);
         match roll {
-            1 => "Shield".to_string(),
-            _ => "Tower Shield".to_string()
+            1 => "Tower Shield".to_string(),
+            _ => "Bulwark Shield".to_string()
         }
     }
 }

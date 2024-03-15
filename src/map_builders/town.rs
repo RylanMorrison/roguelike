@@ -3,7 +3,16 @@ use rltk::RandomNumberGenerator;
 use std::collections::HashSet;
 
 enum BuildingTag {
-    Pub, Temple, Blacksmith, Clothier, Alchemist, PlayerHouse, Hovel, Abandoned, Unassigned
+    Pub, 
+    Temple, 
+    Library,
+    Alchemist,
+    Armoursmith,
+    Weaponsmith,
+    PlayerHouse,
+    Hovel,
+    Abandoned,
+    Unassigned
 }
 
 pub struct TownBuilder {}
@@ -195,11 +204,12 @@ impl TownBuilder {
         building_size.sort_by(|a,b| b.1.cmp(&a.1));
         building_size[0].2 = BuildingTag::Pub;
         building_size[1].2 = BuildingTag::Temple;
-        building_size[2].2 = BuildingTag::Blacksmith;
-        building_size[3].2 = BuildingTag::Clothier;
-        building_size[4].2 = BuildingTag::Alchemist;
-        building_size[5].2 = BuildingTag::PlayerHouse;
-        for b in building_size.iter_mut().skip(6) {
+        building_size[2].2 = BuildingTag::Library;
+        building_size[3].2 = BuildingTag::Alchemist;
+        building_size[4].2 = BuildingTag::Weaponsmith;
+        building_size[5].2 = BuildingTag::Armoursmith;
+        building_size[6].2 = BuildingTag::PlayerHouse;
+        for b in building_size.iter_mut().skip(7) {
             b.2 = BuildingTag::Hovel;
         }
         let last_index = building_size.len()-1;
@@ -213,6 +223,10 @@ impl TownBuilder {
             match build_type {
                 BuildingTag::Pub => self.build_pub(&building, build_data, rng),
                 BuildingTag::Temple => self.build_temple(&building, build_data, rng),
+                BuildingTag::Library => self.build_library(&building, build_data, rng),
+                BuildingTag::Alchemist => self.build_alchemist(&building, build_data, rng),
+                BuildingTag::Weaponsmith => self.build_weaponsmith(&building, build_data, rng),
+                BuildingTag::Armoursmith => self.build_armoursmith(&building, build_data, rng),
                 BuildingTag::Abandoned => self.build_abandoned_house(&building, build_data, rng),
                 _ => {}
             }
@@ -238,7 +252,19 @@ impl TownBuilder {
 
     fn build_temple(&mut self, building: &(i32, i32, i32, i32), build_data: &mut BuilderMap, rng: &mut RandomNumberGenerator) {
         let mut to_place: Vec<&str> = vec!["Priest", "Parishioner", "Parishioner", "Chair",
-            "Chair", "Candle", "Candle"];
+            "Chair", "Candle", "Candle", "Altar"];
+        self.random_building_spawn(building, build_data, rng, &mut to_place, 0);
+    }
+
+    fn build_library(&mut self, building: &(i32, i32, i32, i32), build_data: &mut BuilderMap, rng: &mut RandomNumberGenerator) {
+        let mut to_place: Vec<&str> = vec!["Librarian", "Bookcase", "Bookcase", "Bookcase",
+            "Table", "Table", "Table", "Chair", "Chair", "Chair", "Chair", "Patron", "Patron"];
+        self.random_building_spawn(building, build_data, rng, &mut to_place, 0);
+    }
+
+    fn build_alchemist(&mut self, building: &(i32, i32, i32, i32), build_data: &mut BuilderMap, rng: &mut RandomNumberGenerator) {
+        let mut to_place: Vec<&str> = vec!["Alchemist", "Cauldron", "Potion Rack", "Potion Rack", 
+            "Table", "Table", "Patron", "Patron"];
         self.random_building_spawn(building, build_data, rng, &mut to_place, 0);
     }
 
@@ -252,16 +278,40 @@ impl TownBuilder {
         self.random_building_spawn(building, build_data, rng, &mut to_place, 0);
     }
 
+    fn build_weaponsmith(&mut self, building: &(i32, i32, i32, i32), build_data: &mut BuilderMap, rng: &mut RandomNumberGenerator) {
+        let mut to_place: Vec<&str> = vec!["Weaponsmith", "Table", "Chair"];
+        self.random_building_spawn(building, build_data, rng, &mut to_place, 0);
+    }
+
+    fn build_armoursmith(&mut self, building: &(i32, i32, i32, i32), build_data: &mut BuilderMap, rng: &mut RandomNumberGenerator) {
+        let mut to_place: Vec<&str> = vec!["Armoursmith", "Table", "Chair"];
+        self.random_building_spawn(building, build_data, rng, &mut to_place, 0);
+    }
+
     fn random_building_spawn(&mut self, building: &(i32, i32, i32, i32), build_data: &mut BuilderMap, rng: &mut RandomNumberGenerator, to_place: &mut Vec<&str>, player_idx: usize) {
+        if to_place.len() < 1 { return; }
+        
+        let mut available_tiles: Vec<usize> = Vec::new();
         for y in building.1 .. building.1 + building.3 {
             for x in building.0 .. building.0 + building.2 {
                 let idx = build_data.map.xy_idx(x, y);
-                if build_data.map.tiles[idx] == TileType::WoodFloor && idx != player_idx && rng.roll_dice(1, 3) == 1 && !to_place.is_empty() {
-                    let entity_tag = to_place[0];
-                    to_place.remove(0);
-                    build_data.spawn_list.push((idx, entity_tag.to_string()));
+                if build_data.map.tiles[idx] == TileType::WoodFloor && idx != player_idx {
+                    available_tiles.push(idx);
                 }
             }
+        }
+
+        // randomly shuffle 
+        let count = available_tiles.len().clone() as i32;
+        for i in 0..count-1 {
+            let random_tile = rng.roll_dice(1, count -1) as usize;
+            available_tiles.swap(i as usize, random_tile);
+        }
+
+        for tag in to_place.iter() {
+            if available_tiles.len() < 1 { return; }
+            
+            build_data.spawn_list.push((available_tiles.remove(0), tag.to_string()));
         }
     }
 

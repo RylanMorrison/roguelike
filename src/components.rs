@@ -4,7 +4,6 @@ use specs::{Entity, saveload::{ConvertSaveload, Marker}, error::NoError};
 use serde::{Serialize, Deserialize};
 use rltk::RGB;
 use super::attr_bonus;
-use std::collections::HashMap;
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Position {
@@ -71,29 +70,22 @@ where
     }
 }
 
-#[derive(Component, ConvertSaveload, Clone)]
-pub struct SufferDamage {
-    pub amount: Vec<(i32, bool)>
-}
-
-impl SufferDamage {
-    pub fn new_damage(store: &mut WriteStorage<SufferDamage>, victim: Entity, amount: i32, from_player: bool) {
-        if let Some(suffering) = store.get_mut(victim) {
-            suffering.amount.push((amount, from_player));
-        } else {
-            let damage = SufferDamage { amount: vec![(amount, from_player)] };
-            store.insert(victim, damage).expect("Unable to insert damage");
-        }
-    }
-}
-
-#[derive(Component, Serialize, Deserialize, Clone)]
+#[derive(Component, Serialize, Deserialize, Clone, Debug)]
 pub struct Item {
-    pub colour: String
+    pub initiative_penalty: f32,
+    pub weight_lbs: f32,
+    pub base_value: i32,
+    pub class: ItemClass
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
+pub enum ItemClass { Common, Rare, Legendary, Set, Unique }
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct MagicItem {}
+
 #[derive(Component, ConvertSaveload, Clone)]
-pub struct ProvidesHealing {
+pub struct Healing {
     pub heal_amount: i32
 }
 
@@ -235,7 +227,10 @@ where
 }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
-pub struct Consumable {}
+pub struct Consumable {
+    pub max_charges: i32,
+    pub charges: i32
+}
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Ranged {
@@ -243,7 +238,7 @@ pub struct Ranged {
 }
 
 #[derive(Component, Deserialize, Serialize, Clone)]
-pub struct InflictsDamage {
+pub struct Damage {
     pub damage: String
 }
 
@@ -252,10 +247,8 @@ pub struct AreaOfEffect {
     pub radius: i32
 }
 
-#[derive(Component, ConvertSaveload, Clone)]
-pub struct Confusion {
-    pub turns: i32
-}
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Confusion {}
 
 // Serialization helper. We need to implement ConvertSaveload for each type that contains an Entity
 pub struct SerializeMe {}
@@ -330,7 +323,9 @@ pub struct MeleeWeapon {
     pub damage_n_dice: i32,
     pub damage_die_type: i32,
     pub damage_bonus: i32,
-    pub hit_bonus: i32
+    pub hit_bonus: i32,
+    pub proc_chance: Option<f32>,
+    pub proc_target: Option<String>
 }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
@@ -378,7 +373,7 @@ pub struct ParticleLifetime {
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct MagicMapper {}
+pub struct MagicMapping {}
 
 #[derive(Serialize, Deserialize, Copy, Clone, PartialEq)]
 pub enum HungerState { WellFed, Normal, Hungry, Starving }
@@ -390,7 +385,7 @@ pub struct HungerClock {
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct ProvidesFood {}
+pub struct Food {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct BlocksVisibility {}
@@ -408,7 +403,7 @@ pub struct Quips {
     pub available : Vec<String>
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Attribute {
     pub base: i32,
     pub modifiers: i32,
@@ -435,25 +430,32 @@ impl Attributes {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
-pub enum Skill {
-    Melee,
-    Defence,
-    Magic
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct Skill {
+    pub base: i32,
+    pub modifiers: i32
+}
+
+impl Skill {
+    pub fn bonus(&self) -> i32 {
+        self.base + self.modifiers
+    }
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Skills {
-    pub skills: HashMap<Skill, i32>
+    pub melee: Skill,
+    pub defence: Skill,
+    pub magic: Skill
 }
 
 impl Skills {
     pub fn default() -> Skills {
-        let mut skills = Skills{ skills: HashMap::new() };
-        skills.skills.insert(Skill::Melee, 1);
-        skills.skills.insert(Skill::Defence, 1);
-        skills.skills.insert(Skill::Magic, 1);
-        skills
+        Skills{
+            melee: Skill{ base: 1, modifiers: 0 },
+            defence: Skill{ base: 1, modifiers: 0 },
+            magic: Skill{ base: 1, modifiers: 0 }
+        }
     }
 }
 
@@ -468,7 +470,13 @@ pub struct Pools {
     pub hit_points: Pool,
     pub mana: Pool,
     pub xp: i32,
-    pub level: i32
+    pub level: i32,
+    pub total_weight: f32,
+    pub total_initiative_penalty: f32,
+    pub gold: i32,
+    pub total_armour_class: i32,
+    pub base_damage: String,
+    pub god_mode: bool
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -570,4 +578,214 @@ where
         let entity = ids(data.0).unwrap();
         Ok(Chasing{target: entity})
     }
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct EquipmentChanged {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Vendor {
+    pub categories: Vec<String>
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct TownPortal {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct EntryTrigger {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct TeleportTo {
+    pub x: i32,
+    pub y: i32,
+    pub depth: i32,
+    pub player_only: bool
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct ApplyMove {
+    pub dest_idx: usize
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct ApplyTeleport {
+    pub dest_x: i32,
+    pub dest_y: i32,
+    pub dest_depth: i32
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct SingleActivation {}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct SpawnParticleLine {
+    pub glyph: rltk::FontCharType,
+    pub colour: RGB,
+    pub lifetime_ms: f32
+}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct SpawnParticleBurst {
+    pub glyph: rltk::FontCharType,
+    pub colour: RGB,
+    pub lifetime_ms: f32
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct AttributeBonus {
+    pub strength: Option<i32>,
+    pub dexterity: Option<i32>,
+    pub constitution: Option<i32>,
+    pub intelligence: Option<i32>
+}
+
+impl AttributeBonus {
+    pub fn is_debuff(&self) -> bool {
+        let total_bonus = self.strength.unwrap_or(0) + self.dexterity.unwrap_or(0) 
+            + self.constitution.unwrap_or(0) + self.intelligence.unwrap_or(0);
+        total_bonus < 0
+    }
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct SkillBonus {
+    pub melee: Option<i32>,
+    pub defence: Option<i32>,
+    pub magic: Option<i32>
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Duration {
+    pub turns: i32
+}
+
+#[derive(Component, Debug, Clone)]
+pub struct StatusEffect {
+    pub target: Entity,
+    pub is_debuff: bool
+}
+
+// StatusEffect wrapper
+// TODO serialization causes saving to crash
+#[derive(Serialize, Deserialize, Clone)]
+pub struct StatusEffectData<M>(M, bool);
+
+impl<M: Marker + Serialize> ConvertSaveload<M> for StatusEffect
+where
+    for<'de> M: Deserialize<'de>,
+{
+    type Data = StatusEffectData<M>;
+    type Error = NoError;
+
+    fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
+    where
+        F: FnMut(Entity) -> Option<M>,
+    {
+        let marker = ids(self.target).unwrap();
+        Ok(StatusEffectData(marker, self.is_debuff))
+    }
+
+    fn convert_from<F>(data: Self::Data, mut ids: F) -> Result<Self, Self::Error>
+    where
+        F: FnMut(M) -> Option<Entity>,
+    {
+        let entity = ids(data.0).unwrap();
+        Ok(StatusEffect{target: entity, is_debuff: data.1})
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct KnownSpell {
+    pub name: String,
+    pub mana_cost: i32
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct KnownSpells {
+    pub spells: Vec<KnownSpell>
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Spell {
+    pub mana_cost: i32
+}
+
+#[derive(Component, Debug, Clone)]
+pub struct WantsToCastSpell {
+    pub spell: Entity,
+    pub target: Option<rltk::Point>
+}
+
+// WantsToCastSpell wrapper
+#[derive(Serialize, Deserialize, Clone)]
+pub struct WantsToCastSpellData<M>(M, Option<rltk::Point>);
+
+impl<M: Marker + Serialize> ConvertSaveload<M> for WantsToCastSpell
+where
+    for<'de> M: Deserialize<'de>,
+{
+    type Data = WantsToCastSpellData<M>;
+    type Error = NoError;
+
+    fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
+    where
+        F: FnMut(Entity) -> Option<M>,
+    {
+        let marker = ids(self.spell).unwrap();
+        Ok(WantsToCastSpellData(marker, self.target))
+    }
+
+    fn convert_from<F>(data: Self::Data, mut ids: F) -> Result<Self, Self::Error>
+    where
+        F: FnMut(M) -> Option<Entity>,
+    {
+        let spell = ids(data.0).unwrap();
+        let target = data.1;
+        Ok(WantsToCastSpell{spell, target})
+    }
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct RestoresMana {
+    pub mana_amount: i32
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct TeachesSpell {
+    pub spell: String
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Slow {
+    pub initiative_penalty: f32
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct DamageOverTime {
+    pub damage: i32
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SpecialAbility {
+    pub spell: String,
+    pub chance: f32,
+    pub range: f32,
+    pub min_range: f32
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct SpecialAbilities {
+    pub abilities: Vec<SpecialAbility>
+}
+
+#[derive(Component, ConvertSaveload, Clone)]
+pub struct TileSize {
+    pub x: i32,
+    pub y: i32
+}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct PendingLevelUp {
+    pub attributes: Attributes,
+    pub skills: Skills
 }

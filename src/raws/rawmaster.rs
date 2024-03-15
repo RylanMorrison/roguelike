@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use specs::prelude::*;
 use rltk::{RandomNumberGenerator, RGB};
 use crate::components::*;
-use super::{Raws, RenderableData, SpawnTableEntry, Reaction};
+use super::{Raws, Reaction, RenderableData, SpawnTableEntry};
 use crate::random_table::RandomTable;
 use crate::{attr_bonus, npc_hp, mana_at_level};
 use regex::Regex;
@@ -42,9 +42,9 @@ pub struct RawMaster {
     item_index: HashMap<String, usize>,
     mob_index: HashMap<String, usize>,
     prop_index: HashMap<String, usize>,
+    spell_index: HashMap<String, usize>,
     loot_index: HashMap<String, usize>,
     faction_index: HashMap<String, HashMap<String, Reaction>>
-
 }
 
 impl RawMaster {
@@ -52,8 +52,10 @@ impl RawMaster {
         RawMaster{
             raws: Raws { 
                 items: Vec::new(),
+                item_class_colours: HashMap::new(),
                 mobs: Vec::new(),
                 props: Vec::new(),
+                spells: Vec::new(),
                 spawn_table: Vec::new(),
                 loot_tables: Vec::new(),
                 faction_table: Vec::new()
@@ -61,6 +63,7 @@ impl RawMaster {
             item_index: HashMap::new(),
             mob_index: HashMap::new(),
             prop_index: HashMap::new(),
+            spell_index: HashMap::new(),
             loot_index: HashMap::new(),
             faction_index: HashMap::new()
         }
@@ -70,26 +73,32 @@ impl RawMaster {
         self.raws = raws;
         self.item_index = HashMap::new();
         let mut used_names: HashSet<String> = HashSet::new();
-        for (i,item) in self.raws.items.iter().enumerate() {
+        for (i, item) in self.raws.items.iter().enumerate() {
             if used_names.contains(&item.name) {
                 rltk::console::log(format!("WARNING - duplicate item name in raws [{}]", item.name));
+            }
+            if !self.raws.item_class_colours.contains_key(&item.class) {
+                rltk::console::log(format!("WARNING - unknown item class in raws [{}]", &item.class));
             }
             self.item_index.insert(item.name.clone(), i);
             used_names.insert(item.name.clone());
         }
-        for (i,mob) in self.raws.mobs.iter().enumerate() {
+        for (i, mob) in self.raws.mobs.iter().enumerate() {
             if used_names.contains(&mob.name) {
                 rltk::console::log(format!("WARNING - duplicate item name in raws [{}]", mob.name));
             }
             self.mob_index.insert(mob.name.clone(), i);
             used_names.insert(mob.name.clone());
         }
-        for (i,prop) in self.raws.props.iter().enumerate() {
+        for (i, prop) in self.raws.props.iter().enumerate() {
             if used_names.contains(&prop.name) {
                 rltk::console::log(format!("WARNING - duplicate item name in raws [{}]", prop.name));
             }
             self.prop_index.insert(prop.name.clone(), i);
             used_names.insert(prop.name.clone());
+        }
+        for (i, spell) in self.raws.spells.iter().enumerate() {
+            self.spell_index.insert(spell.name.clone(), i);
         }
         for spawn in self.raws.spawn_table.iter() {
             if !used_names.contains(&spawn.name) {
@@ -137,7 +146,7 @@ fn string_to_weapon_slot(slot: &str) -> EquipmentSlot {
         "Off Hand" => EquipmentSlot::OffHand,
         "Two Handed" => EquipmentSlot::TwoHanded,
         _ => {
-            rltk::console::log(format!("Warning: Unknown weapon slot type [{}]", slot));
+            rltk::console::log(format!("WARNING - Unknown weapon slot type [{}]", slot));
             EquipmentSlot::MainHand
         }
     }
@@ -151,7 +160,7 @@ fn string_to_wearable_slot(slot: &str) -> EquipmentSlot {
         "Hands" => EquipmentSlot::Hands,
         "Feet" => EquipmentSlot::Feet,
         _ => {
-            rltk::console::log(format!("Warning: Unknown wearable slot type [{}]", slot));
+            rltk::console::log(format!("WARNING - Unknown wearable slot type [{}]", slot));
             EquipmentSlot::Head
         }
     }
@@ -170,10 +179,19 @@ fn spawn_position<'a>(pos: SpawnType, new_entity: EntityBuilder<'a>, tag: &str, 
     }
 }
 
-fn get_renderable_component(renderable: &RenderableData) -> Renderable {
+fn get_renderable_component(renderable: &RenderableData, fg_override: Option<&String>) -> Renderable {
     Renderable {
         glyph: rltk::to_cp437(renderable.glyph.chars().next().unwrap()),
-        fg: RGB::from_hex(&renderable.fg).expect("Invalid RGB"),
+        fg: {
+            if let Some(override_code) = fg_override  {
+                RGB::from_hex(override_code).expect("Invalid RGB")
+            } else if let Some(renderable_code) = &renderable.fg {
+                RGB::from_hex(renderable_code).expect("Invalid RGB")
+            } else {
+                rltk::console::log("WARNING No foreground colour provided for renderable");
+                RGB::named(rltk::WHITE)
+            }
+        },
         bg: RGB::from_hex(&renderable.bg).expect("Invalid RGB"),
         render_order: renderable.order
     }
@@ -192,59 +210,80 @@ pub fn spawn_named_entity(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spa
     None
 }
 
+macro_rules! apply_effects {
+    ( $effects:expr, $eb:expr ) => {
+        for effect in $effects.iter() {
+            let effect_name = effect.0.as_str();
+            match effect_name {
+                "healing" => $eb = $eb.with(Healing{ heal_amount: effect.1.parse::<i32>().unwrap() }),
+                "mana" => $eb = $eb.with(RestoresMana{ mana_amount: effect.1.parse::<i32>().unwrap() }),
+                "ranged" => $eb = $eb.with(Ranged{ range: effect.1.parse::<i32>().unwrap() }),
+                "damage" => $eb = $eb.with(Damage{ damage: effect.1.to_string() }),
+                "area_of_effect" => $eb = $eb.with(AreaOfEffect{ radius: effect.1.parse::<i32>().unwrap() }),
+                "confusion" => {
+                    $eb = $eb.with(Confusion{});
+                    $eb = $eb.with(Duration{ turns: effect.1.parse::<i32>().unwrap() });
+                }
+                "magic_mapping" => $eb = $eb.with(MagicMapping{}),
+                "town_portal" => $eb = $eb.with(TownPortal{}),
+                "food" => $eb = $eb.with(Food{}),
+                "single_activation" => $eb = $eb.with(SingleActivation{}),
+                "particle_line" => $eb = $eb.with(parse_particle_line(&effect.1)),
+                "particle" => $eb = $eb.with(parse_particle(&effect.1)),
+                "duration" => $eb = $eb.with(Duration{ turns: effect.1.parse::<i32>().unwrap() }),
+                "teach_spell" => $eb = $eb.with(TeachesSpell{ spell: effect.1.to_string() }),
+                "slow" => $eb = $eb.with(Slow{ initiative_penalty: effect.1.parse::<f32>().unwrap() }),
+                "damage_over_time" => $eb = $eb.with(DamageOverTime{ damage: effect.1.parse::<i32>().unwrap() }),
+                _ => rltk::console::log(format!("WARNING - Effect not implemented: {}", effect_name))
+            }
+        }
+    };
+}
+
 pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnType) -> Option<Entity> {
     let item_template = &raws.raws.items[raws.item_index[key]];
+    let item_class_colours = &raws.raws.item_class_colours;
     let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
 
     // spawn in the specified location
     eb = spawn_position(pos, eb, key, raws);
 
     // renderable
-    let mut colour = "#000000".to_string();
     if let Some(renderable) = &item_template.renderable {
-        eb = eb.with(get_renderable_component(renderable));
-        colour = renderable.fg.clone();
+        eb = eb.with(get_renderable_component(renderable, item_class_colours.get(&item_template.class)));
     }
-    eb = eb.with(Name{ name: item_template.name.clone() });
-    eb = eb.with(Item{ colour });
 
-    // consumables
-    if let Some(consumable) = &item_template.consumable {
-        eb = eb.with(Consumable{});
-        for effect in consumable.effects.iter() {
-            let effect_name = effect.0.as_str();
-            match effect_name {
-                "healing" => {
-                    eb = eb.with(ProvidesHealing{ heal_amount: effect.1.parse::<i32>().unwrap() });
-                }
-                "ranged" => {
-                    eb = eb.with(Ranged{ range: effect.1.parse::<i32>().unwrap() });
-                }
-                "damage" => {
-                    eb = eb.with(InflictsDamage{ damage: effect.1.to_string() });
-                }
-                "aoe" => {
-                    eb = eb.with(AreaOfEffect{ radius: effect.1.parse::<i32>().unwrap() });
-                }
-                "confusion" => {
-                    eb = eb.with(Confusion{ turns: effect.1.parse::<i32>().unwrap() });
-                }
-                "magic_mapping" => {
-                    eb = eb.with(MagicMapper{});
-                }
-                "provides_food" => { // TODO: remove provides
-                    eb = eb.with(ProvidesFood{});
-                }
+    eb = eb.with(Name{ name: item_template.name.clone() });
+    eb = eb.with(Item{
+        initiative_penalty: item_template.initiative_penalty.unwrap_or(0.0),
+        weight_lbs: item_template.weight_lbs.unwrap_or(0.0),
+        base_value: item_template.base_value.unwrap_or(0),
+        class: {
+            let class_name = item_template.class.as_str();
+            match class_name {
+                "common" => ItemClass::Common,
+                "rare" => ItemClass::Rare,
+                "legendary" => ItemClass::Legendary,
+                "set" => ItemClass::Set,
+                "unique" => ItemClass::Unique,
                 _ => {
-                    rltk::console::log(format!("Warning: consumable effect {} not implemented", effect_name));
+                    rltk::console::log(format!("WARNING - Unknown item class: {}", class_name));
+                    ItemClass::Common
                 }
             }
         }
+    });
+
+    // consumables
+    if let Some(consumable) = &item_template.consumable {
+        let max_charges = consumable.charges.unwrap_or(1);
+        eb = eb.with(Consumable{ max_charges, charges: max_charges });
+        apply_effects!(consumable.effects, eb);
     }
 
     // equipment
     if let Some(weapon) = &item_template.weapon {
-        eb = eb.with(Equippable{ slot: EquipmentSlot::MainHand });
+        eb = eb.with(Equippable{ slot: string_to_weapon_slot(&weapon.slot) });
         let (n_dice, die_type, bonus) = parse_dice_string(&weapon.base_damage);
         let wpn = MeleeWeapon {
             attribute: if weapon.attribute.as_str() == "Strength" {
@@ -255,14 +294,38 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
             damage_n_dice: n_dice,
             damage_die_type: die_type,
             damage_bonus: bonus,
-            hit_bonus: weapon.hit_bonus
+            hit_bonus: weapon.hit_bonus,
+            proc_chance: weapon.proc_chance,
+            proc_target: weapon.proc_target.clone()
         };
         eb = eb.with(wpn);
+        if let Some(proc_effects) = &weapon.proc_effects {
+            apply_effects!(proc_effects, eb);
+        }
     }
     if let Some(wearable) = &item_template.wearable {
         let slot = string_to_wearable_slot(&wearable.slot);
         eb = eb.with(Equippable{ slot });
         eb = eb.with(Wearable{ slot, armour_class: wearable.armour_class });
+    }
+
+    // attribute bonuses
+    if let Some(bonus) = &item_template.attribute_bonuses {
+        eb = eb.with(AttributeBonus{
+            strength: bonus.strength,
+            dexterity: bonus.dexterity,
+            constitution: bonus.constitution,
+            intelligence: bonus.intelligence
+        });
+    }
+
+    // skill bonuses
+    if let Some(bonus) = &item_template.skill_bonuses {
+        eb = eb.with(SkillBonus{
+            melee: bonus.melee,
+            defence: bonus.defence,
+            magic: bonus.magic
+        });
     }
 
     Some(eb.build())
@@ -280,7 +343,10 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
 
     // renderable
     if let Some(renderable) = &mob_template.renderable {
-        eb = eb.with(get_renderable_component(renderable));
+        eb = eb.with(get_renderable_component(renderable, None));
+        if renderable.x_size.is_some() || renderable.y_size.is_some() {
+            eb = eb.with(TileSize{ x: renderable.x_size.unwrap_or(1), y: renderable.y_size.unwrap_or(1) });
+        }
     }
 
     // initiative
@@ -336,7 +402,20 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
         level: mob_level,
         xp: 0,
         hit_points: Pool{ current: mob_hp, max: mob_hp },
-        mana: Pool{ current: mob_mana, max: mob_mana }
+        mana: Pool{ current: mob_mana, max: mob_mana },
+        total_weight: 0.0,
+        total_initiative_penalty: 0.0,
+        gold: 
+        if let Some(gold) = &mob_template.gold {
+            let mut rng = RandomNumberGenerator::new();
+            let (n, d, b) = parse_dice_string(&gold);
+            rng.roll_dice(n, d) + b
+        } else {
+            0
+        },
+        total_armour_class: 10, // only used by player for now
+        base_damage: "1d4".to_string(), // only used by player for now
+        god_mode: false
     };
     eb = eb.with(pools);
 
@@ -345,9 +424,9 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
     if let Some(mobskills) = &mob_template.skills {
         for sk in mobskills.iter() {
             match sk.0.as_str() {
-                "melee" => { skills.skills.insert(Skill::Melee, *sk.1); }
-                "defence" => { skills.skills.insert(Skill::Defence, *sk.1); }
-                "magic" => { skills.skills.insert(Skill::Magic, *sk.1); }
+                "melee" => { skills.melee.base = *sk.1; }
+                "defence" => { skills.defence.base = *sk.1; }
+                "magic" => { skills.magic.base = *sk.1; }
                 _ => { rltk::console::log(format!("Unknown skill referenced: [{}]", sk.0)); }
             }
         }
@@ -376,6 +455,22 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
         eb = eb.with(nature);
     }
 
+    // special abilities
+    if let Some(ability_list) = &mob_template.abilities {
+        let mut sabilities = SpecialAbilities{ abilities: Vec::new() };
+        for ability in ability_list.iter() {
+            sabilities.abilities.push(
+                SpecialAbility{
+                    spell: ability.spell.clone(),
+                    chance: ability.chance,
+                    range: ability.range,
+                    min_range: ability.min_range
+                }
+            );
+        }
+        eb = eb.with(sabilities);
+    }
+
     // visibility
     eb = eb.with(Viewshed{ 
         visible_tiles: Vec::new(),
@@ -383,9 +478,15 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
         dirty: true
     });
 
+    eb = eb.with(EquipmentChanged{});
+
     // loot
     if let Some(loot) = &mob_template.loot_table {
         eb = eb.with(LootTable{ table_name: loot.clone() });
+    }
+
+    if let Some(vendor) = &mob_template.vendor {
+        eb = eb.with(Vendor{ categories: vendor.clone() });
     }
 
     // light
@@ -420,7 +521,7 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
 
     // renderable
     if let Some(renderable) = &prop_template.renderable {
-        eb = eb.with(get_renderable_component(renderable));
+        eb = eb.with(get_renderable_component(renderable, None));
     }
     
     eb = eb.with(Name{ name: prop_template.name.clone() });
@@ -434,8 +535,59 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
     if let Some(door_open) = prop_template.door_open {
         eb = eb.with(Door{ open: door_open });
     }
+    if let Some(entry_trigger) = &prop_template.entry_trigger {
+        eb = eb.with(EntryTrigger{});
+        apply_effects!(entry_trigger.effects, eb);
+    }
+    if let Some(light) = &prop_template.light {
+        eb = eb.with(LightSource{ range: light.range, colour: RGB::from_hex(&light.colour).expect("Bad colour") });
+        eb = eb.with(Viewshed{ range: light.range, dirty: true, visible_tiles: Vec::new() });
+    }
 
     Some(eb.build())
+}
+
+pub fn spawn_named_spell(raws: &RawMaster, ecs: &mut World, key: &str) -> Option<Entity> {
+    if raws.spell_index.contains_key(key) {
+        let spell_template = &raws.raws.spells[raws.spell_index[key]];
+
+        let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
+        eb = eb.with(Spell{ mana_cost: spell_template.mana_cost });
+        eb = eb.with(Name{ name: spell_template.name.clone() });
+        apply_effects!(spell_template.effects, eb);
+
+        return Some(eb.build());
+    }
+    None
+}
+
+pub fn spawn_all_spells(ecs: &mut World) {
+    let raws = &super::RAWS.lock().unwrap();
+    for spell in raws.raws.spells.iter() {
+        spawn_named_spell(raws, ecs, &spell.name);
+    }
+}
+
+pub fn find_spell_entity(ecs: &World, name: &str) -> Option<Entity> {
+    let names: Storage<'_, Name, specs::shred::Fetch<'_, specs::storage::MaskedStorage<Name>>> = ecs.read_storage::<Name>();
+    let spells = ecs.read_storage::<Spell>();
+    let entities = ecs.entities();
+
+    for (entity, sname, _spell) in (&entities, &names, &spells).join() {
+        if name == sname.name {
+            return Some(entity);
+        }
+    }
+    None
+}
+
+pub fn find_spell_entity_by_name(name: &str, names: &ReadStorage::<Name>, spells: &ReadStorage::<Spell>, entities: &Entities) -> Option<Entity> {
+    for (entity, sname, _spell) in (entities, names, spells).join() {
+        if name == sname.name {
+            return Some(entity);
+        }
+    }
+    None
 }
 
 pub fn get_spawn_table_for_depth(raws: &RawMaster, depth: i32) -> RandomTable {
@@ -480,3 +632,53 @@ pub fn faction_reaction(my_faction: &str, their_faction: &str, raws: &RawMaster)
     Reaction::Ignore
 }
 
+pub fn get_vendor_items(categories: &[String], raws: &RawMaster) -> Vec<(String, i32, RGB)> {
+    let mut result: Vec<(String, i32, RGB)> = Vec::new();
+    for item in raws.raws.items.iter() {
+        if let Some(cat) = &item.vendor_category {
+            if categories.contains(cat) && item.base_value.is_some() {
+                result.push((
+                    item.name.clone(),
+                    item.base_value.unwrap(),
+                    get_item_class_colour(item.class.as_str(), raws)
+                ));
+            }
+        }
+    }
+    result.sort_by(|a,b| a.1.partial_cmp(&b.1).unwrap());
+    result
+}
+
+pub fn get_item_colour(item: &Item, raws: &RawMaster) -> RGB {
+    let class_string = match item.class {
+        ItemClass::Common => "common",
+        ItemClass::Rare => "rare",
+        ItemClass::Legendary => "legendary",
+        ItemClass::Set => "set",
+        ItemClass::Unique => "unique"
+    };
+    get_item_class_colour(class_string, raws)
+}
+
+fn get_item_class_colour(class_string: &str, raws: &RawMaster) -> RGB {
+    let colour = raws.raws.item_class_colours.get(class_string);
+    RGB::from_hex(colour.unwrap()).expect("Invalid RGB")
+}
+
+fn parse_particle_line(token_string: &str) -> SpawnParticleLine {
+    let tokens: Vec<_> = token_string.split(';').collect();
+    SpawnParticleLine{
+        glyph: rltk::to_cp437(tokens[0].chars().next().unwrap()),
+        colour: RGB::from_hex(tokens[1]).expect("Bad RGB"),
+        lifetime_ms: tokens[2].parse::<f32>().unwrap()
+    }
+}
+
+fn parse_particle(token_string: &str) -> SpawnParticleBurst {
+    let tokens: Vec<_> = token_string.split(';').collect();
+    SpawnParticleBurst{
+        glyph: rltk::to_cp437(tokens[0].chars().next().unwrap()),
+        colour: RGB::from_hex(tokens[1]).expect("Bad RGB"),
+        lifetime_ms: tokens[2].parse::<f32>().unwrap()
+    }
+}
