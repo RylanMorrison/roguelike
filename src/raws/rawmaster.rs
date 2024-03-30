@@ -600,7 +600,7 @@ pub fn get_spawn_table_for_depth(raws: &RawMaster, depth: i32) -> RandomTable {
     for e in available_options.iter() {
         let mut weight = e.weight;
         if e.add_map_depth_to_weight.is_some() {
-            weight += depth;
+            weight += depth - e.min_depth;
         }
         rt = rt.add(e.name.clone(), weight);
     }

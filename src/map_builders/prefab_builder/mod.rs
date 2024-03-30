@@ -292,7 +292,7 @@ impl PrefabBuilder {
         let roll = rng.roll_dice(1, 3);
         match roll {
             1 => "Mithril Longsword".to_string(),
-            _ => "Iron Longsword".to_string()
+            _ => "Steel Longsword".to_string()
         }
     }
 
