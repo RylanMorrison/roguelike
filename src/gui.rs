@@ -1,6 +1,6 @@
 use rltk::{to_cp437, Point, Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
-use crate::{camera, raws, PendingLevelUp};
+use crate::{camera, carry_capacity_lbs, player_xp_for_level, raws, PendingLevelUp};
 
 use super::{Pools, gamelog::GameLog, Map, Name, Position, State, InBackpack,
     Viewshed, RunState, Equipped, HungerClock, HungerState, Attribute, Attributes,
@@ -62,48 +62,46 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
     let player_entity = ecs.fetch::<Entity>();
     let pools = ecs.read_storage::<Pools>();
     let player_pools = pools.get(*player_entity).unwrap();
-    let health = format!("Health: {}/{}", player_pools.hit_points.current, player_pools.hit_points.max);
-    let mana = format!("Mana: {}/{}", player_pools.mana.current, player_pools.mana.max);
+    let health = format!("{}/{}", player_pools.hit_points.current, player_pools.hit_points.max);
+    let mana = format!("{}/{}", player_pools.mana.current, player_pools.mana.max);
     let level = format!("Level: {}", player_pools.level);
-    let xp_level_start = (player_pools.level-1) * 1000;
-    
-    // TODO health clips health bar when over 100
-    ctx.print_color(70, 1, white(), black(), &health);
-    ctx.print_color(70, 2, white(), black(), &mana);
-    ctx.print_color(70, 3, white(), black(), &level);
-    ctx.draw_bar_horizontal(84, 1, 14, player_pools.hit_points.current, player_pools.hit_points.max, red(), black());
-    ctx.draw_bar_horizontal(84, 2, 14, player_pools.mana.current, player_pools.mana.max, blue(), black());
-    ctx.draw_bar_horizontal(84, 3, 14, player_pools.xp - xp_level_start, 1000, gold(), black());
+    let xp_level_start = player_xp_for_level(player_pools.level-1);
 
+    ctx.print_color(70, 1, white(), black(), "Health: ");
+    ctx.draw_bar_horizontal(80, 1, 18, player_pools.hit_points.current, player_pools.hit_points.max, red(), black());
+    ctx.print_color(87, 1, white(), black(), &health);
+
+    ctx.print_color(70, 2, white(), black(), "Mana: ");
+    ctx.draw_bar_horizontal(80, 2, 18, player_pools.mana.current, player_pools.mana.max, blue(), black());
+    ctx.print_color(87, 2, white(), black(), &mana);
+
+    ctx.print_color(70, 3, white(), black(), &level);
+    ctx.draw_bar_horizontal(80, 3, 18, player_pools.xp - xp_level_start, player_xp_for_level(player_pools.level), gold(), black());
+    
     // attributes
     let attributes = ecs.read_storage::<Attributes>();
-    let attr = attributes.get(*player_entity).unwrap();
-    draw_attribute("Strength", &attr.strength, 5, ctx);
-    draw_attribute("Dexterity", &attr.dexterity, 6, ctx);
-    draw_attribute("Constitution", &attr.constitution, 7, ctx);
-    draw_attribute("Intelligence", &attr.intelligence, 8, ctx);
+    let player_attributes = attributes.get(*player_entity).unwrap();
+    draw_attribute("Strength:", &player_attributes.strength, 5, ctx);
+    draw_attribute("Dexterity:", &player_attributes.dexterity, 6, ctx);
+    draw_attribute("Constitution:", &player_attributes.constitution, 7, ctx);
+    draw_attribute("Intelligence:", &player_attributes.intelligence, 8, ctx);
 
     // skills
     let skills = ecs.read_storage::<Skills>();
     let player_skills = &skills.get(*player_entity).unwrap();
-    draw_skill("Melee", &player_skills.melee, 10, ctx);
-    draw_skill("Defence", &player_skills.defence, 11, ctx);
-    draw_skill("Magic", &player_skills.magic, 12, ctx);
+    draw_skill("Melee:", &player_skills.melee, 10, ctx);
+    draw_skill("Defence:", &player_skills.defence, 11, ctx);
+    draw_skill("Magic:", &player_skills.magic, 12, ctx);
 
     // armour class and damage
-    ctx.print_color(70, 14, light_gray(), black(), "Armour Class");
+    ctx.print_color(70, 14, light_gray(), black(), "Armour Class:");
     ctx.print_color(87, 14, white(), black(), player_pools.total_armour_class);
-    ctx.print_color(70, 15, light_gray(), black(), "Base Damage");
+    ctx.print_color(70, 15, light_gray(), black(), "Base Damage:");
     ctx.print_color(87, 15, white(), black(), player_pools.base_damage.clone());
 
     // weight
-    ctx.print_color(70, 19, white(), black(),
-        &format!("{:0} lbs ({} lbs max)",
-            player_pools.total_weight,
-            (attr.strength.base + attr.strength.modifiers) * 15
-        )
-    );
-    
+    draw_weight(ctx, player_pools.total_weight, carry_capacity_lbs(&player_attributes.strength));
+
     // initiative penalty
     ctx.print_color(70, 20, white(), black(),
         &format!("Initiative Penalty: {:.0}", player_pools.total_initiative_penalty)
@@ -242,6 +240,13 @@ fn draw_skill(name: &str, skill: &Skill, y: i32, ctx: &mut Rltk) {
     ctx.print_color(87, y, colour, black(), skill.bonus());
 }
 
+fn draw_weight(ctx: &mut Rltk, weight: f32, capacity: f32) {
+    let colour = if weight > capacity { red() } else { white() };
+    ctx.print_color(70, 19, colour, black(),
+        &format!("{:0} lbs ({} lbs max)", weight, capacity)
+    );
+}
+
 struct Tooltip {
     lines: Vec<String>
 }
@@ -322,7 +327,6 @@ fn draw_tooltips(ecs: &World, ctx : &mut Rltk) {
             // pools
             let stat = pools.get(entity);
             if let Some(stat) = stat {
-                // TODO: separate xp bar and level indicator
                 tip.add(format!("Level: {}", stat.level));
             }
 

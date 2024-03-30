@@ -2,7 +2,7 @@ use rltk::RandomNumberGenerator;
 use specs::{prelude::*, saveload::SimpleMarker, saveload::MarkedBuilder};
 use super::*;
 use crate::components::{Pools, StatusEffect, DamageOverTime, Duration, Name, MeleeWeapon};
-use crate::{Map, Player};
+use crate::{Map, Player, player_xp_for_level};
 use crate::{spatial, Damage, SerializeMe, RunState};
 use crate::raws;
 use crate::player;
@@ -86,7 +86,7 @@ pub fn death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     if let Some(source) = effect.creator {
         if ecs.read_storage::<Player>().get(source).is_some() {
             if let Some(pools) = pools.get(target) {
-                xp_gain += pools.level * 10;
+                xp_gain += pools.level * 100;
                 gold_gain += pools.gold;
             }
 
@@ -95,7 +95,7 @@ pub fn death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
                 
                 player_pools.xp += xp_gain;
                 player_pools.gold += gold_gain;
-                if player_pools.xp >= player_pools.level * 1000 {
+                if player_pools.xp >= player_xp_for_level(player_pools.level) {
                     player::level_up(ecs, source, player_pools);
                     let mut runstate = ecs.fetch_mut::<RunState>();
                     *runstate = RunState::LevelUp{ attribute_points: 1, skill_points: 2 };

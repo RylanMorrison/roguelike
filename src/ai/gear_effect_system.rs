@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use crate::{attr_bonus, gamelog::GameLog, AttributeBonus, Attributes, EquipmentChanged, Equipped, InBackpack, Item, MeleeWeapon, 
-    Pools, Slow, StatusEffect, Wearable, Skills, SkillBonus};
+    Pools, Slow, StatusEffect, Wearable, Skills, SkillBonus, player_hp_at_level, mana_at_level, carry_capacity_lbs};
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -13,7 +13,9 @@ struct ItemUpdate {
     intelligence: i32,
     melee: i32,
     defence: i32,
-    magic: i32
+    magic: i32,
+    total_armour_class: f32,
+    base_damage: String
 }
 
 pub struct GearEffectSystem {}
@@ -58,7 +60,9 @@ impl<'a> System<'a> for GearEffectSystem {
                 intelligence: 0,
                 melee: 0,
                 defence: 0,
-                magic: 0
+                magic: 0,
+                total_armour_class: 10.0, // TODO use armour class from entity's pools
+                base_damage: "1 - 4".to_string()
             });
         }
         equip_dirty.clear();
@@ -84,17 +88,21 @@ impl<'a> System<'a> for GearEffectSystem {
         }
 
         // calculate base damage
-        let mut base_damage: String = "1 - 4".to_string();
-        for (weapon, _equipped) in (&weapons, &wielded).join() {
+        for (weapon, equipped) in (&weapons, &wielded).join() {
+            if to_update.contains_key(&equipped.owner) {
+                let totals = to_update.get_mut(&equipped.owner).unwrap();
+                totals.base_damage = format!("{} - {}", weapon.damage_n_dice + weapon.damage_bonus, weapon.damage_n_dice * weapon.damage_die_type + weapon.damage_bonus);
+            }
             // TODO display extra damage from attributes and skills
-            base_damage = format!("{} - {}", weapon.damage_n_dice + weapon.damage_bonus, weapon.damage_n_dice * weapon.damage_die_type + weapon.damage_bonus); // should only be one
         }
 
         // calculate total armour class
-        let mut total_armour_class: f32 = 10.0; // TODO use entity's armour class from pools
-        for (wearable, _equipped) in (&wearables, &wielded).join() {
+        for (wearable, equipped) in (&wearables, &wielded).join() {
+            if to_update.contains_key(&equipped.owner) {
+                let totals = to_update.get_mut(&equipped.owner).unwrap();
+                totals.total_armour_class += wearable.armour_class;
+            }
             // TODO display extra armour class from attributes and skills
-            total_armour_class += wearable.armour_class;
         }
 
         // total up carried items
@@ -130,10 +138,9 @@ impl<'a> System<'a> for GearEffectSystem {
             if let Some(pool) = pools.get_mut(*entity) {
                 pool.total_weight = item.weight;
                 pool.total_initiative_penalty = item.initiative;
-                pool.total_armour_class = total_armour_class as i32;
-                pool.base_damage = base_damage.clone();
+                pool.total_armour_class = item.total_armour_class as i32;
+                pool.base_damage = item.base_damage.clone();
 
-                // TODO health and mana bonuses
                 if let Some(attr) = attributes.get_mut(*entity) {
                     attr.strength.modifiers = item.strength;
                     attr.dexterity.modifiers = item.dexterity;
@@ -144,9 +151,19 @@ impl<'a> System<'a> for GearEffectSystem {
                     attr.dexterity.bonus = attr_bonus(attr.dexterity.base + attr.dexterity.modifiers);
                     attr.constitution.bonus = attr_bonus(attr.constitution.base + attr.constitution.modifiers);
                     attr.intelligence.bonus = attr_bonus(attr.intelligence.base + attr.intelligence.modifiers);
+
+                    // update health and mana
+                    pool.hit_points.max = player_hp_at_level(
+                        attr.constitution.base + attr.constitution.modifiers,
+                        pool.level
+                    );
+                    pool.hit_points.current = pool.hit_points.max;
+                    pool.mana.max = mana_at_level(
+                        attr.intelligence.base + attr.intelligence.modifiers,
+                        pool.level
+                    );
                     
-                    let carry_capacity_lbs = (attr.strength.base + attr.strength.modifiers) * 15;
-                    if pool.total_weight as i32 > carry_capacity_lbs {
+                    if pool.total_weight > carry_capacity_lbs(&attr.strength) {
                         // overburdened
                         pool.total_initiative_penalty += 4.0;
                         if *entity == *player {

@@ -2,7 +2,7 @@ use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
 use specs::prelude::*;
 use std::cmp::{max, min};
 
-use crate::{spatial, InBackpack, WantsToUseItem, mana_at_level, player_hp_at_level};
+use crate::{spatial, InBackpack, WantsToUseItem};
 use crate::raws::{faction_reaction, find_spell_entity, Reaction, RAWS};
 use crate::effects::{add_effect, EffectType, Targets};
 
@@ -331,22 +331,8 @@ pub fn skip_turn(ecs: &mut World) -> RunState {
 
 pub fn level_up(ecs: &World, source: Entity, pools: &mut Pools) {
     let mut gamelog = ecs.fetch_mut::<GameLog>();
-    let attributes = ecs.read_storage::<Attributes>();
 
-    pools.level += 1;
-    gamelog.entries.push(format!("You are now level {}", pools.level));
-
-    let player_attributes = attributes.get(source).unwrap();
-    pools.hit_points.max = player_hp_at_level(
-        player_attributes.constitution.base + player_attributes.constitution.modifiers,
-        pools.level
-    );
-    pools.hit_points.current = pools.hit_points.max;
-    pools.mana.max = mana_at_level(
-        player_attributes.intelligence.base + player_attributes.intelligence.modifiers,
-        pools.level
-    );
-    pools.mana.current = pools.mana.max;
+    gamelog.entries.push(format!("You are now level {}", pools.level + 1));
 
     let player_pos = ecs.fetch::<rltk::Point>();
     let map = ecs.fetch::<Map>();
@@ -364,6 +350,8 @@ pub fn level_up(ecs: &World, source: Entity, pools: &mut Pools) {
         }
     }
 
+    let attributes = ecs.read_storage::<Attributes>();
+    let player_attributes = attributes.get(source).unwrap();
     let skills = ecs.read_storage::<Skills>();
     let player_skills = skills.get(source).unwrap();
     let mut pending_level_ups = ecs.write_storage::<PendingLevelUp>();

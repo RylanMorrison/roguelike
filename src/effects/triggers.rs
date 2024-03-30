@@ -172,7 +172,6 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
             add_effect(creator, EffectType::Confusion{ duration: duration.turns }, targets.clone());
             did_something = true;
         }
-        
     }
 
     // slow
@@ -198,7 +197,7 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
         did_something = true;
     }
 
-    // attribute modifies
+    // attribute modifiers
     if let Some(attribute) = ecs.read_storage::<AttributeBonus>().get(entity) {
         let duration;
         if let Some(dur) = ecs.read_storage::<Duration>().get(entity) {

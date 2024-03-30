@@ -270,7 +270,7 @@ impl TownBuilder {
 
     fn build_abandoned_house(&mut self, building: &(i32, i32, i32, i32), build_data: &mut BuilderMap, rng: &mut RandomNumberGenerator) {
         let mut to_place: Vec<&str> = Vec::new();
-        let n_rats = rng.roll_dice(1, building.2*building.3 / 2) + 1;
+        let n_rats = rng.roll_dice(1, (building.2*building.3) / 2) + 1;
         // fill around half of the house with rats
         for _ in 0..n_rats {
             to_place.push("Rat");
@@ -378,7 +378,7 @@ impl TownBuilder {
 
     fn spawn_townsfolk(&mut self, build_data: &mut BuilderMap, rng: &mut RandomNumberGenerator, available_building_tiles: &mut HashSet<usize>) {
         for idx in available_building_tiles.iter() {
-            if rng.roll_dice(1, 20) == 1 {
+            if rng.roll_dice(1, 30) == 1 {
                 let roll = rng.roll_dice(1, 4);
                 match roll {
                     1 => build_data.spawn_list.push((*idx, "Peasant".to_string())),

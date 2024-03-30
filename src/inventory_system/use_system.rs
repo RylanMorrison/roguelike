@@ -10,13 +10,12 @@ impl<'a> System<'a> for ItemUseSystem {
         WriteExpect<'a, Map>,
         Entities<'a>,
         WriteStorage<'a, WantsToUseItem>,
-        ReadStorage<'a, Name>,
         ReadStorage<'a, AreaOfEffect>,
         WriteStorage<'a, EquipmentChanged>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player_entity, mut map, entities, mut wants_use, names, aoe, mut dirty) = data;
+        let (player_entity, map, entities, mut wants_use, aoe, mut dirty) = data;
 
         for (entity, useitem) in (&entities, &wants_use).join() {
             add_effect(
@@ -33,6 +32,7 @@ impl<'a> System<'a> for ItemUseSystem {
                     }
                 }
             );
+            dirty.insert(entity, EquipmentChanged{}).expect("Unable to insert");
         }
         wants_use.clear();
     }
