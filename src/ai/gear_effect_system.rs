@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use crate::{attr_bonus, gamelog::GameLog, AttributeBonus, Attributes, EquipmentChanged, Equipped, InBackpack, Item, MeleeWeapon, 
-    Pools, Slow, StatusEffect, Wearable, Skills, SkillBonus, player_hp_at_level, mana_at_level, carry_capacity_lbs};
+    Pools, Slow, StatusEffect, Wearable, Skills, SkillBonus, player_hp_at_level, mana_at_level, carry_capacity_lbs, ItemSets, PartOfSet};
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -37,14 +37,16 @@ impl<'a> System<'a> for GearEffectSystem {
         ReadStorage<'a, MeleeWeapon>,
         ReadStorage<'a, Wearable>,
         WriteStorage<'a, Skills>,
-        ReadStorage<'a, SkillBonus>
+        ReadStorage<'a, SkillBonus>,
+        ReadExpect<'a, ItemSets>,
+        ReadStorage<'a, PartOfSet>
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (mut equip_dirty, entities, items, backpacks, wielded,
             mut pools, mut attributes, player, mut gamelog, 
             attribute_bonuses, statuses, slowed, weapons, wearables,
-            mut skills, skill_bonuses) = data;
+            mut skills, skill_bonuses, item_sets, set_pieces) = data;
 
         if equip_dirty.is_empty() { return; }
 
@@ -130,6 +132,44 @@ impl<'a> System<'a> for GearEffectSystem {
             if to_update.contains_key(&status.target) {
                 let totals = to_update.get_mut(&status.target).unwrap();
                 totals.initiative += slow.initiative_penalty;
+            }
+        }
+
+        // item set bonuses
+        // TODO lags a bit when equipping, find more efficient way of doing this
+        // determine equipped set piece count for each item set
+        let mut set_counts: HashMap<String, i32> = HashMap::new();
+        for (equipped, set_piece) in (&wielded, &set_pieces).join() {
+            if equipped.owner == *player && to_update.contains_key(&equipped.owner) {
+                // only count set pieces for the player
+                if item_sets.item_sets.get(&set_piece.set_name).is_some() {
+                    if set_counts.contains_key(&set_piece.set_name) {
+                        *set_counts.get_mut(&set_piece.set_name).unwrap() += 1;
+                    } else {
+                        set_counts.insert(set_piece.set_name.clone(), 1);
+                    }
+                }
+            }
+        }
+        // apply set bonuses depending on number of set pieces equipped
+        for set in set_counts.keys() {
+            // only the player gets set bonuses for now
+            let totals = to_update.get_mut(&player).unwrap();
+            if let Some(item_set) = item_sets.item_sets.get(set) {
+                if let Some(set_bonus) = item_set.set_bonuses.get(&set_counts[set]) {
+                    // TODO cummulative set bonuses??
+                    if let Some(attr_bonus) = &set_bonus.attribute_bonus {
+                        totals.strength += attr_bonus.strength.unwrap_or(0);
+                        totals.dexterity += attr_bonus.dexterity.unwrap_or(0);
+                        totals.constitution += attr_bonus.constitution.unwrap_or(0);
+                        totals.intelligence += attr_bonus.intelligence.unwrap_or(0);
+                    }
+                    if let Some(skill_bonus) = &set_bonus.skill_bonus {
+                        totals.melee += skill_bonus.melee.unwrap_or(0);
+                        totals.defence += skill_bonus.defence.unwrap_or(0);
+                        totals.magic += skill_bonus.magic.unwrap_or(0);
+                    }
+                }
             }
         }
 

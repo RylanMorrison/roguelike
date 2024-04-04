@@ -1,7 +1,7 @@
 use rltk::RandomNumberGenerator;
 use specs::{prelude::*, saveload::SimpleMarker, saveload::MarkedBuilder};
 use super::*;
-use crate::components::{Pools, StatusEffect, DamageOverTime, Duration, Name, MeleeWeapon};
+use crate::components::{Pools, StatusEffect, DamageOverTime, Duration, Name};
 use crate::{Map, Player, player_xp_for_level};
 use crate::{spatial, Damage, SerializeMe, RunState};
 use crate::raws;

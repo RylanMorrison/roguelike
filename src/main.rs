@@ -3,6 +3,7 @@ use gui::LevelUpMenuResult;
 use rltk::{GameState, Rltk, Point};
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
+use std::collections::HashMap;
 
 mod components;
 pub use components::*;
@@ -583,6 +584,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SpecialAbilities>();
     gs.ecs.register::<TileSize>();
     gs.ecs.register::<PendingLevelUp>();
+    gs.ecs.register::<ItemSets>();
+    gs.ecs.register::<PartOfSet>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     raws::load_raws();
@@ -598,6 +601,8 @@ fn main() -> rltk::BError {
     gs.ecs.insert(RunState::MapGeneration{});
 
     raws::spawn_all_spells(&mut gs.ecs);
+    gs.ecs.insert(ItemSets{ item_sets: HashMap::new() });
+    raws::store_all_item_sets(&mut gs.ecs);
     gs.ecs.insert(gamelog::GameLog{ entries : vec!["Welcome to Taverns of Stoner Doom".to_string()] });
 
     gs.generate_world_map(0, 0);

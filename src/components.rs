@@ -4,6 +4,7 @@ use specs::{Entity, saveload::{ConvertSaveload, Marker}, error::NoError};
 use serde::{Serialize, Deserialize};
 use rltk::RGB;
 use super::attr_bonus;
+use std::collections::HashMap;
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Position {
@@ -788,4 +789,26 @@ pub struct TileSize {
 pub struct PendingLevelUp {
     pub attributes: Attributes,
     pub skills: Skills
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ItemSetBonus {
+    pub attribute_bonus: Option<AttributeBonus>,
+    pub skill_bonus: Option<SkillBonus>
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ItemSet {
+    pub total_pieces: i32,
+    pub set_bonuses: HashMap<i32, ItemSetBonus>
+}
+
+#[derive(Component, Serialize, Deserialize, Clone, Debug)]
+pub struct ItemSets {
+    pub item_sets: HashMap<String, ItemSet>
+}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct PartOfSet {
+    pub set_name: String
 }

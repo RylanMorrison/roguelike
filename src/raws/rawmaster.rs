@@ -8,7 +8,7 @@ use crate::{attr_bonus, npc_hp, mana_at_level};
 use regex::Regex;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 
-/// Parse a dice string into its values. 
+/// Parse a dice string into its values. TODO move to gamesystem
 /// eg. 1d10+4 => (1, 10, 4)
 pub fn parse_dice_string(dice: &str) -> (i32, i32, i32) {
     lazy_static! {
@@ -40,6 +40,7 @@ pub enum SpawnType {
 pub struct RawMaster {
     raws: Raws,
     item_index: HashMap<String, usize>,
+    item_set_index: HashMap<String, usize>,
     mob_index: HashMap<String, usize>,
     prop_index: HashMap<String, usize>,
     spell_index: HashMap<String, usize>,
@@ -52,6 +53,7 @@ impl RawMaster {
         RawMaster{
             raws: Raws { 
                 items: Vec::new(),
+                item_sets: Vec::new(),
                 item_class_colours: HashMap::new(),
                 mobs: Vec::new(),
                 props: Vec::new(),
@@ -61,6 +63,7 @@ impl RawMaster {
                 faction_table: Vec::new()
             },
             item_index: HashMap::new(),
+            item_set_index: HashMap::new(),
             mob_index: HashMap::new(),
             prop_index: HashMap::new(),
             spell_index: HashMap::new(),
@@ -83,16 +86,23 @@ impl RawMaster {
             self.item_index.insert(item.name.clone(), i);
             used_names.insert(item.name.clone());
         }
+        for (i, item_set) in self.raws.item_sets.iter().enumerate() {
+            if used_names.contains(&item_set.name) {
+                rltk::console::log(format!("WARNING - duplicate item set name in raws [{}]", &item_set.name));
+            }
+            self.item_set_index.insert(item_set.name.clone(), i);
+            used_names.insert(item_set.name.clone());
+        }
         for (i, mob) in self.raws.mobs.iter().enumerate() {
             if used_names.contains(&mob.name) {
-                rltk::console::log(format!("WARNING - duplicate item name in raws [{}]", mob.name));
+                rltk::console::log(format!("WARNING - duplicate mob name in raws [{}]", mob.name));
             }
             self.mob_index.insert(mob.name.clone(), i);
             used_names.insert(mob.name.clone());
         }
         for (i, prop) in self.raws.props.iter().enumerate() {
             if used_names.contains(&prop.name) {
-                rltk::console::log(format!("WARNING - duplicate item name in raws [{}]", prop.name));
+                rltk::console::log(format!("WARNING - duplicate prop name in raws [{}]", prop.name));
             }
             self.prop_index.insert(prop.name.clone(), i);
             used_names.insert(prop.name.clone());
@@ -328,6 +338,11 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         });
     }
 
+    // item sets
+    if let Some(set_name) = &item_template.set_name {
+        eb = eb.with(PartOfSet{ set_name: set_name.to_string() });
+    }
+
     Some(eb.build())
 }
 
@@ -561,6 +576,45 @@ pub fn spawn_named_spell(raws: &RawMaster, ecs: &mut World, key: &str) -> Option
     None
 }
 
+pub fn store_all_item_sets(ecs: &mut World) {
+    let raws = &super::RAWS.lock().unwrap();
+    for item_set in raws.raws.item_sets.iter() {
+        store_named_item_set(raws, ecs, &item_set.name);
+    }
+}
+
+pub fn store_named_item_set(raws: &RawMaster, ecs: &mut World, key: &str) {
+    if raws.item_set_index.contains_key(key) {
+        let item_set_template = &raws.raws.item_sets[raws.item_set_index[key]];
+
+        let mut item_sets = ecs.fetch_mut::<ItemSets>();
+        let mut set_bonuses: HashMap<i32, ItemSetBonus> = HashMap::new();
+        for set_bonus in item_set_template.set_bonuses.iter() {
+            let required_pieces = set_bonus.required_pieces;
+            let mut attribute_bonus: Option<AttributeBonus> = None;
+            if let Some(attr_bonus) = &set_bonus.attribute_bonuses {
+                attribute_bonus = Some(AttributeBonus{
+                    strength: attr_bonus.strength,
+                    dexterity: attr_bonus.dexterity,
+                    constitution: attr_bonus.constitution,
+                    intelligence: attr_bonus.intelligence
+                });
+            }
+            let mut skill_bonus: Option<SkillBonus> = None;
+            if let Some(sk_bonus) = &set_bonus.skill_bonuses {
+                skill_bonus = Some(SkillBonus{
+                    melee: sk_bonus.melee,
+                    defence: sk_bonus.defence,
+                    magic: sk_bonus.magic
+                });
+            }
+            set_bonuses.insert(required_pieces, ItemSetBonus{ attribute_bonus, skill_bonus });
+        }
+        let item_set = ItemSet{ total_pieces: item_set_template.total_pieces, set_bonuses };
+        item_sets.item_sets.insert(item_set_template.name.clone(), item_set);
+    }
+}
+
 pub fn spawn_all_spells(ecs: &mut World) {
     let raws = &super::RAWS.lock().unwrap();
     for spell in raws.raws.spells.iter() {
@@ -682,3 +736,5 @@ fn parse_particle(token_string: &str) -> SpawnParticleBurst {
         lifetime_ms: tokens[2].parse::<f32>().unwrap()
     }
 }
+
+

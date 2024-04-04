@@ -31,7 +31,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
         let (entities, mut gamelog, mut wants_melee, names, attributes, 
             skills, pools, positions, hunger_clock, mut rng, 
             equipped_items, melee_weapons, wearables, natural,
-            area_of_effect, mut map) = data;
+            area_of_effect, map) = data;
 
         for (entity, wants_melee, name, attacker_attributes, attacker_skills, attacker_pools) in (&entities, &wants_melee, &names, &attributes, &skills, &pools).join() {
             let target_pools = pools.get(wants_melee.target).unwrap();
@@ -113,7 +113,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
             let armour_dexterity_bonus = target_attributes.dexterity.bonus;
             // each point in defence gives 0.1 armour class
             // TODO make this scale equipped armour instead of a flat bonus
-            let armour_skill_bonus = attacker_skills.defence.bonus() as f32 * 0.1;
+            let armour_skill_bonus = target_skills.defence.bonus() as f32 * 0.1;
             let total_armour_bonus = (armour_item_bonus + armour_skill_bonus) as i32;
             let armour_class = base_armour_class + armour_dexterity_bonus + total_armour_bonus;
 

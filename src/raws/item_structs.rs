@@ -15,7 +15,8 @@ pub struct ItemData {
     pub vendor_category: Option<String>,
     pub class: String,
     pub attribute_bonuses: Option<ItemAttributeBonusData>,
-    pub skill_bonuses: Option<ItemSkillBonusData>
+    pub skill_bonuses: Option<ItemSkillBonusData>,
+    pub set_name: Option<String>
 }
 
 #[derive(Deserialize, Debug)]

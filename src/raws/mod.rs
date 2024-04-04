@@ -1,4 +1,5 @@
 mod item_structs;
+mod item_set_structs;
 mod mob_structs;
 mod prop_structs;
 mod spawn_table_structs;
@@ -8,6 +9,7 @@ mod spell_structs;
 mod rawmaster;
 
 use item_structs::*;
+use item_set_structs::*;
 use mob_structs::*;
 use prop_structs::*;
 use spawn_table_structs::*;
@@ -39,6 +41,7 @@ pub struct RenderableData {
 #[derive(Deserialize, Debug)]
 pub struct Raws {
     pub items: Vec<ItemData>,
+    pub item_sets: Vec<ItemSetData>,
     pub item_class_colours: HashMap<String, String>,
     pub mobs: Vec<MobData>,
     pub props: Vec<PropData>,

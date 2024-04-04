@@ -61,7 +61,7 @@ pub fn save_game(ecs : &mut World) {
             EquipmentChanged, Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport,
             Food, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, Duration, StatusEffect,
             KnownSpells, Spell, WantsToCastSpell, RestoresMana, TeachesSpell, Slow, DamageOverTime,
-            SpecialAbilities, TileSize, PendingLevelUp, SkillBonus
+            SpecialAbilities, TileSize, PendingLevelUp, SkillBonus, ItemSets, PartOfSet
         );
     }
 
@@ -117,7 +117,7 @@ pub fn load_game(ecs: &mut World) {
             EquipmentChanged, Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport,
             Food, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, Duration, StatusEffect,
             KnownSpells, Spell, WantsToCastSpell, RestoresMana, TeachesSpell, Slow, DamageOverTime,
-            SpecialAbilities, TileSize, PendingLevelUp, SkillBonus
+            SpecialAbilities, TileSize, PendingLevelUp, SkillBonus, ItemSets, PartOfSet
         );
     }
 

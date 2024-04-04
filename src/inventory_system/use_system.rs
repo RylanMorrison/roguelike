@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use super::{Map, WantsToUseItem, WantsToCastSpell, Name, AreaOfEffect, EquipmentChanged};
+use super::{Map, WantsToUseItem, WantsToCastSpell, AreaOfEffect, EquipmentChanged};
 use crate::effects::*;
 
 pub struct ItemUseSystem {}
@@ -46,13 +46,12 @@ impl<'a> System<'a> for SpellUseSystem {
         WriteExpect<'a, Map>,
         Entities<'a>,
         WriteStorage<'a, WantsToCastSpell>,
-        ReadStorage<'a, Name>,
         ReadStorage<'a, AreaOfEffect>,
         WriteStorage<'a, EquipmentChanged>
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player_entity, map, entities, mut wants_cast, names,
+        let (player_entity, map, entities, mut wants_cast,
             aoe, mut dirty) = data;
 
         for (entity, usespell) in (&entities, &wants_cast).join() {

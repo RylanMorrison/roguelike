@@ -77,6 +77,10 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Town Portal Scroll", SpawnType::Carried { by: player });
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Wooden Shield", SpawnType::Equipped { by: player });
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Leather Boots", SpawnType::Equipped { by: player });
+    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Dopelord's Gloves", SpawnType::Carried { by: player });
+    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Dopelord's Hat", SpawnType::Carried { by: player });
+    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Dopelord's Stick", SpawnType::Carried { by: player });
+
     
     player
 }

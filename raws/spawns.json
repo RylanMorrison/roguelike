@@ -204,6 +204,29 @@
         "set": "#00FF00",
         "unique": "#FF00FF"
     },
+
+    "item_sets": [
+        {
+            "name": "Dopelord's Set",
+            "total_pieces": 3,
+            "set_bonuses": [
+                {
+                    "required_pieces": 2,
+                    "skill_bonuses": {
+                        "melee": 1,
+                        "defence": 1
+                    }
+                },
+                {
+                    "required_pieces": 3,
+                    "skill_bonuses": {
+                        "melee": 2,
+                        "defence": 2
+                    }
+                }
+            ]
+        }
+    ],
     
     "items": [
         {
@@ -1431,6 +1454,97 @@
                 "strength": 2,
                 "dexterity": -5,
                 "intelligence": -2
+            }
+        },
+        {
+            "name": "Dopelord's Gloves",
+            "renderable": {
+                "glyph": "(",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 0.2,
+                "slot": "Hands"
+            },
+            "weight_lbs": 10.0,
+            "base_value": 600,
+            "initiative_penalty": 0.4,
+            "class": "set",
+            "set_name": "Dopelord's Set",
+            "vendor_category": "wearables",
+            "attribute_bonuses": {
+                "strength": 1,
+                "dexterity": -2
+            },
+            "skill_bonuses": {
+                "melee": 1,
+                "defence": -1,
+                "magic": -1
+            }
+        },
+        {
+            "name": "Dopelord's Hat",
+            "renderable": {
+                "glyph": "(",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 0.0,
+                "slot": "Head"
+            },
+            "weight_lbs": 10.0,
+            "base_value": 600,
+            "initiative_penalty": 0.4,
+            "class": "set",
+            "set_name": "Dopelord's Set",
+            "vendor_category": "wearables",
+            "attribute_bonuses": {
+                "constitution": 1,
+                "strength": 1,
+                "dexterity": -1,
+                "intelligence": -1
+            },
+            "skill_bonuses": {
+                "melee": 1,
+                "defence": -1
+            }
+        },
+        {
+            "name": "Dopelord's Stick",
+            "renderable": {
+                "glyph": "|",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Strength",
+                "base_damage": "2d8",
+                "hit_bonus": -2,
+                "slot": "Main Hand",
+                "proc_target": "Target",
+                "proc_chance": 0.6,
+                "proc_effects": {
+                    "damage_over_time": "4",
+                    "duration": "10"
+                }
+            },
+            "weight_lbs": 6.0,
+            "base_value": 1000,
+            "initiative_penalty": 0.4,
+            "class": "set",
+            "set_name": "Dopelord's Set",
+            "vendor_category": "weapons",
+            "attribute_bonuses": {
+                "strength": 2,
+                "dexterity": -2
+            },
+            "skill_bonuses": {
+                "melee": 2,
+                "defence": -1,
+                "magic": -1
             }
         }
     ],
