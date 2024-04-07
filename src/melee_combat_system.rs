@@ -139,7 +139,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
                 
                 // indicate that damage was done
                 gamelog.entries.push(format!("{} hits {}, dealing {} damage.", &name.name, &target_name.name, damage));
-                if let Some(pos) = positions.get(wants_melee.target) {
+                if positions.get(wants_melee.target).is_some() {
                     add_effect(
                         None, 
                         EffectType::Particle {
@@ -177,7 +177,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
             } else if natural_roll == 1 {
                 // critical miss
                 gamelog.entries.push(format!("{} completely misses {}!", name.name, target_name.name));
-                if let Some(pos) = positions.get(wants_melee.target) {
+                if positions.get(wants_melee.target).is_some() {
                     add_effect(
                         None, 
                         EffectType::Particle {
@@ -192,7 +192,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
             } else {
                 // miss
                 gamelog.entries.push(format!("{} evades {}'s attack.", target_name.name, name.name));
-                if let Some(pos) = positions.get(wants_melee.target) {
+                if positions.get(wants_melee.target).is_some() {
                     add_effect(
                         None, 
                         EffectType::Particle {

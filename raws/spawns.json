@@ -225,6 +225,59 @@
                     }
                 }
             ]
+        },
+        {
+            "name": "Electric Wizard Set",
+            "total_pieces": 5,
+            "set_bonuses": [
+                {
+                    "required_pieces": 2,
+                    "skill_bonuses": {
+                        "melee": -1,
+                        "defence": -1,
+                        "magic": 1
+                    }
+                },
+                {
+                    "required_pieces": 3,
+                    "skill_bonuses": {
+                        "melee": -2,
+                        "defence": -2,
+                        "magic": 2
+                    },
+                    "attribute_bonuses": {
+                        "intelligence": 1
+                    }
+                },
+                {
+                    "required_pieces": 4,
+                    "skill_bonuses": {
+                        "melee": -3,
+                        "defence": -3,
+                        "magic": 3
+                    },
+                    "attribute_bonuses": {
+                        "intelligence": 2,
+                        "strength": -1,
+                        "dexterity": -1,
+                        "constitution": -1
+                    }
+                },
+                {
+                    "required_pieces": 5,
+                    "skill_bonuses": {
+                        "melee": -5,
+                        "defence": -5,
+                        "magic": 5
+                    },
+                    "attribute_bonuses": {
+                        "intelligence": 4,
+                        "strength": -2,
+                        "dexterity": -2,
+                        "constitution": -2
+                    }
+                }
+            ]
         }
     ],
     
@@ -1468,7 +1521,7 @@
                 "slot": "Hands"
             },
             "weight_lbs": 10.0,
-            "base_value": 600,
+            "base_value": 700,
             "initiative_penalty": 0.4,
             "class": "set",
             "set_name": "Dopelord's Set",
@@ -1495,7 +1548,7 @@
                 "slot": "Head"
             },
             "weight_lbs": 10.0,
-            "base_value": 600,
+            "base_value": 700,
             "initiative_penalty": 0.4,
             "class": "set",
             "set_name": "Dopelord's Set",
@@ -1545,6 +1598,147 @@
                 "melee": 2,
                 "defence": -1,
                 "magic": -1
+            }
+        },
+        {
+            "name": "Electric Wizard's Gloves",
+            "renderable": {
+                "glyph": "(",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 0.1,
+                "slot": "Hands"
+            },
+            "weight_lbs": 10.0,
+            "base_value": 600,
+            "initiative_penalty": 0.1,
+            "class": "set",
+            "set_name": "Electric Wizard's Set",
+            "vendor_category": "wearables",
+            "attribute_bonuses": {
+                "strength": -2
+            },
+            "skill_bonuses": {
+                "melee": -2,
+                "defence": -1,
+                "magic": 2
+            }
+        },
+        {
+            "name": "Electric Wizard's Hat",
+            "renderable": {
+                "glyph": "(",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 0.1,
+                "slot": "Head"
+            },
+            "weight_lbs": 10.0,
+            "base_value": 800,
+            "initiative_penalty": 0.0,
+            "class": "set",
+            "set_name": "Electric Wizard's Set",
+            "vendor_category": "wearables",
+            "attribute_bonuses": {
+                "dexterity": -1,
+                "constitution": -1
+            },
+            "skill_bonuses": {
+                "melee": -2,
+                "defence": -2,
+                "magic": 3
+            }
+        },
+        {
+            "name": "Electric Wizard's Sandals",
+            "renderable": {
+                "glyph": "(",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 0.0,
+                "slot": "Feet"
+            },
+            "weight_lbs": 10.0,
+            "base_value": 600,
+            "initiative_penalty": 0.0,
+            "class": "set",
+            "set_name": "Electric Wizard's Set",
+            "vendor_category": "wearables",
+            "attribute_bonuses": {
+                "dexterity": 1,
+                "constitution": -1
+            },
+            "skill_bonuses": {
+                "melee": -1,
+                "defence": -2,
+                "magic": 1
+            }
+        },
+        {
+            "name": "Electric Wizard's Robe",
+            "renderable": {
+                "glyph": "(",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 1.0,
+                "slot": "Body"
+            },
+            "weight_lbs": 10.0,
+            "base_value": 1000,
+            "initiative_penalty": 0.1,
+            "class": "set",
+            "set_name": "Electric Wizard's Set",
+            "vendor_category": "wearables",
+            "attribute_bonuses": {
+                "strength": -1,
+                "dexterity": 1,
+                "constitution": -1,
+                "intelligence": 1
+            },
+            "skill_bonuses": {
+                "melee": -2,
+                "defence": -2,
+                "magic": 3
+            }
+        },
+        {
+            "name": "Electric Wizard's Staff",
+            "renderable": {
+                "glyph": "|",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "1d6",
+                "hit_bonus": -1,
+                "slot": "Two Handed"
+            },
+            "weight_lbs": 6.0,
+            "base_value": 1000,
+            "initiative_penalty": 0.2,
+            "class": "set",
+            "set_name": "Electric Wizard's Set",
+            "vendor_category": "weapons",
+            "attribute_bonuses": {
+                "strength": -1,
+                "dexterity": -2,
+                "constitution": -1,
+                "intelligence": 2
+            },
+            "skill_bonuses": {
+                "melee": -2,
+                "defence": -2,
+                "magic": 4
             }
         }
     ],

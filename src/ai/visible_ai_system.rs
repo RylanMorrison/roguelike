@@ -36,7 +36,7 @@ impl<'a> System<'a> for VisibleAI {
                 for visible_tile in viewshed.visible_tiles.iter() {
                     let idx = map.xy_idx(visible_tile.x, visible_tile.y);
                     if my_idx != idx {
-                        evaluate(idx, &map, &factions, &my_faction.name, &mut reactions);
+                        evaluate(idx, &factions, &my_faction.name, &mut reactions);
                     }
                 }
 
@@ -85,7 +85,7 @@ impl<'a> System<'a> for VisibleAI {
     }
 }
 
-fn evaluate(idx: usize, map: &Map, factions: &ReadStorage<Faction>, my_faction: &str, reactions: &mut Vec<(usize, Reaction, Entity)>) {
+fn evaluate(idx: usize, factions: &ReadStorage<Faction>, my_faction: &str, reactions: &mut Vec<(usize, Reaction, Entity)>) {
     spatial::for_each_tile_content(idx, |other_entity| {
         if let Some(faction) = factions.get(other_entity) {
             reactions.push((

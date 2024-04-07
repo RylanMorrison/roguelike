@@ -108,11 +108,10 @@ impl<'a> System<'a> for GearEffectSystem {
         }
 
         // total up carried items
-        for (item, carried, entity) in (&items, &backpacks, &entities).join() {
+        for (item, carried) in (&items, &backpacks).join() {
             if to_update.contains_key(&carried.owner) {
                 let totals = to_update.get_mut(&carried.owner).unwrap();
                 totals.weight += item.weight_lbs;
-                totals.initiative += item.initiative_penalty;
             }
         }
 
@@ -197,7 +196,6 @@ impl<'a> System<'a> for GearEffectSystem {
                         attr.constitution.base + attr.constitution.modifiers,
                         pool.level
                     );
-                    pool.hit_points.current = pool.hit_points.max;
                     pool.mana.max = mana_at_level(
                         attr.intelligence.base + attr.intelligence.modifiers,
                         pool.level

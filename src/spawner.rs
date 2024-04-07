@@ -77,11 +77,6 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Town Portal Scroll", SpawnType::Carried { by: player });
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Wooden Shield", SpawnType::Equipped { by: player });
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Leather Boots", SpawnType::Equipped { by: player });
-    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Dopelord's Gloves", SpawnType::Carried { by: player });
-    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Dopelord's Hat", SpawnType::Carried { by: player });
-    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Dopelord's Stick", SpawnType::Carried { by: player });
-
-    
     player
 }
 
@@ -107,10 +102,10 @@ pub fn spawn_region(_map: &Map, rng: &mut RandomNumberGenerator, area: &[usize],
 
     {
         // use min to avoid spawning more entites than we have room for
-        let num_spawns = i32::min(areas.len() as i32 / 2, rng.roll_dice(1, 7) + (map_depth - 1) - 3);
+        let num_spawns = i32::min(areas.len() as i32 / 3, rng.roll_dice(1, 7) + (map_depth / 2) - 3);
         if num_spawns == 0 { return; }
 
-        for _i in 0 .. num_spawns {
+        for _ in 0 .. num_spawns {
             let array_index = if areas.len() == 1 { 
                 0usize 
             } else {
@@ -125,7 +120,7 @@ pub fn spawn_region(_map: &Map, rng: &mut RandomNumberGenerator, area: &[usize],
         }
     }
 
-    // actually spawn things
+    // store where and what to spawn
     for spawn in spawn_points.iter() {
         spawn_list.push((*spawn.0, spawn.1.to_string()));
     }
@@ -169,7 +164,7 @@ pub fn spawn_town_portal(ecs: &mut World) {
         }
     }
     let portal_x = (stairs_idx as i32 % town_map.width) - 2;
-    let portal_y = stairs_idx as i32 / town_map.width;
+    let portal_y = (stairs_idx as i32 / town_map.width) + 2;
     std::mem::drop(dm);
 
     // spawn the portal

@@ -20,7 +20,6 @@ impl<'a> System<'a> for LevelUpSystem {
             mut pending_level_up, runstate) = data;
 
         // TODO make this more generic when other entities can level up
-
         if pending_level_up.count() < 1 { return; }
         if *runstate != RunState::Ticking { return; }
 

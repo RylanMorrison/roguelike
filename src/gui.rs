@@ -43,10 +43,10 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
     draw_hollow_box(ctx, 69, 0, 30, 16, box_gray(), black()); // Top-right panel
 
     ctx.set(0, 65, box_gray(), black(), to_cp437('├'));
-    ctx.set(69, 14, box_gray(), black(), to_cp437('├'));
+    ctx.set(69, 16, box_gray(), black(), to_cp437('├'));
     ctx.set(69, 0, box_gray(), black(), to_cp437('┬'));
     ctx.set(69, 65, box_gray(), black(), to_cp437('┴'));
-    ctx.set(99, 14, box_gray(), black(), to_cp437('┤'));
+    ctx.set(99, 16, box_gray(), black(), to_cp437('┤'));
     ctx.set(99, 65, box_gray(), black(), to_cp437('┤'));
 
     // map name
@@ -103,17 +103,17 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
     draw_weight(ctx, player_pools.total_weight, carry_capacity_lbs(&player_attributes.strength));
 
     // initiative penalty
-    ctx.print_color(70, 20, white(), black(),
+    ctx.print_color(70, 19, white(), black(),
         &format!("Initiative Penalty: {:.0}", player_pools.total_initiative_penalty)
     );
 
     // gold
-    ctx.print_color(70, 21, gold(), black(),
+    ctx.print_color(70, 20, gold(), black(),
         &format!("Gold: {}", player_pools.gold)
     );
 
     // equipment
-    let mut y = 24;
+    let mut y = 23;
     let equipped = ecs.read_storage::<Equipped>();
     let items = ecs.read_storage::<Item>();
     let names = ecs.read_storage::<Name>();
@@ -242,7 +242,7 @@ fn draw_skill(name: &str, skill: &Skill, y: i32, ctx: &mut Rltk) {
 
 fn draw_weight(ctx: &mut Rltk, weight: f32, capacity: f32) {
     let colour = if weight > capacity { red() } else { white() };
-    ctx.print_color(70, 19, colour, black(),
+    ctx.print_color(70, 18, colour, black(),
         &format!("{:0} lbs ({} lbs max)", weight, capacity)
     );
 }

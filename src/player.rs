@@ -73,13 +73,15 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
             
             let door = doors.get_mut(potential_target);
             if let Some(door) = door {
-                door.open = true;
-                blocks_visibility.remove(potential_target);
-                blocks_movement.remove(potential_target);
-                let glyph = renderables.get_mut(potential_target).unwrap();
-                glyph.glyph = rltk::to_cp437('/');
-                viewshed.dirty = true;
-                return Some(RunState::Ticking);
+                if !door.open {
+                    door.open = true;
+                    blocks_visibility.remove(potential_target);
+                    blocks_movement.remove(potential_target);
+                    let glyph = renderables.get_mut(potential_target).unwrap();
+                    glyph.glyph = rltk::to_cp437('/');
+                    viewshed.dirty = true;
+                    return Some(RunState::Ticking);
+                }
             }
             None
         });
