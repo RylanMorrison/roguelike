@@ -295,7 +295,8 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
     if let Some(weapon) = &item_template.weapon {
         eb = eb.with(Equippable{ slot: string_to_weapon_slot(&weapon.slot) });
         let (n_dice, die_type, bonus) = parse_dice_string(&weapon.base_damage);
-        let wpn = MeleeWeapon {
+        let wpn = Weapon {
+            range: if weapon.range == "melee" { None } else { Some(weapon.range.parse::<i32>().expect("Not a number")) },
             attribute: if weapon.attribute.as_str() == "Strength" {
                 WeaponAttribute::Strength
             } else {

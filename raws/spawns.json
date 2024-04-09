@@ -5,6 +5,7 @@
         { "name": "Kobold", "weight": 12, "min_depth": 1, "max_depth": 2 },
         { "name": "Goblin", "weight": 10, "min_depth": 3, "max_depth": 5 },
         { "name": "Orc", "weight": 1, "min_depth": 3, "max_depth": 7, "add_map_depth_to_weight": true },
+        { "name": "Orc Archer", "weight": 1, "min_depth": 4, "max_depth": 7, "add_map_depth_to_weight": true },
         { "name": "Large Spider", "weight": 2, "min_depth": 2, "max_depth": 4 },
         { "name": "Gelatinous Cube", "weight": 10, "min_depth": 2, "max_depth": 2 },
         { "name": "Ogre", "weight": 2, "min_depth": 6, "max_depth": 100 },
@@ -1181,6 +1182,27 @@
         },
 
         {
+            "name": "Shortbow",
+            "renderable": {
+                "glyph": "}",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "4",
+                "attribute": "Dexterity",
+                "base_damage": "1d6",
+                "hit_bonus": 0,
+                "slot": "Two Handed"
+            },
+            "weight_lbs": 2.0,
+            "base_value": 50,
+            "initiative_penalty": 1,
+            "vendor_category": "weapon",
+            "class": "common"
+        },
+
+        {
             "name": "Wooden Shield",
             "renderable": {
                 "glyph": "0",
@@ -1901,6 +1923,35 @@
             "loot_table": "Lesser Monster"
         },
         {
+            "name": "Orc Archer",
+            "level": 2,
+            "renderable": {
+                "glyph": "o",
+                "fg": "#FF5500",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 8,
+            "movement": "static",
+            "faction": "Horde",
+            "gold": "1d6",
+            "quips": [
+                "For the horde!",
+                "Taste my arrow!",
+                "WAAAAAAAAAGH!"
+            ],
+            "attributes": {
+                "dexterity": 12,
+                "strength": 12
+            },
+            "natural": {
+                "armour_class": 12
+            },
+            "equipped": ["Shortbow", "Iron Armour", "Leather Boots"],
+            "loot_table": "Lesser Monster"
+        },
+        {
             "name": "Large Spider",
             "level": 2,
             "renderable": {
@@ -2007,7 +2058,7 @@
             },
             "skills": {
                 "defence": 2,
-                "magic": 6
+                "magic": 4
             },
             "abilities": [
                 { "spell": "Scorching Ray", "chance": 0.4, "range": 6.0, "min_range": 2.0 }
@@ -2332,7 +2383,7 @@
             },
             "blocks_tile": true,
             "blocks_visibility": true,
-            "door_open": true
+            "door_open": false
         },
         {
             "name": "Keg",

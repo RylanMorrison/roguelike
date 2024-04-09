@@ -12,7 +12,7 @@ mod movement;
 mod attributes;
 mod slow;
 pub use targeting::*;
-use rltk::{FontCharType, RGB};
+use rltk::{FontCharType, RGB, Point};
 use crate::spatial;
 use super::AttributeBonus;
 
@@ -26,6 +26,7 @@ pub enum EffectType {
     Mana { amount: i32 },
     Bloodstain,
     Particle { glyph: FontCharType, fg: RGB, bg: RGB, lifespan: f32 },
+    ParticleProjectile { glyph: FontCharType, fg: RGB, bg: RGB, lifespan: f32, speed: f32, path: Vec<Point> },
     EntityDeath,
     ItemUse { item: Entity },
     WellFed,
@@ -97,6 +98,7 @@ fn affect_tile(ecs: &mut World, effect: &mut EffectSpawner, tile_idx: i32) {
     match &effect.effect_type {
         EffectType::Bloodstain => damage::bloodstain(ecs, tile_idx),
         EffectType::Particle{..} => particles::particle_to_tile(ecs, tile_idx, &effect),
+        EffectType::ParticleProjectile {..} => particles::projectile(ecs, tile_idx, &effect),
         _ => {
             let content = spatial::get_tile_content_clone(tile_idx as usize);
             content.iter().for_each(|entity| affect_entity(ecs, effect, *entity));

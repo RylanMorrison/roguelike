@@ -164,7 +164,7 @@ pub fn spawn_town_portal(ecs: &mut World) {
         }
     }
     let portal_x = (stairs_idx as i32 % town_map.width) - 2;
-    let portal_y = (stairs_idx as i32 / town_map.width) + 2;
+    let portal_y = stairs_idx as i32 / town_map.width;
     std::mem::drop(dm);
 
     // spawn the portal

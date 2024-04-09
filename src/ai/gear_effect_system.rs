@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::{attr_bonus, gamelog::GameLog, AttributeBonus, Attributes, EquipmentChanged, Equipped, InBackpack, Item, MeleeWeapon, 
+use crate::{attr_bonus, gamelog::GameLog, AttributeBonus, Attributes, EquipmentChanged, Equipped, InBackpack, Item, Weapon, 
     Pools, Slow, StatusEffect, Wearable, Skills, SkillBonus, player_hp_at_level, mana_at_level, carry_capacity_lbs, ItemSets, PartOfSet};
 use std::collections::HashMap;
 
@@ -34,7 +34,7 @@ impl<'a> System<'a> for GearEffectSystem {
         ReadStorage<'a, AttributeBonus>,
         ReadStorage<'a, StatusEffect>,
         ReadStorage<'a, Slow>,
-        ReadStorage<'a, MeleeWeapon>,
+        ReadStorage<'a, Weapon>,
         ReadStorage<'a, Wearable>,
         WriteStorage<'a, Skills>,
         ReadStorage<'a, SkillBonus>,

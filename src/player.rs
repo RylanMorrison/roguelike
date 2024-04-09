@@ -10,7 +10,7 @@ use super::{Position, Player, Viewshed, State, Map, RunState, Item, gamelog::Gam
     TileType, particle_system::ParticleBuilder, Pools, WantsToMelee, WantsToPickupItem,
     HungerState, HungerClock, Door, BlocksVisibility, BlocksTile, Renderable, EntityMoved,
     Consumable, Ranged, Faction, Vendor, VendorMode, KnownSpells, WantsToCastSpell,
-    Attributes, Skills, PendingLevelUp};
+    Attributes, Skills, PendingLevelUp, Equipped, Weapon, Target, WantsToShoot, Name};
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
     let mut positions = ecs.write_storage::<Position>();
@@ -182,6 +182,8 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             VirtualKeyCode::U => return try_move_player(1, -1, &mut gs.ecs), // move north-west
             VirtualKeyCode::B => return try_move_player(-1, 1, &mut gs.ecs), // move south-east
             VirtualKeyCode::N => return try_move_player(1, 1, &mut gs.ecs), // move south-west
+            VirtualKeyCode::V => return cycle_ranged_target(&mut gs.ecs),
+            VirtualKeyCode::F => return fire_on_target(&mut gs.ecs),
             VirtualKeyCode::Space => return skip_turn(&mut gs.ecs),
             VirtualKeyCode::Period => return try_transition_level(&mut gs.ecs),
             VirtualKeyCode::G => get_item(&mut gs.ecs), // pickup item
@@ -358,4 +360,116 @@ pub fn level_up(ecs: &World, source: Entity, pools: &mut Pools) {
     let player_skills = skills.get(source).unwrap();
     let mut pending_level_ups = ecs.write_storage::<PendingLevelUp>();
     pending_level_ups.insert(source, PendingLevelUp{ attributes: player_attributes.clone(), skills: player_skills.clone() }).expect("Unable to insert");
+}
+
+fn get_target_list(ecs: &mut World) -> Vec<(f32, Entity)> {
+    let mut possible_targets: Vec<(f32, Entity)> = Vec::new();
+    let viewsheds = ecs.read_storage::<Viewshed>();
+    let player_entity = ecs.fetch::<Entity>();
+    let equipped = ecs.read_storage::<Equipped>();
+    let weapons = ecs.read_storage::<Weapon>();
+    let map = ecs.fetch::<Map>();
+    let positions = ecs.read_storage::<Position>();
+    let factions = ecs.read_storage::<Faction>();
+    for (equipped, weapon) in (&equipped, &weapons).join() {
+        if equipped.owner == *player_entity && weapon.range.is_some() {
+            let range = weapon.range.unwrap();
+
+            if let Some(vs) = viewsheds.get(*player_entity) {
+                let player_pos = positions.get(*player_entity).unwrap();
+                for tile_point in vs.visible_tiles.iter() {
+                    let tile_idx = map.xy_idx(tile_point.x, tile_point.y);
+                    let distance_to_target = rltk::DistanceAlg::Pythagoras.distance2d(*tile_point, rltk::Point::new(player_pos.x, player_pos.y));
+                    if distance_to_target < range as f32 {
+                        spatial::for_each_tile_content(tile_idx, |possible_target| {
+                            if possible_target != *player_entity {
+                                if let Some(faction) = factions.get(possible_target) {
+                                    let reaction = faction_reaction(
+                                        &faction.name,
+                                        "Player",
+                                        &RAWS.lock().unwrap()
+                                    );
+                                    if reaction == Reaction::Attack {
+                                        possible_targets.push((distance_to_target, possible_target));
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        }
+    }
+    possible_targets.sort_by(|a,b| a.0.partial_cmp(&b.0).unwrap());
+    possible_targets
+}
+
+pub fn change_target(ecs: &mut World) {
+    let possible_targets = get_target_list(ecs);
+    let mut targets = ecs.write_storage::<Target>();
+    targets.clear();
+
+    if !possible_targets.is_empty() {
+        targets.insert(possible_targets[0].1, Target{}).expect("Unable to insert");
+    }
+}
+
+fn cycle_target(ecs: &mut World) {
+    let possible_targets = get_target_list(ecs);
+    let mut targets = ecs.write_storage::<Target>();
+    let entities = ecs.entities();
+    let mut current_target: Option<Entity> = None;
+
+    for (entity, _target) in (&entities, &targets).join() {
+        current_target = Some(entity);
+    }
+    targets.clear();
+
+    if let Some(current_target) = current_target {
+        if !possible_targets.len() > 1 {
+            let mut index = 0;
+            for (i, target) in possible_targets.iter().enumerate() {
+                if target.1 == current_target {
+                    index = i
+                }
+            }
+
+            if index > possible_targets.len() - 2 {
+                targets.insert(possible_targets[0].1, Target{}).expect("Unable to insert");
+            } else {
+                targets.insert(possible_targets[index+1].1, Target{}).expect("Unable to insert");
+            }
+        }
+    }
+}
+
+fn cycle_ranged_target(ecs: &mut World) -> RunState {
+    cycle_target(ecs);
+    RunState::AwaitingInput
+}
+
+fn fire_on_target(ecs: &mut World) -> RunState {
+    let targets = ecs.write_storage::<Target>();
+    let entities = ecs.entities();
+    let mut current_target: Option<Entity> = None;
+    let mut gamelog = ecs.fetch_mut::<GameLog>();
+
+    for (entity, _target) in (&entities, &targets).join() {
+        current_target = Some(entity);
+    }
+
+    if let Some(target) = current_target {
+        let player_entity = ecs.fetch::<Entity>();
+        let mut shoot_store = ecs.write_storage::<WantsToShoot>();
+        let names = ecs.read_storage::<Name>();
+        if let Some(name) = names.get(target) {
+            gamelog.entries.push(format!("You fire at {}", name.name));
+        }
+        shoot_store.insert(*player_entity, WantsToShoot{ target }).expect("Unable to insert");
+
+        RunState::Ticking
+    } else {
+        gamelog.entries.push("You don't have a target selected!".to_string());
+        RunState::AwaitingInput
+    }
 }

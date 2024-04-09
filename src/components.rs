@@ -2,7 +2,7 @@ use specs::prelude::*;
 use specs_derive::*;
 use specs::{Entity, saveload::{ConvertSaveload, Marker}, error::NoError};
 use serde::{Serialize, Deserialize};
-use rltk::RGB;
+use rltk::{RGB, Point, FontCharType};
 use super::attr_bonus;
 use std::collections::HashMap;
 
@@ -14,7 +14,7 @@ pub struct Position {
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Renderable {
-    pub glyph: rltk::FontCharType,
+    pub glyph: FontCharType,
     pub fg: RGB,
     pub bg: RGB,
     pub render_order: i32
@@ -25,7 +25,7 @@ pub struct Player {}
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Viewshed {
-    pub visible_tiles: Vec<rltk::Point>,
+    pub visible_tiles: Vec<Point>,
     pub range: i32,
     pub dirty: bool
 }
@@ -162,12 +162,12 @@ where
 #[derive(Component, Debug)]
 pub struct WantsToUseItem {
     pub item: Entity,
-    pub target: Option<rltk::Point>
+    pub target: Option<Point>
 }
 
 // WantsToUseItem wrapper
 #[derive(Serialize, Deserialize, Clone)]
-pub struct WantsToUseItemData<M>(M, Option<rltk::Point>);
+pub struct WantsToUseItemData<M>(M, Option<Point>);
 
 impl<M: Marker + Serialize> ConvertSaveload<M> for WantsToUseItem
 where
@@ -319,7 +319,8 @@ where
 pub enum WeaponAttribute { Strength, Dexterity }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
-pub struct MeleeWeapon {
+pub struct Weapon {
+    pub range: Option<i32>,
     pub attribute: WeaponAttribute,
     pub damage_n_dice: i32,
     pub damage_die_type: i32,
@@ -368,9 +369,18 @@ where
     }
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ParticleAnimation {
+    pub step_time: f32,
+    pub path: Vec<Point>,
+    pub current_step: usize,
+    pub timer: f32
+}
+
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct ParticleLifetime {
-    pub lifetime_ms: f32
+    pub lifetime_ms: f32,
+    pub animation: Option<ParticleAnimation>
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
@@ -620,14 +630,14 @@ pub struct SingleActivation {}
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct SpawnParticleLine {
-    pub glyph: rltk::FontCharType,
+    pub glyph: FontCharType,
     pub colour: RGB,
     pub lifetime_ms: f32
 }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct SpawnParticleBurst {
-    pub glyph: rltk::FontCharType,
+    pub glyph: FontCharType,
     pub colour: RGB,
     pub lifetime_ms: f32
 }
@@ -714,12 +724,12 @@ pub struct Spell {
 #[derive(Component, Debug, Clone)]
 pub struct WantsToCastSpell {
     pub spell: Entity,
-    pub target: Option<rltk::Point>
+    pub target: Option<Point>
 }
 
 // WantsToCastSpell wrapper
 #[derive(Serialize, Deserialize, Clone)]
-pub struct WantsToCastSpellData<M>(M, Option<rltk::Point>);
+pub struct WantsToCastSpellData<M>(M, Option<Point>);
 
 impl<M: Marker + Serialize> ConvertSaveload<M> for WantsToCastSpell
 where
@@ -811,4 +821,40 @@ pub struct ItemSets {
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct PartOfSet {
     pub set_name: String
+}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct Target {}
+
+#[derive(Component, Clone, Debug)]
+pub struct WantsToShoot {
+    pub target: Entity
+}
+
+// WantsToShoot wrapper
+#[derive(Serialize, Deserialize, Clone)]
+pub struct WantsToShootData<M>(M);
+
+impl<M: Marker + Serialize> ConvertSaveload<M> for WantsToShoot
+where
+    for<'de> M: Deserialize<'de>,
+{
+    type Data = WantsToShootData<M>;
+    type Error = NoError;
+
+    fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
+    where
+        F: FnMut(Entity) -> Option<M>,
+    {
+        let marker = ids(self.target).unwrap();
+        Ok(WantsToShootData(marker))
+    }
+
+    fn convert_from<F>(data: Self::Data, mut ids: F) -> Result<Self, Self::Error>
+    where
+        F: FnMut(M) -> Option<Entity>,
+    {
+        let entity = ids(data.0).unwrap();
+        Ok(WantsToShoot{target: entity})
+    }
 }

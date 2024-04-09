@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use crate::tile_glyph;
 
-use super::{Map, Position, Renderable, World, TileSize};
+use super::{Map, Position, Renderable, World, TileSize, Target};
 use rltk::{Point, Rltk, RGB};
 
 const SHOW_BOUNDARIES: bool = true;
@@ -47,6 +47,7 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
     let map = ecs.fetch::<Map>();
     let sizes = ecs.read_storage::<TileSize>();
     let entities = ecs.entities();
+    let targets = ecs.read_storage::<Target>();
 
     let mut data = (&positions, &renderables, &entities).join().collect::<Vec<_>>();
     data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
@@ -59,11 +60,11 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
                     let tile_y = cy + pos.y;
                     let idx = map.xy_idx(tile_x, tile_y);
                     if map.visible_tiles[idx] {
-                        let entity_screen_x = pos.x - min_x;
-                        let entity_screen_y = pos.y - min_y;
+                        let entity_screen_x = tile_x - min_x;
+                        let entity_screen_y = tile_y - min_y;
                         if entity_screen_x > 0 && entity_screen_x < map_width 
-                            && entity_screen_y > 0 && entity_screen_y < map_height {
-                            ctx.set(entity_screen_x, entity_screen_y, render.fg, render.bg, render.glyph);
+                        && entity_screen_y > 0 && entity_screen_y < map_height {
+                            ctx.set(entity_screen_x + 1, entity_screen_y + 1, render.fg, render.bg, render.glyph);
                         }
                     }
                 }
@@ -78,6 +79,13 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
                     ctx.set(entity_screen_x + 1, entity_screen_y + 1, render.fg, render.bg, render.glyph);
                 }
             }
+        }
+
+        if targets.get(*entity).is_some() {
+            let entity_screen_x = pos.x - min_x;
+            let entity_screen_y = pos.y - min_y;
+            ctx.set(entity_screen_x, entity_screen_y + 1, RGB::named(rltk::RED), RGB::named(rltk::YELLOW), rltk::to_cp437('['));
+            ctx.set(entity_screen_x + 2, entity_screen_y + 1, RGB::named(rltk::RED), RGB::named(rltk::YELLOW), rltk::to_cp437(']'));
         }
     }
 }

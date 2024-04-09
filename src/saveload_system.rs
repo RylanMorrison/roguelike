@@ -52,14 +52,14 @@ pub fn save_game(ecs : &mut World) {
         serialize_individually!(ecs, serializer, data, Position, Renderable, Player, Viewshed, Name,
             BlocksTile, Pools, WantsToMelee, Item, Consumable, Ranged, Damage, AreaOfEffect, 
             Confusion, Healing, InBackpack, WantsToPickupItem, WantsToUseItem, SingleActivation,
-            WantsToDropItem, SerializationHelper, Equippable, MeleeWeapon, Wearable, WantsToUnequipItem,
+            WantsToDropItem, SerializationHelper, Equippable, Weapon, Wearable, WantsToUnequipItem,
             ParticleLifetime, MagicMapping, HungerClock, BlocksVisibility, Door, EntityMoved, Quips, 
             Attributes, Skills, NaturalAttackDefence, LootTable, OtherLevelPosition, DMSerializationHelper, 
             LightSource, Initiative, MyTurn, Faction, WantsToApproach, WantsToFlee, MoveMode, Chasing,
             EquipmentChanged, Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport,
             Food, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, Duration, StatusEffect,
             KnownSpells, Spell, WantsToCastSpell, RestoresMana, TeachesSpell, Slow, DamageOverTime,
-            SpecialAbilities, TileSize, PendingLevelUp, SkillBonus, ItemSets, PartOfSet
+            SpecialAbilities, TileSize, PendingLevelUp, SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot
         );
     }
 
@@ -108,14 +108,14 @@ pub fn load_game(ecs: &mut World) {
         deserialize_individually!(ecs, de, d, Position, Renderable, Player, Viewshed, Name,
             BlocksTile, Pools, WantsToMelee, Item, Consumable, Ranged, Damage, AreaOfEffect, 
             Confusion, Healing, InBackpack, WantsToPickupItem, WantsToUseItem, SingleActivation,
-            WantsToDropItem, SerializationHelper, Equippable, MeleeWeapon, Wearable, WantsToUnequipItem,
+            WantsToDropItem, SerializationHelper, Equippable, Weapon, Wearable, WantsToUnequipItem,
             ParticleLifetime, MagicMapping, HungerClock, BlocksVisibility, Door, EntityMoved, Quips, 
             Attributes, Skills, NaturalAttackDefence, LootTable, OtherLevelPosition, DMSerializationHelper, 
             LightSource, Initiative, MyTurn, Faction, WantsToApproach, WantsToFlee, MoveMode, Chasing,
             EquipmentChanged, Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport,
             Food, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, Duration, StatusEffect,
             KnownSpells, Spell, WantsToCastSpell, RestoresMana, TeachesSpell, Slow, DamageOverTime,
-            SpecialAbilities, TileSize, PendingLevelUp, SkillBonus, ItemSets, PartOfSet
+            SpecialAbilities, TileSize, PendingLevelUp, SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot
         );
     }
 

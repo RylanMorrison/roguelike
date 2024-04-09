@@ -1,17 +1,17 @@
 use specs::prelude::*;
-use super::{Attributes, Skills, WantsToMelee, Name, gamelog::GameLog, Position,
+use super::{Attributes, Skills, WantsToShoot, Name, gamelog::GameLog, Position,
     HungerClock, HungerState, Pools, Equipped, Weapon, AreaOfEffect,
     EquipmentSlot, WeaponAttribute, Wearable, NaturalAttackDefence, Map};
 use super::effects::{add_effect, aoe_tiles, EffectType, Targets};
-use rltk::RandomNumberGenerator;
+use rltk::{RGB, Point, RandomNumberGenerator};
 
-pub struct MeleeCombatSystem {}
+pub struct RangedCombatSystem {}
 
-impl<'a> System<'a> for MeleeCombatSystem {
+impl<'a> System<'a> for RangedCombatSystem {
     type SystemData = (
         Entities<'a>,
         WriteExpect<'a, GameLog>,
-        WriteStorage<'a, WantsToMelee>,
+        WriteStorage<'a, WantsToShoot>,
         ReadStorage<'a, Name>,
         ReadStorage<'a, Attributes>,
         ReadStorage<'a, Skills>,
@@ -28,18 +28,38 @@ impl<'a> System<'a> for MeleeCombatSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (entities, mut gamelog, mut wants_melees, names, attributes, 
+        let (entities, mut gamelog, mut wants_shoots, names, attributes, 
             skills, pools, positions, hunger_clock, mut rng, 
             equipped_items, melee_weapons, wearables, natural,
             area_of_effect, map) = data;
 
-        for (entity, wants_melee, name, attacker_attributes, attacker_skills, attacker_pools) in (&entities, &wants_melees, &names, &attributes, &skills, &pools).join() {
-            let target_pools = pools.get(wants_melee.target).unwrap();
-            let target_attributes = attributes.get(wants_melee.target).unwrap();
-            let target_skills = skills.get(wants_melee.target).unwrap();
+        for (entity, wants_shoot, name, attacker_attributes, attacker_skills, attacker_pools) in (&entities, &wants_shoots, &names, &attributes, &skills, &pools).join() {
+            let target_pools = pools.get(wants_shoot.target).unwrap();
+            let target_attributes = attributes.get(wants_shoot.target).unwrap();
+            let target_skills = skills.get(wants_shoot.target).unwrap();
             if attacker_pools.hit_points.current <= 0 || target_pools.hit_points.current <= 0 {
                 continue; // skip if attacker or defender are dead
             }
+
+            // Fire projectile effect
+            let attacker_pos = positions.get(entity).unwrap();
+            let defender_pos = positions.get(wants_shoot.target).unwrap();
+            add_effect(
+                None, 
+                EffectType::ParticleProjectile{ 
+                    glyph: rltk::to_cp437('*'),
+                    fg: RGB::named(rltk::CYAN), 
+                    bg: RGB::named(rltk::BLACK), 
+                    lifespan: 300.0, 
+                    speed: 50.0, 
+                    path: rltk::line2d(
+                        rltk::LineAlg::Bresenham, 
+                        Point::new(attacker_pos.x, attacker_pos.y), 
+                        Point::new(defender_pos.x, defender_pos.y)
+                    )
+                 }, 
+                Targets::Tile{ tile_idx : map.xy_idx(attacker_pos.x, attacker_pos.y) as i32 }
+            );
 
             // default to unarmed
             let mut weapon_info = Weapon {
@@ -78,7 +98,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
             }
 
             // calculate attacker hit roll
-            let target_name = names.get(wants_melee.target).unwrap();
+            let target_name = names.get(wants_shoot.target).unwrap();
             let natural_roll = rng.roll_dice(1, 20);
             let attribute_hit_bonus = if weapon_info.attribute == WeaponAttribute::Strength {
                 attacker_attributes.strength.bonus
@@ -97,7 +117,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
                 + weapon_hit_bonus + status_hit_bonus;
             
             // natural defence ability of defender
-            let base_armour_class = match natural.get(wants_melee.target) {
+            let base_armour_class = match natural.get(wants_shoot.target) {
                 None => 10,
                 Some(nature) => nature.armour_class.unwrap_or(10)
             };
@@ -105,7 +125,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
             // defence from any armour defender is wearing
             let mut armour_item_bonus = 0.0;
             for (wielded, armour) in (&equipped_items, &wearables).join() {
-                if wielded.owner == wants_melee.target {
+                if wielded.owner == wants_shoot.target {
                     armour_item_bonus += armour.armour_class;
                 }
             }
@@ -135,12 +155,12 @@ impl<'a> System<'a> for MeleeCombatSystem {
                 add_effect(
                     Some(entity),
                     EffectType::Damage{ amount: damage },
-                    Targets::Single{ target: wants_melee.target }
+                    Targets::Single{ target: wants_shoot.target }
                 );
                 
                 // indicate that damage was done
                 gamelog.entries.push(format!("{} hits {}, dealing {} damage.", &name.name, &target_name.name, damage));
-                if positions.get(wants_melee.target).is_some() {
+                if positions.get(wants_shoot.target).is_some() {
                     add_effect(
                         None, 
                         EffectType::Particle {
@@ -149,20 +169,20 @@ impl<'a> System<'a> for MeleeCombatSystem {
                             bg: rltk::RGB::named(rltk::BLACK),
                             lifespan: 200.0
                         },
-                        Targets::Single{ target: wants_melee.target }
+                        Targets::Single{ target: wants_shoot.target }
                     );
                 }
 
                 // proc effects
                 if let Some(chance) = &weapon_info.proc_chance {
                     if rng.roll_dice(1, 100) <= (chance * 100.0) as i32 {
-                        let mut effect_target = Targets::Single { target: wants_melee.target };
+                        let mut effect_target = Targets::Single { target: wants_shoot.target };
                         if weapon_info.proc_target.unwrap() == "Self" {
                             effect_target = Targets::Single{ target: entity }
                         } else if weapon_entity.is_some() {
                             // check for area effects
                             if let Some(aoe) = area_of_effect.get(weapon_entity.unwrap()) {
-                                if let Some(pos) = positions.get(wants_melee.target) {
+                                if let Some(pos) = positions.get(wants_shoot.target) {
                                     // TODO remove effect creator from target list
                                     effect_target = Targets::Tiles{ tiles: aoe_tiles(&*map, rltk::Point{ x: pos.x, y: pos.y }, aoe.radius) }
                                 }
@@ -178,7 +198,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
             } else if natural_roll == 1 {
                 // critical miss
                 gamelog.entries.push(format!("{} completely misses {}!", name.name, target_name.name));
-                if positions.get(wants_melee.target).is_some() {
+                if positions.get(wants_shoot.target).is_some() {
                     add_effect(
                         None, 
                         EffectType::Particle {
@@ -187,13 +207,13 @@ impl<'a> System<'a> for MeleeCombatSystem {
                             bg: rltk::RGB::named(rltk::BLACK),
                             lifespan: 200.0
                         },
-                        Targets::Single{ target: wants_melee.target }
+                        Targets::Single{ target: wants_shoot.target }
                     );
                 }
             } else {
                 // miss
                 gamelog.entries.push(format!("{} evades {}'s attack.", target_name.name, name.name));
-                if positions.get(wants_melee.target).is_some() {
+                if positions.get(wants_shoot.target).is_some() {
                     add_effect(
                         None, 
                         EffectType::Particle {
@@ -202,11 +222,11 @@ impl<'a> System<'a> for MeleeCombatSystem {
                             bg: rltk::RGB::named(rltk::BLACK),
                             lifespan: 200.0
                         },
-                        Targets::Single{ target: wants_melee.target }
+                        Targets::Single{ target: wants_shoot.target }
                     );
                 }
             }
         }
-        wants_melees.clear();
+        wants_shoots.clear();
     }
 }
