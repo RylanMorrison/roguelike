@@ -138,7 +138,7 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
     if let Some(damage) = ecs.read_storage::<Damage>().get(entity) {
         let mut amount = damage::calculate_damage(&mut rng, damage);
         if ecs.read_storage::<Spell>().get(entity).is_some() {
-            // add attribute and skill bonuses
+            // add attribute and skill bonuses for spells
             // TODO put this in its own system
             if let Some(source) = creator {
                 let attributes = ecs.read_storage::<Attributes>();
@@ -194,7 +194,19 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
             },
             targets.clone()
         );
-        did_something = true;
+        // effect is only evaluated later and won't actually occur if the target isn't the player and player_only is true
+        // so did_something could be set to true when teleportation hasn't occurred
+        // make sure the player is the one being teleported for do_something to be set to true
+        // TODO refactor this when other entities can teleport!
+        let player_entity = ecs.fetch::<Entity>();
+        match *targets {
+            Targets::Single{target} => {
+                if target == *player_entity {
+                    did_something = true;
+                }
+            }
+            _ => {}
+        }
     }
 
     // attribute modifiers
