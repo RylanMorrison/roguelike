@@ -7,6 +7,7 @@ mod targeting;
 mod particles;
 mod triggers;
 mod hunger;
+mod stun;
 mod confusion;
 mod movement;
 mod attributes;
@@ -20,6 +21,7 @@ lazy_static! {
     pub static ref EFFECT_QUEUE: Mutex<VecDeque<EffectSpawner>> = Mutex::new(VecDeque::new());
 }
 
+#[derive(Debug)]
 pub enum EffectType {
     Damage { amount: i32 },
     Healing { amount: i32 },
@@ -36,10 +38,11 @@ pub enum EffectType {
     AttributeEffect { bonus: AttributeBonus, name: String, duration: i32 },
     SpellUse { spell: Entity },
     Slow { initiative_penalty: f32, duration: i32 },
-    DamageOverTime { damage: i32, duration: i32 }
+    DamageOverTime { damage: i32, duration: i32 },
+    Stun { duration: i32 }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Targets {
     Single { target: Entity },
     TargetList { targets: Vec<Entity> },
@@ -47,6 +50,7 @@ pub enum Targets {
     Tiles { tiles: Vec<i32> }
 }
 
+#[derive(Debug)]
 pub struct EffectSpawner {
     pub creator: Option<Entity>,
     pub effect_type: EffectType,
@@ -126,7 +130,8 @@ fn affect_entity(ecs: &mut World, effect: &mut EffectSpawner, target: Entity) {
             }
         }
         EffectType::WellFed => hunger::well_fed(ecs, target),
-        EffectType::Confusion{..} => confusion::add_confusion(ecs, effect, target),
+        EffectType::Confusion{..} => confusion::apply_confusion(ecs, effect, target),
+        EffectType::Stun{..} => stun::apply_stun(ecs, effect, target),
         EffectType::TeleportTo{..} => movement::apply_teleport(ecs, effect, target),
         EffectType::AttributeEffect{..} => attributes::apply_effect(ecs, effect, target),
         EffectType::Slow{..} => slow::apply_slow(ecs, effect, target),

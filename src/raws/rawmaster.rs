@@ -234,6 +234,10 @@ macro_rules! apply_effects {
                     $eb = $eb.with(Confusion{});
                     $eb = $eb.with(Duration{ turns: effect.1.parse::<i32>().unwrap() });
                 }
+                "stun" => {
+                    $eb = $eb.with(Stun{});
+                    $eb = $eb.with(Duration{ turns: effect.1.parse::<i32>().unwrap() });
+                }
                 "magic_mapping" => $eb = $eb.with(MagicMapping{}),
                 "town_portal" => $eb = $eb.with(TownPortal{}),
                 "food" => $eb = $eb.with(Food{}),

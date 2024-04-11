@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::{MyTurn, Faction, Position, Map, WantsToMelee, TileSize, Rect};
+use crate::{MyTurn, Faction, Position, Map, WantsToMelee, TileSize, Rect, Confusion};
 use crate::raws::{Reaction, faction_reaction, RAWS};
 use crate::spatial;
 
@@ -14,12 +14,14 @@ impl<'a> System<'a> for AdjacentAI {
         WriteStorage<'a, WantsToMelee>,
         Entities<'a>,
         ReadExpect<'a, Entity>,
-        ReadStorage<'a, TileSize>
+        ReadStorage<'a, TileSize>,
+        ReadStorage<'a, Confusion>
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (mut turns, factions, positions, map, 
-            mut want_melee, entities, player, tile_sizes) = data;
+            mut want_melee, entities, player,
+            tile_sizes, confused) = data;
 
         let mut turn_done: Vec<Entity> = Vec::new();
         for (entity, _turn, my_faction, pos) in (&entities, &turns, &factions, &positions).join() {
@@ -53,7 +55,7 @@ impl<'a> System<'a> for AdjacentAI {
                 
                 let mut done = false;
                 for reaction in reactions.iter() {
-                    if let Reaction::Attack = reaction.1 {
+                    if reaction.1 == Reaction::Attack || confused.get(entity).is_some() {
                         want_melee.insert(entity, WantsToMelee{ target: reaction.0 }).expect("Error inserting melee");
                         done = true;
                     }

@@ -19,11 +19,6 @@
         { "name": "Potion of Constitution", "weight": 2, "min_depth": 4, "max_depth": 100 },
         { "name": "Potion of Intelligence", "weight": 2, "min_depth": 4, "max_depth": 100 },
         { "name": "Mana Potion", "weight": 7, "min_depth": 1, "max_depth": 100 },
-        { "name": "Fireball Scroll", "weight": 2, "min_depth": 2, "max_depth": 100},
-        { "name": "Confusion Scroll", "weight": 2, "min_depth": 2, "max_depth": 100},
-        { "name": "Magic Missile Scroll", "weight": 4, "min_depth": 2, "max_depth": 100 },
-        { "name": "Magic Mapping Scroll", "weight": 2, "min_depth": 2, "max_depth": 100 },
-        { "name": "Town Portal Scroll", "weight": 2, "min_depth": 4, "max_depth": 100 },
         { "name": "Rod of Fireballs", "weight": 1, "min_depth": 7, "max_depth": 100 },
         { "name": "Food Ration", "weight": 5, "min_depth": 3, "max_depth": 100 },
 
@@ -71,7 +66,6 @@
             "name": "Lesser Monster",
             "drops": [
                 { "name": "Food Ration", "weight": 5 },
-                { "name": "Magic Missile Scroll", "weight": 5 },
                 { "name": "Health Potion", "weight": 2 },
                 { "name": "Wooden Shield", "weight": 1 },
                 { "name": "Leather Helmet", "weight": 3 },
@@ -82,8 +76,6 @@
         {
             "name": "Greater Monster",
             "drops": [
-                { "name": "Confusion Scroll", "weight": 8 },
-                { "name": "Fireball Scroll", "weight": 8 },
                 { "name": "Greater Health Potion", "weight": 8 },
                 { "name": "Magic Mapping Scroll", "weight": 6 },
                 { "name": "Tower Shield", "weight": 4 },
@@ -132,16 +124,65 @@
     "spells": [
         {
             "name": "Zap",
-            "mana_cost": 1,
+            "mana_cost": 2,
             "effects": {
                 "ranged": "6",
                 "damage": "1d10",
-                "particle_line" : "▓;#00FFFF;400.0"
+                "stun": "2",
+                "particle_line": "▓;#f7ff02;400.0"
+            }
+        },
+        {
+            "name": "Lightning Bolt",
+            "mana_cost": 6,
+            "effects": {
+                "ranged": "6",
+                "damage": "1d20",
+                "stun": "4",
+                "particle_line": "▓;#f7ff02;400.0"
+            }
+        },
+        {
+            "name": "Frost Bolt",
+            "mana_cost": 6,
+            "effects": {
+                "ranged": "6",
+                "damage": "3d5",
+                "slow": "10",
+                "duration": "6",
+                "particle_line" : "*;#00FFFF;400.0"
+            }
+        },
+        {
+            "name": "Magic Missile",
+            "mana_cost": 2,
+            "effects": {
+                "ranged": "8",
+                "damage": "3d6",
+                "particle_line": "*;#ff0623;200.0"
+            }
+        },
+        {
+            "name": "Confusion",
+            "mana_cost": 4,
+            "effects": {
+                "ranged": "6",
+                "confusion": "4"
+            }
+        },
+        {
+            "name": "Mass Confusion",
+            "mana_cost": 10,
+            "effects": {
+                "ranged": "6",
+                "confusion": "4",
+                "area_of_effect": "3",
+                "particle": "?;#fc1cfc;200.0"
             }
         },
         {
             "name": "Ray of Sickness",
-            "mana_cost": 3,
+            "mana_cost": 6,
             "effects": {
                 "ranged": "6",
                 "damage": "2d5",
@@ -152,7 +193,7 @@
         },
         {
             "name": "Fireball",
-            "mana_cost": 5,
+            "mana_cost": 10,
             "effects": {
                 "ranged": "6",
                 "damage": "2d10",
@@ -164,7 +205,7 @@
         },
         {
             "name": "Web",
-            "mana_cost": 2,
+            "mana_cost": 4,
             "effects": {
                 "ranged": "6",
                 "slow": "10",
@@ -175,7 +216,7 @@
         },
         {
             "name": "Scorching Ray",
-            "mana_cost": 2,
+            "mana_cost": 6,
             "effects": {
                 "ranged": "6",
                 "particle_line" : "▓;#FFA500;400.0",
@@ -186,7 +227,7 @@
         },
         {
             "name": "Drain Soul",
-            "mana_cost": 3,
+            "mana_cost": 10,
             "effects": {
                 "ranged": "6",
                 "particle_line" : "☼;#c045f1;400.0",
@@ -446,64 +487,7 @@
             "vendor_category": "alchemy",
             "class": "common"
         },
-
-        {
-            "name": "Magic Missile Scroll",
-            "renderable": {
-                "glyph": "?",
-                "bg": "#000000",
-                "order": 2
-            },
-            "consumable": {
-                "effects": {
-                    "ranged": "6",
-                    "damage": "3d6",
-                    "particle_line": "*;#00FFFF;200.0"
-                }
-            },
-            "weight_lbs": 0.5,
-            "base_value": 60,
-            "vendor_category": "scrolls",
-            "class": "common"
-        },
-        {
-            "name": "Fireball Scroll",
-            "renderable": {
-                "glyph": "?",
-                "bg": "#000000",
-                "order": 2
-            },
-            "consumable": {
-                "effects": {
-                    "ranged": "6",
-                    "damage": "2d10",
-                    "area_of_effect": "3",
-                    "particle": "*;#FFA500;200.0"
-                }
-            },
-            "weight_lbs": 0.5,
-            "base_value": 100,
-            "vendor_category": "scrolls",
-            "class": "common"
-        },
-        {
-            "name": "Confusion Scroll",
-            "renderable": {
-                "glyph": "?",
-                "bg": "#000000",
-                "order": 2
-            },
-            "consumable": {
-                "effects": {
-                    "ranged": "6",
-                    "confusion": "4"
-                }
-            },
-            "weight_lbs": 0.5,
-            "base_value": 100,
-            "vendor_category": "scrolls",
-            "class": "common"
-        },
+        
         {
             "name": "Magic Mapping Scroll",
             "renderable": {
@@ -548,6 +532,40 @@
             "consumable": {
                 "effects": {
                     "teach_spell": "Zap"
+                }
+            },
+            "weight_lbs": 0.5,
+            "base_value": 150,
+            "vendor_category": "scrolls",
+            "class": "common"
+        },
+        {
+            "name": "Beginner Arcane Magic",
+            "renderable": {
+                "glyph": "&",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "teach_spell": "Magic Missile"
+                }
+            },
+            "weight_lbs": 0.5,
+            "base_value": 150,
+            "vendor_category": "scrolls",
+            "class": "common"
+        },
+        {
+            "name": "Beginner Chaos Magic",
+            "renderable": {
+                "glyph": "&",
+                "bg": "#000000",
+                "order": 2
+            },
+            "consumable": {
+                "effects": {
+                    "teach_spell": "Confusion"
                 }
             },
             "weight_lbs": 0.5,

@@ -599,6 +599,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<PartOfSet>();
     gs.ecs.register::<Target>();
     gs.ecs.register::<WantsToShoot>();
+    gs.ecs.register::<Stun>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     raws::load_raws();

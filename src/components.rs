@@ -858,3 +858,6 @@ where
         Ok(WantsToShoot{target: entity})
     }
 }
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Stun {}

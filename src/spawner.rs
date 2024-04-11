@@ -77,6 +77,11 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Town Portal Scroll", SpawnType::Carried { by: player });
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Wooden Shield", SpawnType::Equipped { by: player });
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Leather Boots", SpawnType::Equipped { by: player });
+    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Beginner Arcane Magic", SpawnType::Carried { by: player });
+    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Beginner Lightning Magic", SpawnType::Carried { by: player });
+    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Beginner Chaos Magic", SpawnType::Carried { by: player });
+
+
     player
 }
 

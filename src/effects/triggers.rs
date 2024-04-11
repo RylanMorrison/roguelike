@@ -1,7 +1,9 @@
 use rltk::{RandomNumberGenerator, RGB};
 use specs::prelude::*;
 use super::*;
-use crate::{gamelog::GameLog, raws, Attributes, Confusion, Consumable, Damage, DamageOverTime, Duration, Food, Healing, KnownSpell, KnownSpells, MagicMapping, Map, Name, Pools, RestoresMana, RunState, SingleActivation, Skills, Slow, SpawnParticleBurst, SpawnParticleLine, Spell, TeachesSpell, TeleportTo, TownPortal};
+use crate::{gamelog::GameLog, raws, Attributes, Confusion, Consumable, Damage, DamageOverTime, Duration, Food, Healing, KnownSpell, KnownSpells,
+    MagicMapping, Map, Name, Pools, RestoresMana, RunState, SingleActivation, Skills, Slow, SpawnParticleBurst, SpawnParticleLine, Spell,
+    TeachesSpell, TeleportTo, TownPortal, Stun};
 
 pub fn item_trigger(ecs: &mut World, creator: Option<Entity>, item: Entity, targets: &Targets) {
     // check charges
@@ -41,7 +43,9 @@ pub fn spell_trigger(ecs: &mut World, creator: Option<Entity>, spell_entity: Ent
         if let Some(caster) = creator {
             if let Some(pool) = pools.get_mut(caster) {
                 if spell.mana_cost <= pool.mana.current {
-                    pool.mana.current -= spell.mana_cost;
+                    if !pool.god_mode {
+                        pool.mana.current -= spell.mana_cost;
+                    }
                     did_something = true;
                 }
             }
@@ -171,6 +175,13 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
         if let Some(duration) = ecs.read_storage::<Duration>().get(entity) {
             add_effect(creator, EffectType::Confusion{ duration: duration.turns }, targets.clone());
             did_something = true;
+        }
+    }
+
+    // stun
+    if ecs.read_storage::<Stun>().get(entity).is_some() {
+        if let Some(duration) = ecs.read_storage::<Duration>().get(entity) {
+            add_effect(creator, EffectType::Stun{ duration: duration.turns }, targets.clone());
         }
     }
 

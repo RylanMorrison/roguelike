@@ -56,7 +56,7 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
     ctx.set(x_pos, 0, box_gray(), black(), to_cp437('┤'));
     ctx.set(x_pos + name_length as i32, 0, box_gray(), black(), to_cp437('├'));
     ctx.print_color(x_pos+1, 0, white(), black(), &map.name);
-    std::mem::drop(map);
+    // std::mem::drop(map);
 
     // stats
     let player_entity = ecs.fetch::<Entity>();
@@ -201,7 +201,8 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
     }
 
     let mouse_pos = ctx.mouse_pos();
-    ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::MAGENTA));
+    ctx.set_bg(mouse_pos.0, mouse_pos.1, magenta());
+    ctx.print_color(mouse_pos.0, mouse_pos.1, white(), black(), &format!("{}/{} {}", mouse_pos.0, mouse_pos.1, map.xy_idx(mouse_pos.0, mouse_pos.1) as i32));
     draw_tooltips(ecs, ctx);
 }
 
@@ -373,7 +374,7 @@ fn draw_tooltips(ecs: &World, ctx : &mut Rltk) {
     }
 }
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Copy, Clone, Debug)]
 pub enum ItemMenuResult { Cancel, NoResponse, Selected }
 
 pub fn show_inventory(gs : &mut State, ctx : &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
@@ -495,8 +496,8 @@ pub fn ranged_target(gs : &mut State, ctx : &mut Rltk, range : i32) -> (ItemMenu
     // Draw mouse cursor
     let mouse_pos = ctx.mouse_pos();
     let mut mouse_map_pos = mouse_pos;
-    mouse_map_pos.0 += min_x;
-    mouse_map_pos.1 += min_y;
+    mouse_map_pos.0 += min_x - 1;
+    mouse_map_pos.1 += min_y - 1;
     let mut valid_target = false;
     for idx in available_cells.iter() {
         if idx.x == mouse_map_pos.0 && idx.y == mouse_map_pos.1 { 

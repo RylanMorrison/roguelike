@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::{Confusion, MyTurn, RunState, StatusEffect};
+use crate::{Stun, MyTurn, RunState, StatusEffect, Confusion};
 use std::collections::HashSet;
 use crate::effects::{EffectType, Targets, add_effect};
 
@@ -8,6 +8,7 @@ pub struct TurnStatusSystem {}
 impl<'a> System<'a> for TurnStatusSystem {
     type SystemData = (
         WriteStorage<'a, MyTurn>,
+        ReadStorage<'a, Stun>,
         ReadStorage<'a, Confusion>,
         Entities<'a>,
         ReadExpect<'a, RunState>,
@@ -15,8 +16,8 @@ impl<'a> System<'a> for TurnStatusSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut turns, confusion, entities, runstate, 
-            statuses) = data;
+        let (mut turns, stunned, confused, 
+            entities, runstate,  statuses) = data;
 
         if *runstate != RunState::Ticking { return; }
 
@@ -28,7 +29,7 @@ impl<'a> System<'a> for TurnStatusSystem {
         let mut skip_turn: Vec<Entity> = Vec::new();
         for (effect_entity, status_effect) in (&entities, &statuses).join() {
             if entity_turns.contains(&status_effect.target) {
-                if confusion.get(effect_entity).is_some() {
+                if stunned.get(effect_entity).is_some() {
                     add_effect(
                         None,
                         EffectType::Particle{
@@ -40,6 +41,18 @@ impl<'a> System<'a> for TurnStatusSystem {
                         Targets::Single{ target: status_effect.target }
                     );
                     skip_turn.push(status_effect.target);
+                } else if confused.get(effect_entity).is_some() {
+                    // stun should take precedence over confusion
+                    add_effect(
+                        None,
+                        EffectType::Particle{
+                            glyph: rltk::to_cp437('?'),
+                            fg: rltk::RGB::named(rltk::MAGENTA),
+                            bg: rltk::RGB::named(rltk::BLACK),
+                            lifespan: 200.0
+                        },
+                        Targets::Single{ target: status_effect.target }
+                    );
                 }
             }
         }

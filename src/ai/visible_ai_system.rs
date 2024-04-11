@@ -1,6 +1,7 @@
 use rltk::RandomNumberGenerator;
 use specs::prelude::*;
-use crate::{raws, spatial, Chasing, Faction, Map, MyTurn, Name, Position, SpecialAbilities, Spell, Viewshed, WantsToApproach, WantsToCastSpell, WantsToFlee};
+use crate::{raws, spatial, Chasing, Faction, Map, MyTurn, Name, Position, SpecialAbilities, Spell, Viewshed,
+    WantsToApproach, WantsToCastSpell, WantsToFlee, Confusion};
 use crate::raws::{Reaction, faction_reaction, RAWS};
 
 pub struct VisibleAI {}
@@ -21,13 +22,14 @@ impl<'a> System<'a> for VisibleAI {
         WriteExpect<'a, RandomNumberGenerator>,
         WriteStorage<'a, WantsToCastSpell>,
         ReadStorage<'a, Name>,
-        ReadStorage<'a, Spell>
+        ReadStorage<'a, Spell>,
+        ReadStorage<'a, Confusion>
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (turns, factions, positions, map, mut want_approach, mut want_flee,
             entities, player, viewsheds, mut chasing, special_abilities,
-            mut rng, mut wants_cast, names, spells) = data;
+            mut rng, mut wants_cast, names, spells, confused) = data;
 
         for (entity, _turn, my_faction, pos, viewshed) in (&entities, &turns, &factions, &positions, &viewsheds).join() {
             if entity != *player {
@@ -42,7 +44,11 @@ impl<'a> System<'a> for VisibleAI {
 
                 let mut done = false;
                 let mut flee: Vec<usize> = Vec::new();
-                for reaction in reactions.iter() {
+                for reaction in reactions.iter_mut() {
+                    if confused.get(entity).is_some() {
+                        // confused entities attack everything
+                        reaction.1 = Reaction::Attack;
+                    }
                     match reaction.1 {
                         Reaction::Attack => {
                             if let Some(abilities) = special_abilities.get(entity) {
