@@ -1,24 +1,26 @@
 use specs::prelude::*;
-use super::{Name, InBackpack, GameLog, WantsToUseItem, Equippable, Equipped, EquipmentChanged, EquipmentSlot};
+use super::{Name, InBackpack, WantsToUseItem, Equippable, Equipped, EquipmentChanged, EquipmentSlot, Item};
+use crate::gamelog;
+use crate::raws;
 
 pub struct ItemEquipSystem {}
 
 impl<'a> System<'a> for ItemEquipSystem {
     type SystemData = (
         ReadExpect<'a, Entity>,
-        WriteExpect<'a, GameLog>,
         Entities<'a>,
         WriteStorage<'a, WantsToUseItem>,
         ReadStorage<'a, Name>,
         ReadStorage<'a, Equippable>,
         WriteStorage<'a, Equipped>,
         WriteStorage<'a, InBackpack>,
-        WriteStorage<'a, EquipmentChanged>
+        WriteStorage<'a, EquipmentChanged>,
+        ReadStorage<'a, Item>
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player_entity, mut gamelog, entities, mut wants_use, names, equippable, 
-            mut equipped, mut backpack, mut dirty) = data;
+        let (player_entity, entities, mut wants_use, names, equippable, 
+            mut equipped, mut backpack, mut dirty, items) = data;
 
         let mut remove_use: Vec<Entity> = Vec::new();
         for (target, useitem) in (&entities, &wants_use).join() {
@@ -44,11 +46,16 @@ impl<'a> System<'a> for ItemEquipSystem {
                         }
                     }
                 }
-                for item in to_unequip.iter() {
-                    equipped.remove(*item);
-                    backpack.insert(*item, InBackpack{ owner: target }).expect("Unable to insert backpack entry");
+                for item_entity in to_unequip.iter() {
+                    equipped.remove(*item_entity);
+                    backpack.insert(*item_entity, InBackpack{ owner: target }).expect("Unable to insert backpack entry");
                     if target == *player_entity {
-                        gamelog.entries.push(format!("You unequip {}.", &names.get(*item).unwrap().name));
+                        if let Some(item) = items.get(*item_entity) {
+                            gamelog::Logger::new()
+                                .append("You unequip")
+                                .item_name(item, &names.get(*item_entity).unwrap().name)
+                                .log();
+                        }
                     }
                 }
 
@@ -56,7 +63,12 @@ impl<'a> System<'a> for ItemEquipSystem {
                 equipped.insert(useitem.item, Equipped{ owner: target, slot: target_slot }).expect("Unable to insert equipped component");
                 backpack.remove(useitem.item);
                 if target == *player_entity {
-                    gamelog.entries.push(format!("You equip {}.", names.get(useitem.item).unwrap().name));
+                    if let Some(item) = items.get(useitem.item) {
+                        gamelog::Logger::new()
+                            .append("You equip")
+                            .item_name(item, &names.get(useitem.item).unwrap().name)
+                            .log();
+                    }
                 }
 
                 remove_use.push(target);

@@ -1,4 +1,4 @@
-use super::{gamelog::GameLog, WantsToPickupItem, Position, Name, InBackpack, EquipmentChanged, WantsToDropItem,
+use super::{WantsToPickupItem, Position, Name, InBackpack, EquipmentChanged, WantsToDropItem, Item,
     WantsToUnequipItem, Map, WantsToUseItem, AreaOfEffect, Equippable, Equipped, EquipmentSlot, WantsToCastSpell};
 
 mod collection_system;

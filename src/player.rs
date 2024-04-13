@@ -1,12 +1,12 @@
-use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode};
+use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
 use std::cmp::{max, min};
 
-use crate::{spatial, InBackpack, WantsToUseItem};
+use crate::{spatial, gamelog, InBackpack, WantsToUseItem};
 use crate::raws::{faction_reaction, find_spell_entity, Reaction, RAWS};
 use crate::effects::{add_effect, EffectType, Targets};
 
-use super::{Position, Player, Viewshed, State, Map, RunState, Item, gamelog::GameLog, 
+use super::{Position, Player, Viewshed, State, Map, RunState, Item, 
     TileType, particle_system::ParticleBuilder, Pools, WantsToMelee, WantsToPickupItem,
     HungerState, HungerClock, Door, BlocksVisibility, BlocksTile, Renderable, EntityMoved,
     Consumable, Ranged, Faction, Vendor, VendorMode, KnownSpells, WantsToCastSpell,
@@ -122,7 +122,6 @@ fn get_item(ecs: &mut World) {
     let entities = ecs.entities();
     let items = ecs.read_storage::<Item>();
     let positions = ecs.read_storage::<Position>();
-    let mut gamelog = ecs.fetch_mut::<GameLog>();
 
     let mut target_item: Option<Entity> = None;
     for (item_entity, _item, position) in (&entities, &items, &positions).join() {
@@ -131,7 +130,7 @@ fn get_item(ecs: &mut World) {
         }
     }
     match target_item {
-        None => gamelog.entries.push("There is nothing here to pick up.".to_string()),
+        None => gamelog::Logger::new().append("There is nothing here to pick up.").log(),
         Some(item) => {
             let mut pickup = ecs.write_storage::<WantsToPickupItem>();
             pickup.insert(*player_entity, WantsToPickupItem { collected_by: *player_entity, item: item }).expect("Unable to insert want to pickup");
@@ -246,8 +245,11 @@ fn use_spell_hotkey(gs: &mut State, key: i32) -> RunState {
                 return RunState::Ticking;
             }
         } else {
-            let mut gamelog = gs.ecs.fetch_mut::<GameLog>();
-            gamelog.entries.push(format!("You don't have enough mana to cast {}!", player_spells[key as usize].name));
+            gamelog::Logger::new()
+                .append("You don't have enough mana to cast")
+                .spell_name(&player_spells[key as usize].name)
+                .append("!")
+                .log();
         }
     }
     RunState::Ticking
@@ -262,8 +264,7 @@ pub fn try_transition_level(ecs: &mut World) -> RunState {
         TileType::DownStairs => RunState::NextLevel,
         TileType::UpStairs => RunState::PreviousLevel,
         _ => {
-            let mut gamelog = ecs.fetch_mut::<GameLog>();
-            gamelog.entries.push("There is nowhere to go from here.".to_string());
+            gamelog::Logger::new().append("There is nowhere to go from here.").log();
             RunState::Ticking
         }
     }
@@ -334,9 +335,13 @@ pub fn skip_turn(ecs: &mut World) -> RunState {
 }
 
 pub fn level_up(ecs: &World, source: Entity, pools: &mut Pools) {
-    let mut gamelog = ecs.fetch_mut::<GameLog>();
-
-    gamelog.entries.push(format!("You are now level {}", pools.level + 1));
+    gamelog::Logger::new()
+        .append("You are now level")
+        .colour(RGB::named(rltk::GOLD))
+        .append(pools.level + 1)
+        .reset_colour()
+        .append("!")
+        .log();
 
     let player_pos = ecs.fetch::<rltk::Point>();
     let map = ecs.fetch::<Map>();
@@ -452,7 +457,6 @@ fn fire_on_target(ecs: &mut World) -> RunState {
     let targets = ecs.write_storage::<Target>();
     let entities = ecs.entities();
     let mut current_target: Option<Entity> = None;
-    let mut gamelog = ecs.fetch_mut::<GameLog>();
 
     for (entity, _target) in (&entities, &targets).join() {
         current_target = Some(entity);
@@ -463,13 +467,13 @@ fn fire_on_target(ecs: &mut World) -> RunState {
         let mut shoot_store = ecs.write_storage::<WantsToShoot>();
         let names = ecs.read_storage::<Name>();
         if let Some(name) = names.get(target) {
-            gamelog.entries.push(format!("You fire at {}", name.name));
+            gamelog::Logger::new().append("You fire at").character_name(&name.name).log();
         }
         shoot_store.insert(*player_entity, WantsToShoot{ target }).expect("Unable to insert");
 
         RunState::Ticking
     } else {
-        gamelog.entries.push("You don't have a target selected!".to_string());
+        gamelog::Logger::new().append("You don't have a target selected!").log();
         RunState::AwaitingInput
     }
 }

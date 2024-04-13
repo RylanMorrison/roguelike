@@ -1,12 +1,11 @@
 use specs::prelude::*;
-use crate::{gamelog::GameLog, Quips, Name, MyTurn, Viewshed};
+use crate::{gamelog, Quips, Name, MyTurn, Viewshed};
 use rltk::{RandomNumberGenerator, Point};
 
 pub struct QuipSystem {}
 
 impl<'a> System<'a> for QuipSystem {
     type SystemData = (
-        WriteExpect<'a, GameLog>,
         WriteStorage<'a, Quips>,
         ReadStorage<'a, Name>,
         ReadStorage<'a, MyTurn>,
@@ -16,7 +15,7 @@ impl<'a> System<'a> for QuipSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut gamelog, mut quips, names, turns, player_pos, viewsheds, mut rng) = data;
+        let (mut quips, names, turns, player_pos, viewsheds, mut rng) = data;
 
         for (quip, name, viewshed, _turn) in (&mut quips, &names, &viewsheds, &turns).join() {
             if !quip.available.is_empty() && viewshed.visible_tiles.contains(&player_pos) && rng.roll_dice(1, 6) == 1 {
@@ -25,7 +24,11 @@ impl<'a> System<'a> for QuipSystem {
                 } else {
                     (rng.roll_dice(1, quip.available.len() as i32)-1) as usize
                 };
-                gamelog.entries.push(format!("{} says \"{}\"", name.name, quip.available[quip_index]));
+                gamelog::Logger::new()
+                    .character_name(&name.name)
+                    .append("says")
+                    .speech(&quip.available[quip_index])
+                    .log();
                 quip.available.remove(quip_index);
             }
         }

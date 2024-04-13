@@ -5,7 +5,7 @@ use super::components::*;
 use std::fs::File;
 use std::path::Path;
 use std::fs;
-use crate::spatial;
+use crate::{gamelog, spatial};
 
 macro_rules! serialize_individually {
     ($ecs:expr, $ser:expr, $data:expr, $( $type:ty),*) => {
@@ -29,6 +29,8 @@ pub fn save_game(_ecs : &mut World) {
 #[cfg(not(target_arch = "wasm32"))]
 pub fn save_game(ecs : &mut World) {
     // Create helper
+
+    use crate::gamelog;
     let mapcopy = ecs.get_mut::<super::map::Map>().unwrap().clone();
     let dungeon_master = ecs.get_mut::<super::map::MasterDungeonMap>().unwrap().clone();
     let savehelper = ecs
@@ -38,7 +40,11 @@ pub fn save_game(ecs : &mut World) {
         .build();
     let dm_savehelper = ecs
         .create_entity()
-        .with(DMSerializationHelper{ map: dungeon_master })
+        .with(DMSerializationHelper{
+            map: dungeon_master,
+            log: gamelog::clone_log(),
+            events: gamelog::clone_events()
+        })
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 
@@ -139,6 +145,8 @@ pub fn load_game(ecs: &mut World) {
             let mut dungeonmaster = ecs.write_resource::<super::map::MasterDungeonMap>();
             *dungeonmaster = h.map.clone();
             dm_deleteme = Some(e);
+            gamelog::restore_log(&mut h.log.clone());
+            gamelog::load_events(h.events.clone());
         }
         for (e,_p,pos) in (&entities, &player, &position).join() {
             let mut ppos = ecs.write_resource::<rltk::Point>();

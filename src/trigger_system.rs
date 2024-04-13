@@ -1,6 +1,7 @@
 use specs::prelude::*;
-use super::{EntityMoved, Position, EntryTrigger, Map, Name, gamelog::GameLog};
+use super::{EntityMoved, Position, EntryTrigger, Map, Name};
 use super::effects::*;
+use crate::gamelog;
 
 pub struct TriggerSystem {}
 
@@ -11,13 +12,12 @@ impl<'a> System<'a> for TriggerSystem {
         ReadStorage<'a, Position>,
         ReadStorage<'a, EntryTrigger>,
         ReadStorage<'a, Name>,
-        Entities<'a>,
-        WriteExpect<'a, GameLog>
+        Entities<'a>
     );
 
     fn run(&mut self, data : Self::SystemData) {
         let (map, mut entity_moved, position, entry_trigger, names, 
-            entities, mut gamelog) = data;
+            entities) = data;
 
         // Iterate the entities that moved and their final position
         for (entity, mut _entity_moved, pos) in (&entities, &mut entity_moved, &position).join() {
@@ -31,7 +31,7 @@ impl<'a> System<'a> for TriggerSystem {
                             // We triggered it
                             let name = names.get(e);
                             if let Some(name) = name {
-                                gamelog.entries.push(format!("{} triggers!", &name.name));
+                                gamelog::Logger::new().append(format!("{} triggers!", &name.name)).log();
                             }
 
                             add_effect(

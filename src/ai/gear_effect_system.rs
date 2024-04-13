@@ -1,7 +1,8 @@
 use specs::prelude::*;
-use crate::{attr_bonus, gamelog::GameLog, AttributeBonus, Attributes, EquipmentChanged, Equipped, InBackpack, Item, Weapon, 
+use crate::{attr_bonus, gamelog, AttributeBonus, Attributes, EquipmentChanged, Equipped, InBackpack, Item, Weapon, 
     Pools, Slow, StatusEffect, Wearable, Skills, SkillBonus, player_hp_at_level, mana_at_level, carry_capacity_lbs, ItemSets, PartOfSet};
 use std::collections::HashMap;
+use rltk::RGB;
 
 #[derive(Debug)]
 struct ItemUpdate {
@@ -30,7 +31,6 @@ impl<'a> System<'a> for GearEffectSystem {
         WriteStorage<'a, Pools>,
         WriteStorage<'a, Attributes>,
         ReadExpect<'a, Entity>,
-        WriteExpect<'a, GameLog>,
         ReadStorage<'a, AttributeBonus>,
         ReadStorage<'a, StatusEffect>,
         ReadStorage<'a, Slow>,
@@ -44,9 +44,9 @@ impl<'a> System<'a> for GearEffectSystem {
 
     fn run(&mut self, data: Self::SystemData) {
         let (mut equip_dirty, entities, items, backpacks, wielded,
-            mut pools, mut attributes, player, mut gamelog, 
-            attribute_bonuses, statuses, slowed, weapons, wearables,
-            mut skills, skill_bonuses, item_sets, set_pieces) = data;
+            mut pools, mut attributes, player, attribute_bonuses, 
+            statuses, slowed, weapons, wearables, mut skills, 
+            skill_bonuses, item_sets, set_pieces) = data;
 
         if equip_dirty.is_empty() { return; }
 
@@ -205,7 +205,7 @@ impl<'a> System<'a> for GearEffectSystem {
                         // overburdened
                         pool.total_initiative_penalty += 4.0;
                         if *entity == *player {
-                            gamelog.entries.push("You are overburdened!".to_string());
+                            gamelog::Logger::new().colour(RGB::named(rltk::ORANGE)).append("You are overburdened!").log();
                         }
                     }
                 }

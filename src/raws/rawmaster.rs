@@ -728,7 +728,7 @@ fn parse_particle_line(token_string: &str) -> SpawnParticleLine {
     let tokens: Vec<_> = token_string.split(';').collect();
     SpawnParticleLine{
         glyph: rltk::to_cp437(tokens[0].chars().next().unwrap()),
-        colour: RGB::from_hex(tokens[1]).expect("Bad RGB"),
+        colour: RGB::from_hex(tokens[1]).expect("Invalid RGB"),
         lifetime_ms: tokens[2].parse::<f32>().unwrap()
     }
 }

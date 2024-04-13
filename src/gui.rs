@@ -1,8 +1,8 @@
-use rltk::{to_cp437, Point, Rltk, VirtualKeyCode, RGB};
+use rltk::{to_cp437, Point, Rltk, VirtualKeyCode, RGB, TextBlock};
 use specs::prelude::*;
-use crate::{camera, carry_capacity_lbs, player_xp_for_level, raws, PendingLevelUp};
+use crate::{camera, carry_capacity_lbs, gamelog, player_xp_for_level, raws, PendingLevelUp};
 
-use super::{Pools, gamelog::GameLog, Map, Name, Position, State, InBackpack,
+use super::{Pools, Map, Name, Position, State, InBackpack,
     Viewshed, RunState, Equipped, HungerClock, HungerState, Attribute, Attributes,
     Consumable, Item, Vendor, VendorMode, StatusEffect, Duration, KnownSpells,
     Skill, Skills};
@@ -191,18 +191,13 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
         }
     }
 
-    // game log
-    let log = ecs.fetch::<GameLog>();
-    let mut y = 66;
-    for s in log.entries.iter().rev() {
-        // TODO: log colours
-        if y < 79 { ctx.print(2, y, s); }
-        y += 1;
-    }
+    let mut block = TextBlock::new(1, 66, 98, 13);
+    block.print(&gamelog::log_display()).expect("Unable to print log");
+    block.render(&mut rltk::BACKEND_INTERNAL.lock().consoles[0].console);
 
-    let mouse_pos = ctx.mouse_pos();
-    ctx.set_bg(mouse_pos.0, mouse_pos.1, magenta());
-    ctx.print_color(mouse_pos.0, mouse_pos.1, white(), black(), &format!("{}/{} {}", mouse_pos.0, mouse_pos.1, map.xy_idx(mouse_pos.0, mouse_pos.1) as i32));
+    // let mouse_pos = ctx.mouse_pos();
+    // ctx.set_bg(mouse_pos.0, mouse_pos.1, magenta());
+    // ctx.print_color(mouse_pos.0, mouse_pos.1, white(), black(), &format!("{}/{} {}", mouse_pos.0, mouse_pos.1, map.xy_idx(mouse_pos.0, mouse_pos.1) as i32));
     draw_tooltips(ecs, ctx);
 }
 
@@ -642,12 +637,15 @@ pub enum GameOverResult {
 }
 
 pub fn game_over(ctx: &mut Rltk) -> GameOverResult {
-    ctx.draw_box_double(24, 13, 52, 10, yellow(), black());
+    ctx.draw_box_double(24, 13, 52, 12, yellow(), black());
     ctx.print_color_centered(15, yellow(), black(), "Your journey has ended!");
-    ctx.print_color_centered(17, white(), black(), "One day, we'll tell you all about how you did.");
-    ctx.print_color_centered(18, white(), black(), "That day, sadly, is not in this chapter..");
 
-    ctx.print_color_centered(20, magenta(), black(), "Press any key to return to the menu.");
+    ctx.print_color_centered(17, white(), black(), &format!("You lived for {} turns.", gamelog::get_event_count("Turn")));
+    ctx.print_color_centered(18, red(), black(), &format!("You took {} total damage.", gamelog::get_event_count("Damage Taken")));
+    ctx.print_color_centered(19, red(), black(), &format!("You dealt {} total damage.", gamelog::get_event_count("Damage Dealt")));
+    ctx.print_color_centered(20, yellow(), black(), &format!("You killed {} enemies.", gamelog::get_event_count("Kill")));
+
+    ctx.print_color_centered(22, magenta(), black(), "Press any key to return to the menu.");
 
     match ctx.key {
         None => GameOverResult::NoSelection,

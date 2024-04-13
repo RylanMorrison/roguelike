@@ -3,6 +3,8 @@ use specs_derive::*;
 use specs::{Entity, saveload::{ConvertSaveload, Marker}, error::NoError};
 use serde::{Serialize, Deserialize};
 use rltk::{RGB, Point, FontCharType};
+use crate::gamelog::LogFragment;
+
 use super::attr_bonus;
 use std::collections::HashMap;
 
@@ -262,7 +264,9 @@ pub struct SerializationHelper {
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct DMSerializationHelper {
-    pub map: super::map::MasterDungeonMap
+    pub map: super::map::MasterDungeonMap,
+    pub log: Vec<Vec<LogFragment>>,
+    pub events: HashMap<String, i32>
 }
 
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize, Debug)]

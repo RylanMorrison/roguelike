@@ -1,28 +1,33 @@
 use rltk::{RandomNumberGenerator, RGB};
 use specs::prelude::*;
 use super::*;
-use crate::{gamelog::GameLog, raws, Attributes, Confusion, Consumable, Damage, DamageOverTime, Duration, Food, Healing, KnownSpell, KnownSpells,
+use crate::{gamelog, raws, Attributes, Confusion, Consumable, Damage, DamageOverTime, Duration, Food, Healing, KnownSpell, KnownSpells,
     MagicMapping, Map, Name, Pools, RestoresMana, RunState, SingleActivation, Skills, Slow, SpawnParticleBurst, SpawnParticleLine, Spell,
-    TeachesSpell, TeleportTo, TownPortal, Stun};
+    TeachesSpell, TeleportTo, TownPortal, Stun, Item};
 
-pub fn item_trigger(ecs: &mut World, creator: Option<Entity>, item: Entity, targets: &Targets) {
+pub fn item_trigger(ecs: &mut World, creator: Option<Entity>, item_entity: Entity, targets: &Targets) {
     // check charges
-    if let Some(consumable) = ecs.write_storage::<Consumable>().get_mut(item) {
+    if let Some(consumable) = ecs.write_storage::<Consumable>().get_mut(item_entity) {
         if consumable.charges < 1 {
-            let mut gamelog = ecs.fetch_mut::<GameLog>();
-            gamelog.entries.push(format!("{} is out of charges.", ecs.read_storage::<Name>().get(item).unwrap().name));
+            if let Some(item) = ecs.read_storage::<Item>().get(item_entity) {
+                let names = ecs.read_storage::<Name>();
+                gamelog::Logger::new()
+                    .item_name(&item, &names.get(item_entity).unwrap().name)
+                    .append("is out of charges.")
+                    .log();
+            }
             return;
         }
     }
     
-    let did_something = event_trigger(ecs, creator, item, targets);
+    let did_something = event_trigger(ecs, creator, item_entity, targets);
 
     // delete consumables after use
     if did_something {
-        if let Some(consumable) = ecs.write_storage::<Consumable>().get_mut(item) {
+        if let Some(consumable) = ecs.write_storage::<Consumable>().get_mut(item_entity) {
             consumable.charges -= 1;
             if consumable.max_charges == 1 {
-                ecs.entities().delete(item).expect("Delete failed");
+                ecs.entities().delete(item_entity).expect("Delete failed");
             }
         }
     }
@@ -58,9 +63,10 @@ pub fn spell_trigger(ecs: &mut World, creator: Option<Entity>, spell_entity: Ent
 
 fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targets: &Targets) -> bool {
     let mut did_something = false;
-    let mut gamelog = ecs.fetch_mut::<GameLog>();
     let mut rng = ecs.write_resource::<RandomNumberGenerator>();
     let names = ecs.read_storage::<Name>();
+    let items = ecs.read_storage::<Item>();
+    let spells = ecs.read_storage::<Spell>();
 
     // single particle
     if let Some(particle) = ecs.read_storage::<SpawnParticleBurst>().get(entity) {
@@ -101,14 +107,17 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
     // food
     if ecs.read_storage::<Food>().get(entity).is_some() {
         add_effect(creator, EffectType::WellFed, targets.clone());
-        gamelog.entries.push(format!("You eat the {}.", names.get(entity).unwrap().name));
+        gamelog::Logger::new()
+            .append("You eat the")
+            .item_name(&items.get(entity).unwrap(), &names.get(entity).unwrap().name)
+            .log();
         did_something = true;
     }
 
     // magic mapper
     if ecs.read_storage::<MagicMapping>().get(entity).is_some() {
         let mut runstate = ecs.fetch_mut::<RunState>();
-        gamelog.entries.push("The entire map is revealed!".to_string());
+        gamelog::Logger::new().append("The entire map is revealed!").log();
         *runstate = RunState::MagicMapReveal{ row: 0 };
         did_something = true;
     }
@@ -117,9 +126,9 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
     if ecs.read_storage::<TownPortal>().get(entity).is_some() {
         let map = ecs.fetch::<Map>();
         if map.depth == 0 {
-            gamelog.entries.push("You are already in town, the scroll has no effect.".to_string());
+            gamelog::Logger::new().append("You are already in town, the scroll has no effect.").log();
         } else {
-            gamelog.entries.push("You are teleported back to town.".to_string());
+            gamelog::Logger::new().append("You are teleported back to town.").log();
             let mut runstate = ecs.fetch_mut::<RunState>();
             *runstate = RunState::TownPortal;
             did_something = true;
@@ -141,7 +150,7 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
     // damage
     if let Some(damage) = ecs.read_storage::<Damage>().get(entity) {
         let mut amount = damage::calculate_damage(&mut rng, damage);
-        if ecs.read_storage::<Spell>().get(entity).is_some() {
+        if spells.get(entity).is_some() {
             // add attribute and skill bonuses for spells
             // TODO put this in its own system
             if let Some(source) = creator {
@@ -156,7 +165,34 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
             }
         }
         add_effect(creator, EffectType::Damage{ amount }, targets.clone());
-        gamelog.entries.push(format!("{} deals {} damage with {}", names.get(creator.unwrap()).unwrap().name, amount, names.get(entity).unwrap().name));
+        let items = ecs.read_storage::<Item>();
+        
+        // TODO clean this up
+        if let Some(item) = items.get(entity) {
+            gamelog::Logger::new()
+                .character_name(&names.get(creator.unwrap()).unwrap().name)
+                .append("deals")
+                .damage(amount)
+                .append("damage with")
+                .item_name(item, &names.get(entity).unwrap().name)
+                .log();
+        } else if spells.get(entity).is_some() {
+            gamelog::Logger::new()
+                .character_name(&names.get(creator.unwrap()).unwrap().name)
+                .append("deals")
+                .damage(amount)
+                .append("damage with")
+                .spell_name(&names.get(entity).unwrap().name)
+                .log();
+        } else {
+            gamelog::Logger::new()
+                .character_name(&names.get(creator.unwrap()).unwrap().name)
+                .append("deals")
+                .damage(amount)
+                .append("damage with")
+                .append(&names.get(entity).unwrap().name)
+                .log();
+        }
         did_something = true;
     }
 
@@ -165,7 +201,10 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
         if let Some(duration) = ecs.read_storage::<Duration>().get(entity) {
             // TODO: damage over time damage should be a dice roll?
             add_effect(creator, EffectType::DamageOverTime{ damage: damage.damage, duration: duration.turns }, targets.clone());
-            gamelog.entries.push(format!("Damage over time deals {}", damage.damage));
+            gamelog::Logger::new()
+                .append("Damage over time deals")
+                .damage(damage.damage)
+                .log();
             did_something = true;
         }
     }
@@ -249,10 +288,16 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
                     known.spells.iter().for_each(|s| if s.name == teacher.spell { already_known = true });
                     if !already_known {
                         known.spells.push(KnownSpell{ name: teacher.spell.clone(), mana_cost: spell.mana_cost });
-                        gamelog.entries.push(format!("You now know how to cast {}.", teacher.spell));
+                        gamelog::Logger::new()
+                            .append("You now know how to cast")
+                            .spell_name(&teacher.spell)
+                            .log();
                         did_something = true;
                     } else {
-                        gamelog.entries.push(format!("You already know how to cast {}.", teacher.spell));
+                        gamelog::Logger::new()
+                            .append("You already know how to cast")
+                            .spell_name(&teacher.spell)
+                            .log();
                     }
                 }
             }

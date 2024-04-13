@@ -1,23 +1,25 @@
 use specs::prelude::*;
-use super::{GameLog, WantsToDropItem, Name, Position, InBackpack, EquipmentChanged};
+use super::{WantsToDropItem, Name, Position, InBackpack, EquipmentChanged, Item};
+use crate::gamelog;
+use crate::raws;
 
 pub struct ItemDropSystem {}
 
 impl<'a> System<'a> for ItemDropSystem {
     type SystemData = (
         ReadExpect<'a, Entity>,
-        WriteExpect<'a, GameLog>,
         Entities<'a>,
         WriteStorage<'a, WantsToDropItem>,
         ReadStorage<'a, Name>,
         WriteStorage<'a, Position>,
         WriteStorage<'a, InBackpack>,
-        WriteStorage<'a, EquipmentChanged>
+        WriteStorage<'a, EquipmentChanged>,
+        ReadStorage<'a, Item>
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player_entity, mut gamelog, entities, mut wants_drop, 
-            names, mut positions, mut backpack, mut dirty) = data;
+        let (player_entity, entities, mut wants_drop, 
+            names, mut positions, mut backpack, mut dirty, items) = data;
 
         for (entity, to_drop) in (&entities, &wants_drop).join() {
             let mut dropped_pos: Position = Position{x:0, y:0};
@@ -31,7 +33,12 @@ impl<'a> System<'a> for ItemDropSystem {
             dirty.insert(entity, EquipmentChanged{}).expect("Unable to insert");
 
             if entity == *player_entity {
-                gamelog.entries.push(format!("You drop the {}.", names.get(to_drop.item).unwrap().name));
+                if let Some(item) = items.get(to_drop.item) {
+                    gamelog::Logger::new()
+                        .append("You drop the")
+                        .item_name(item, &names.get(to_drop.item).unwrap().name)
+                        .log();
+                }
             }
         }
         wants_drop.clear();

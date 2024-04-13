@@ -1,16 +1,16 @@
 use specs::prelude::*;
-use super::{Attributes, Skills, WantsToShoot, Name, gamelog::GameLog, Position,
+use super::{Attributes, Skills, WantsToShoot, Name, Position,
     HungerClock, HungerState, Pools, Equipped, Weapon, AreaOfEffect,
     EquipmentSlot, WeaponAttribute, Wearable, NaturalAttackDefence, Map};
 use super::effects::{add_effect, aoe_tiles, EffectType, Targets};
 use rltk::{RGB, Point, RandomNumberGenerator};
+use crate::gamelog;
 
 pub struct RangedCombatSystem {}
 
 impl<'a> System<'a> for RangedCombatSystem {
     type SystemData = (
         Entities<'a>,
-        WriteExpect<'a, GameLog>,
         WriteStorage<'a, WantsToShoot>,
         ReadStorage<'a, Name>,
         ReadStorage<'a, Attributes>,
@@ -28,7 +28,7 @@ impl<'a> System<'a> for RangedCombatSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (entities, mut gamelog, mut wants_shoots, names, attributes, 
+        let (entities, mut wants_shoots, names, attributes, 
             skills, pools, positions, hunger_clock, mut rng, 
             equipped_items, melee_weapons, wearables, natural,
             area_of_effect, map) = data;
@@ -159,7 +159,15 @@ impl<'a> System<'a> for RangedCombatSystem {
                 );
                 
                 // indicate that damage was done
-                gamelog.entries.push(format!("{} hits {}, dealing {} damage.", &name.name, &target_name.name, damage));
+                gamelog::Logger::new()
+                    .character_name(&name.name)
+                    .append("hits")
+                    .character_name(&target_name.name)
+                    .append("dealing")
+                    .damage(damage)
+                    .append("damage.")
+                    .log();
+
                 if positions.get(wants_shoot.target).is_some() {
                     add_effect(
                         None, 
@@ -197,7 +205,13 @@ impl<'a> System<'a> for RangedCombatSystem {
                 }
             } else if natural_roll == 1 {
                 // critical miss
-                gamelog.entries.push(format!("{} completely misses {}!", name.name, target_name.name));
+                gamelog::Logger::new()
+                    .character_name(&name.name)
+                    .append("completely misses")
+                    .character_name(&target_name.name)
+                    .append("!")
+                    .log();
+
                 if positions.get(wants_shoot.target).is_some() {
                     add_effect(
                         None, 
@@ -212,7 +226,12 @@ impl<'a> System<'a> for RangedCombatSystem {
                 }
             } else {
                 // miss
-                gamelog.entries.push(format!("{} evades {}'s attack.", target_name.name, name.name));
+                gamelog::Logger::new()
+                    .character_name(&target_name.name)
+                    .append("evades attack from")
+                    .character_name(&name.name)
+                    .log();
+
                 if positions.get(wants_shoot.target).is_some() {
                     add_effect(
                         None, 

@@ -3,9 +3,10 @@
         { "name": "Wolf", "weight": 13, "min_depth": 1, "max_depth": 2 },
         { "name": "Bandit", "weight": 10, "min_depth": 1, "max_depth": 2 },
         { "name": "Kobold", "weight": 12, "min_depth": 1, "max_depth": 2 },
-        { "name": "Goblin", "weight": 10, "min_depth": 3, "max_depth": 5 },
-        { "name": "Orc", "weight": 1, "min_depth": 3, "max_depth": 7, "add_map_depth_to_weight": true },
-        { "name": "Orc Archer", "weight": 1, "min_depth": 4, "max_depth": 7, "add_map_depth_to_weight": true },
+        { "name": "Goblin Warrior", "weight": 10, "min_depth": 3, "max_depth": 5 },
+        { "name": "Goblin Archer", "weight": 10, "min_depth": 3, "max_depth": 5 },
+        { "name": "Orc Warrior", "weight": 1, "min_depth": 3, "max_depth": 7, "add_map_depth_to_weight": true },
+        { "name": "Orc Archer", "weight": 1, "min_depth": 3, "max_depth": 7, "add_map_depth_to_weight": true },
         { "name": "Large Spider", "weight": 2, "min_depth": 2, "max_depth": 4 },
         { "name": "Gelatinous Cube", "weight": 10, "min_depth": 2, "max_depth": 2 },
         { "name": "Ogre", "weight": 2, "min_depth": 6, "max_depth": 100 },
@@ -1215,6 +1216,26 @@
             },
             "weight_lbs": 2.0,
             "base_value": 50,
+            "initiative_penalty": 0.5,
+            "vendor_category": "weapon",
+            "class": "common"
+        },
+        {
+            "name": "Longbow",
+            "renderable": {
+                "glyph": "}",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "6",
+                "attribute": "Dexterity",
+                "base_damage": "1d8",
+                "hit_bonus": 0,
+                "slot": "Two Handed"
+            },
+            "weight_lbs": 4.0,
+            "base_value": 200,
             "initiative_penalty": 1,
             "vendor_category": "weapon",
             "class": "common"
@@ -1884,7 +1905,7 @@
             }
         },
         {
-            "name": "Goblin",
+            "name": "Goblin Warrior",
             "renderable": {
                 "glyph": "g",
                 "fg": "#FF0000",
@@ -1897,7 +1918,7 @@
             "faction": "Horde",
             "gold": "1d6",
             "attributes": {
-                "strength": 8,
+                "strength": 10,
                 "dexterity": 8,
                 "constitution": 7
             },
@@ -1910,7 +1931,29 @@
             "loot_table": "Lesser Monster"
         },
         {
-            "name": "Orc",
+            "name": "Goblin Archer",
+            "level": 2,
+            "renderable": {
+                "glyph": "g",
+                "fg": "#FF5500",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 8,
+            "movement": "static",
+            "faction": "Horde",
+            "gold": "1d8",
+            "attributes": {
+                "strength": 8,
+                "dexterity": 10,
+                "constitution": 7
+            },
+            "equipped": ["Shortbow", "Leather Armour", "Leather Boots", "Leather Helmet"],
+            "loot_table": "Lesser Monster"
+        },
+        {
+            "name": "Orc Warrior",
             "level": 2,
             "renderable": {
                 "glyph": "o",
@@ -1953,20 +1996,21 @@
             "vision_range": 8,
             "movement": "static",
             "faction": "Horde",
-            "gold": "1d6",
+            "gold": "1d8",
             "quips": [
                 "For the horde!",
-                "Taste my arrow!",
                 "WAAAAAAAAAGH!"
             ],
             "attributes": {
-                "dexterity": 12,
-                "strength": 12
+                "dexterity": 12
+            },
+            "skills": {
+                "defence": 2
             },
             "natural": {
                 "armour_class": 12
             },
-            "equipped": ["Shortbow", "Iron Armour", "Leather Boots"],
+            "equipped": ["Longbow", "Leather Gloves", "Iron Armour", "Leather Boots"],
             "loot_table": "Lesser Monster"
         },
         {

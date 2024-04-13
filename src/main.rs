@@ -1,6 +1,6 @@
 extern crate serde;
 use gui::LevelUpMenuResult;
-use rltk::{GameState, Rltk, Point};
+use rltk::{GameState, Rltk, Point, RGB};
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 use std::collections::HashMap;
@@ -158,6 +158,14 @@ impl State {
         } else {
             map::thaw_level_entities(&mut self.ecs);
         }
+
+        gamelog::clear_log();
+        gamelog::Logger::new()
+            .append("Welcome to")
+            .colour(RGB::named(rltk::CYAN))
+            .append("Taverns of Stoner Doom")
+            .log();
+        gamelog::clear_events();
     }
 
     fn change_level(&mut self, offset: i32) {
@@ -167,8 +175,7 @@ impl State {
         let current_depth = self.ecs.fetch::<Map>().depth;
         self.generate_world_map(current_depth + offset, offset);
 
-        let mut gamelog = self.ecs.fetch_mut::<gamelog::GameLog>();
-        gamelog.entries.push("You change floor.".to_string());
+        gamelog::Logger::new().append("You change floor.").log();
     }
 
     pub fn game_over_cleanup(&mut self) {
@@ -242,6 +249,9 @@ impl GameState for State {
             }
             RunState::AwaitingInput => {
                 newrunstate = player_input(self, ctx);
+                if newrunstate != RunState::AwaitingInput {
+                    gamelog::record_event("Turn", 1)
+                }
             }
             RunState::Ticking => {
                 let mut should_change_target = false;
@@ -617,8 +627,6 @@ fn main() -> rltk::BError {
     raws::spawn_all_spells(&mut gs.ecs);
     gs.ecs.insert(ItemSets{ item_sets: HashMap::new() });
     raws::store_all_item_sets(&mut gs.ecs);
-    gs.ecs.insert(gamelog::GameLog{ entries : vec!["Welcome to Taverns of Stoner Doom".to_string()] });
-
     gs.generate_world_map(0, 0);
     rltk::main_loop(context, gs)
 }

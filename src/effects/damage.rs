@@ -2,7 +2,7 @@ use rltk::RandomNumberGenerator;
 use specs::{prelude::*, saveload::SimpleMarker, saveload::MarkedBuilder};
 use super::*;
 use crate::components::{Pools, StatusEffect, DamageOverTime, Duration, Name};
-use crate::{Map, Player, player_xp_for_level};
+use crate::{gamelog, player_xp_for_level, Map, Player};
 use crate::{spatial, Damage, SerializeMe, RunState};
 use crate::raws;
 use crate::player;
@@ -14,12 +14,16 @@ pub fn calculate_damage(rng: &mut RandomNumberGenerator, damage: &Damage) -> i32
 
 pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
     let mut pools = ecs.write_storage::<Pools>();
+    let player_entity = ecs.fetch::<Entity>();
     if let Some(pool) = pools.get_mut(target) {
         if !pool.god_mode {
-            if let Some(creator) = damage.creator {
-                if creator == target { return; } // prevent self damage
-            }
             if let EffectType::Damage{amount} = damage.effect_type {
+                if let Some(creator) = damage.creator {
+                    if creator == target { return; } // prevent self damage
+                    if creator == *player_entity {
+                        gamelog::record_event("Damage Dealt", amount);
+                    }
+                }
                 pool.hit_points.current -= amount;
                 add_effect(
                     None,
@@ -36,6 +40,9 @@ pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
                     },
                     Targets::Single{target}
                 );
+                if target == *player_entity {
+                    gamelog::record_event("Damage Taken", amount);
+                }
 
                 if pool.hit_points.current < 1 {
                     add_effect(
@@ -88,6 +95,7 @@ pub fn death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
             if let Some(pools) = pools.get(target) {
                 xp_gain += pools.level * 100;
                 gold_gain += pools.gold;
+                gamelog::record_event("Kill", 1);
             }
 
             if xp_gain != 0 || gold_gain != 0 {

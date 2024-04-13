@@ -1,16 +1,16 @@
 use specs::prelude::*;
-use super::{Attributes, Skills, WantsToMelee, Name, gamelog::GameLog, Position,
+use super::{Attributes, Skills, WantsToMelee, Name, Position,
     HungerClock, HungerState, Pools, Equipped, Weapon, AreaOfEffect,
     EquipmentSlot, WeaponAttribute, Wearable, NaturalAttackDefence, Map};
 use super::effects::{add_effect, aoe_tiles, EffectType, Targets};
-use rltk::RandomNumberGenerator;
+use rltk::{RandomNumberGenerator, RGB, Point};
+use crate::gamelog;
 
 pub struct MeleeCombatSystem {}
 
 impl<'a> System<'a> for MeleeCombatSystem {
     type SystemData = (
         Entities<'a>,
-        WriteExpect<'a, GameLog>,
         WriteStorage<'a, WantsToMelee>,
         ReadStorage<'a, Name>,
         ReadStorage<'a, Attributes>,
@@ -28,7 +28,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (entities, mut gamelog, mut wants_melees, names, attributes, 
+        let (entities, mut wants_melees, names, attributes, 
             skills, pools, positions, hunger_clock, mut rng, 
             equipped_items, melee_weapons, wearables, natural,
             area_of_effect, map) = data;
@@ -139,14 +139,22 @@ impl<'a> System<'a> for MeleeCombatSystem {
                 );
                 
                 // indicate that damage was done
-                gamelog.entries.push(format!("{} hits {}, dealing {} damage.", &name.name, &target_name.name, damage));
+                gamelog::Logger::new()
+                    .character_name(&name.name)
+                    .append("hits")
+                    .character_name(&target_name.name)
+                    .append("dealing")
+                    .damage(damage)
+                    .append("damage.")
+                    .log();
+
                 if positions.get(wants_melee.target).is_some() {
                     add_effect(
                         None, 
                         EffectType::Particle {
                             glyph: rltk::to_cp437('‼'),
-                            fg: rltk::RGB::named(rltk::ORANGE),
-                            bg: rltk::RGB::named(rltk::BLACK),
+                            fg: RGB::named(rltk::ORANGE),
+                            bg: RGB::named(rltk::BLACK),
                             lifespan: 200.0
                         },
                         Targets::Single{ target: wants_melee.target }
@@ -164,7 +172,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
                             if let Some(aoe) = area_of_effect.get(weapon_entity.unwrap()) {
                                 if let Some(pos) = positions.get(wants_melee.target) {
                                     // TODO remove effect creator from target list
-                                    effect_target = Targets::Tiles{ tiles: aoe_tiles(&*map, rltk::Point{ x: pos.x, y: pos.y }, aoe.radius) }
+                                    effect_target = Targets::Tiles{ tiles: aoe_tiles(&*map, Point{ x: pos.x, y: pos.y }, aoe.radius) }
                                 }
                             }
                         }
@@ -177,14 +185,19 @@ impl<'a> System<'a> for MeleeCombatSystem {
                 }
             } else if natural_roll == 1 {
                 // critical miss
-                gamelog.entries.push(format!("{} completely misses {}!", name.name, target_name.name));
+                gamelog::Logger::new()
+                    .character_name(&name.name)
+                    .append("completely misses")
+                    .character_name(&target_name.name)
+                    .append("!")
+                    .log();
                 if positions.get(wants_melee.target).is_some() {
                     add_effect(
                         None, 
                         EffectType::Particle {
                             glyph: rltk::to_cp437('‼'),
-                            fg: rltk::RGB::named(rltk::BLUE),
-                            bg: rltk::RGB::named(rltk::BLACK),
+                            fg: RGB::named(rltk::BLUE),
+                            bg: RGB::named(rltk::BLACK),
                             lifespan: 200.0
                         },
                         Targets::Single{ target: wants_melee.target }
@@ -192,14 +205,18 @@ impl<'a> System<'a> for MeleeCombatSystem {
                 }
             } else {
                 // miss
-                gamelog.entries.push(format!("{} evades {}'s attack.", target_name.name, name.name));
+                gamelog::Logger::new()
+                    .character_name(&target_name.name)
+                    .append("evades attack from")
+                    .character_name(&name.name)
+                    .log();
                 if positions.get(wants_melee.target).is_some() {
                     add_effect(
                         None, 
                         EffectType::Particle {
                             glyph: rltk::to_cp437('‼'),
-                            fg: rltk::RGB::named(rltk::CYAN),
-                            bg: rltk::RGB::named(rltk::BLACK),
+                            fg: RGB::named(rltk::CYAN),
+                            bg: RGB::named(rltk::BLACK),
                             lifespan: 200.0
                         },
                         Targets::Single{ target: wants_melee.target }
