@@ -9,7 +9,7 @@ use crate::effects::{add_effect, EffectType, Targets};
 use super::{Position, Player, Viewshed, State, Map, RunState, Item, 
     TileType, particle_system::ParticleBuilder, Pools, WantsToMelee, WantsToPickupItem,
     HungerState, HungerClock, Door, BlocksVisibility, BlocksTile, Renderable, EntityMoved,
-    Consumable, Ranged, Faction, Vendor, VendorMode, KnownSpells, WantsToCastSpell,
+    Consumable, Ranged, Faction, Vendor, gui::VendorMode, KnownSpells, WantsToCastSpell,
     Attributes, Skills, PendingLevelUp, Equipped, Weapon, Target, WantsToShoot, Name};
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {

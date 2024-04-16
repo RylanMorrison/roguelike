@@ -1,8 +1,7 @@
 use specs::prelude::*;
+use rltk::prelude::*;
 use crate::tile_glyph;
-
-use super::{Map, Position, Renderable, World, TileSize, Target};
-use rltk::{Point, Rltk, RGB};
+use crate::{Map, Position, Renderable, World, TileSize, Target};
 
 const SHOW_BOUNDARIES: bool = true;
 
@@ -24,6 +23,7 @@ pub fn get_screen_bounds(ecs: &World, _ctx: &mut Rltk) -> (i32, i32, i32, i32) {
 pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
     let map = ecs.fetch::<Map>();
     let (min_x, max_x, min_y, max_y) = get_screen_bounds(ecs, ctx);
+    let mut draw_batch = DrawBatch::new();
 
     let map_width = map.width - 1;
     let map_height = map.height - 1;
@@ -34,10 +34,18 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
                 let idx = map.xy_idx(tx, ty);
                 if map.revealed_tiles[idx] {
                     let (glyph, fg, bg) = tile_glyph(idx, &*map);
-                    ctx.set(x + 1, y + 1, fg, bg, glyph);
+                    draw_batch.set(
+                        Point::new(x + 1, y + 1),
+                        ColorPair::new(fg, bg),
+                        glyph
+                    );
                 }
             } else if SHOW_BOUNDARIES {
-                ctx.set(x + 1, y + 1, RGB::named(rltk::GRAY), RGB::named(rltk::BLACK), rltk::to_cp437('·'));
+                draw_batch.set(
+                    Point::new(x + 1, y + 1),
+                    ColorPair::new(RGB::named(rltk::GRAY), RGB::named(rltk::BLACK)),
+                    rltk::to_cp437('·')
+                );
             }
         }
     }
@@ -64,7 +72,11 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
                         let entity_screen_y = tile_y - min_y;
                         if entity_screen_x > 0 && entity_screen_x < map_width 
                         && entity_screen_y > 0 && entity_screen_y < map_height {
-                            ctx.set(entity_screen_x + 1, entity_screen_y + 1, render.fg, render.bg, render.glyph);
+                            draw_batch.set(
+                                Point::new(entity_screen_x + 1, entity_screen_y + 1),
+                                ColorPair::new(render.fg, render.bg),
+                                render.glyph
+                            );
                         }
                     }
                 }
@@ -76,7 +88,11 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
                 let entity_screen_y = pos.y - min_y;
                 if entity_screen_x > 0 && entity_screen_x < map_width
                 && entity_screen_y > 0 && entity_screen_y < map_height {
-                    ctx.set(entity_screen_x + 1, entity_screen_y + 1, render.fg, render.bg, render.glyph);
+                    draw_batch.set(
+                        Point::new(entity_screen_x + 1, entity_screen_y + 1),
+                        ColorPair::new(render.fg, render.bg),
+                        render.glyph
+                    );
                 }
             }
         }
@@ -84,15 +100,26 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
         if targets.get(*entity).is_some() {
             let entity_screen_x = pos.x - min_x;
             let entity_screen_y = pos.y - min_y;
-            ctx.set(entity_screen_x, entity_screen_y + 1, RGB::named(rltk::RED), RGB::named(rltk::YELLOW), rltk::to_cp437('['));
-            ctx.set(entity_screen_x + 2, entity_screen_y + 1, RGB::named(rltk::RED), RGB::named(rltk::YELLOW), rltk::to_cp437(']'));
+            draw_batch.set(
+                Point::new(entity_screen_x, entity_screen_y + 1),
+                ColorPair::new(RGB::named(rltk::RED), RGB::named(rltk::YELLOW)),
+                rltk::to_cp437('[')
+            );
+            draw_batch.set(
+                Point::new(entity_screen_x + 2, entity_screen_y + 1),
+                ColorPair::new(RGB::named(rltk::RED), RGB::named(rltk::YELLOW)),
+                rltk::to_cp437(']')
+            );
         }
     }
+
+    draw_batch.submit(0).expect("Draw batch submission failed");
 }
 
 pub fn render_debug_map(map: &Map, ctx: &mut Rltk) {
     let player_pos = Point::new(map.width / 2, map.height / 2);
     let (x_chars, y_chars) = ctx.get_char_size();
+    let mut draw_batch = DrawBatch::new();
 
     let center_x = (x_chars / 2) as i32;
     let center_y = (y_chars / 2) as i32;
@@ -111,12 +138,22 @@ pub fn render_debug_map(map: &Map, ctx: &mut Rltk) {
                 let idx = map.xy_idx(tx, ty);
                 if map.revealed_tiles[idx] {
                     let (glyph, fg, bg) = tile_glyph(idx, &*map);
-                    ctx.set(x, y, fg, bg, glyph);
+                    draw_batch.set(
+                        Point::new(x, y),
+                        ColorPair::new(fg, bg),
+                        glyph
+                    );
                 }
                 
             } else if SHOW_BOUNDARIES {
-                ctx.set(x, y, RGB::named(rltk::GRAY), RGB::named(rltk::BLACK), rltk::to_cp437('·'));
+                draw_batch.set(
+                    Point::new(x, y),
+                    ColorPair::new(RGB::named(rltk::GRAY), RGB::named(rltk::BLACK)),
+                    rltk::to_cp437('·')
+                );
             }
         }
     }
+
+    draw_batch.submit(5000).expect("Draw batch submission failed");
 }

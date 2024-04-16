@@ -3,12 +3,14 @@ use specs::prelude::*;
 use serde::{Serialize, Deserialize};
 use std::collections::HashSet;
 mod tile_type;
-pub use tile_type::{TileType, tile_walkable, tile_opaque, tile_cost};
 mod themes;
-pub use themes::*;
 mod dungeon;
-pub use dungeon::{MasterDungeonMap, level_transition, freeze_level_entities, thaw_level_entities};
+pub mod camera;
 use super::spatial;
+pub use tile_type::{TileType, tile_walkable, tile_opaque, tile_cost};
+pub use dungeon::{MasterDungeonMap, level_transition, freeze_level_entities, thaw_level_entities};
+pub use themes::*;
+
 
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct Map {

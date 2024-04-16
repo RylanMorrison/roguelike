@@ -36,7 +36,6 @@ use particle_system::ParticleSpawnSystem;
 pub mod hunger_system;
 use hunger_system::HungerSystem;
 pub mod map_builders;
-pub mod camera;
 pub mod raws;
 mod gamesystem;
 pub use gamesystem::*;
@@ -56,9 +55,6 @@ extern crate lazy_static;
 const SHOW_MAPGEN_VISUALIZER : bool = true;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
-pub enum VendorMode { Buy, Sell }
-
-#[derive(PartialEq, Copy, Clone, Debug)]
 pub enum RunState { 
     PreRun,
     AwaitingInput,
@@ -75,7 +71,7 @@ pub enum RunState {
     GameOver,
     MapGeneration,
     ShowCheatMenu,
-    ShowVendor { vendor: Entity, mode: VendorMode },
+    ShowVendor { vendor: Entity, mode: gui::VendorMode },
     TownPortal,
     TeleportingToOtherLevel { x: i32, y: i32, depth: i32 },
     LevelUp{ attribute_points: i32, skill_points: i32 }
@@ -211,6 +207,9 @@ impl GameState for State {
             newrunstate = *runstate;
         }
 
+        ctx.set_active_console(1);
+        ctx.cls();
+        ctx.set_active_console(0);
         ctx.cls();
         particle_system::update_particles(&mut self.ecs, ctx);
 
@@ -401,7 +400,7 @@ impl GameState for State {
                 }
             }
             RunState::ShowCheatMenu => {
-                let result = gui::show_cheat_mode(self, ctx);
+                let result = gui::show_cheat_mode(ctx);
                 match result {
                     gui::CheatMenuResult::Cancel => newrunstate = RunState::AwaitingInput,
                     gui::CheatMenuResult::NoResponse => {}
@@ -471,8 +470,8 @@ impl GameState for State {
                             self.ecs.write_storage::<EquipmentChanged>().insert(*self.ecs.fetch::<Entity>(), EquipmentChanged{}).expect("Unable to insert");
                         }
                     }
-                    gui::VendorResult::BuyMode => newrunstate = RunState::ShowVendor { vendor, mode: VendorMode::Buy },
-                    gui::VendorResult::SellMode => newrunstate = RunState::ShowVendor { vendor, mode: VendorMode::Sell }
+                    gui::VendorResult::BuyMode => newrunstate = RunState::ShowVendor { vendor, mode: gui::VendorMode::Buy },
+                    gui::VendorResult::SellMode => newrunstate = RunState::ShowVendor { vendor, mode: gui::VendorMode::Sell }
                 }
                 self.run_systems();
             }
@@ -515,6 +514,8 @@ impl GameState for State {
             *runwriter = newrunstate;
         }
         cleanup::delete_the_dead(&mut self.ecs);
+
+        rltk::render_draw_buffer(ctx).expect("Render error");
     }
 }
 
@@ -524,6 +525,8 @@ fn main() -> rltk::BError {
         .unwrap()
         .with_title("Taverns of Stoner Doom")
         .with_fps_cap(30.0)
+        .with_font("vga8x16.png", 8, 16)
+        .with_sparse_console(100, 40, "vga8x16.png")
         .build()?;
     context.with_post_scanlines(true);
     let mut gs = State {
