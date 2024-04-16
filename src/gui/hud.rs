@@ -33,7 +33,6 @@ fn draw_stats(draw_batch: &mut DrawBatch, player_pools: &Pools) {
     let health = format!("{}/{}", player_pools.hit_points.current, player_pools.hit_points.max);
     let mana = format!("{}/{}", player_pools.mana.current, player_pools.mana.max);
     let level = format!("Level: {}", player_pools.level);
-    let xp_level_start = player_xp_for_level(player_pools.level-1);
 
     draw_batch.print_color(Point::new(70, 1), "Health: ", ColorPair::new(white(), black()));
     draw_batch.bar_horizontal(Point::new(80, 1), 18, player_pools.hit_points.current, player_pools.hit_points.max, ColorPair::new(red(), black()));
@@ -44,7 +43,7 @@ fn draw_stats(draw_batch: &mut DrawBatch, player_pools: &Pools) {
     draw_batch.print_color(Point::new(87, 2), &mana, ColorPair::new(white(), black()));
 
     draw_batch.print_color(Point::new(70, 3), &level, ColorPair::new(white(), black()));
-    draw_batch.bar_horizontal(Point::new(80, 3), 18, player_pools.xp - xp_level_start, player_xp_for_level(player_pools.level), ColorPair::new(gold(), black()));
+    draw_batch.bar_horizontal(Point::new(80, 3), 18, player_pools.xp, player_xp_for_level(player_pools.level), ColorPair::new(gold(), black()));
 
     draw_batch.print_color(Point::new(70, 14), "Armour Class:", ColorPair::new(light_gray(), black()));
     draw_batch.print_color(Point::new(87, 14), player_pools.total_armour_class, ColorPair::new(white(), black()));

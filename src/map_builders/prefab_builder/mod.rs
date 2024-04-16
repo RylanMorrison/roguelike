@@ -62,6 +62,7 @@ impl PrefabBuilder {
     }
 
     fn char_to_map(&mut self, ch: char, idx: usize, build_data: &mut BuilderMap) {
+        let rng = RandomNumberGenerator::new();
         match ch {
             ' ' => build_data.map.tiles[idx] = TileType::Floor,
             '#' => build_data.map.tiles[idx] = TileType::Wall,
@@ -74,11 +75,11 @@ impl PrefabBuilder {
             '>' => build_data.map.tiles[idx] = TileType::DownStairs,
             'g' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, "Goblin".to_string()));
+                build_data.spawn_list.push((idx, random_goblin(rng)));
             }
             'o' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, "Orc".to_string()));
+                build_data.spawn_list.push((idx, random_orc(rng)));
             }
             'O' => {
                 build_data.map.tiles[idx] = TileType::Floor;
@@ -98,11 +99,11 @@ impl PrefabBuilder {
             }
             '/' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, self.random_melee_weapon()));
+                build_data.spawn_list.push((idx, random_melee_weapon(rng)));
             }
             '0' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, self.random_shield()));
+                build_data.spawn_list.push((idx, random_shield(rng)));
             }
             _ => {
                 rltk::console::log(format!("Unknown glyph loading map: {}", ch));
@@ -222,10 +223,9 @@ impl PrefabBuilder {
 
                 // check for map overflow
                 if x > 1
-                    && (x + vault.width as i32) < build_data.map.width - 2
-                    && y > 1
-                    && (y + vault.height as i32) < build_data.map.height - 2
-                {
+                && (x + vault.width as i32) < build_data.map.width - 2
+                && y > 1
+                && (y + vault.height as i32) < build_data.map.height - 2 {
                     let mut possible = true;
                     for ty in 0..vault.height as i32 {
                         for tx in 0..vault.width as i32 {
@@ -287,21 +287,37 @@ impl PrefabBuilder {
         }
     }
 
-    pub fn random_melee_weapon(&self) -> String {
-        let mut rng = RandomNumberGenerator::new();
-        let roll = rng.roll_dice(1, 3);
-        match roll {
-            1 => "Mithril Longsword".to_string(),
-            _ => "Steel Longsword".to_string()
-        }
-    }
+    
+}
 
-    pub fn random_shield(&self) -> String {
-        let mut rng = RandomNumberGenerator::new();
-        let roll = rng.roll_dice(1, 3);
-        match roll {
-            1 => "Tower Shield".to_string(),
-            _ => "Bulwark Shield".to_string()
-        }
+fn random_melee_weapon(mut rng: RandomNumberGenerator) -> String {
+    let roll = rng.roll_dice(1, 3);
+    match roll {
+        1 => "Mithril Longsword".to_string(),
+        _ => "Steel Longsword".to_string()
+    }
+}
+
+fn random_shield(mut rng: RandomNumberGenerator) -> String {
+    let roll = rng.roll_dice(1, 3);
+    match roll {
+        1 => "Tower Shield".to_string(),
+        _ => "Bulwark Shield".to_string()
+    }
+}
+
+fn random_goblin(mut rng: RandomNumberGenerator) -> String {
+    let roll = rng.roll_dice(1, 2);
+    match roll {
+        1 => "Goblin Warrior".to_string(),
+        _ => "Goblin Archer".to_string()
+    }
+}
+
+fn random_orc(mut rng: RandomNumberGenerator) -> String {
+    let roll = rng.roll_dice(1, 2);
+    match roll {
+        1 => "Orc Warrior".to_string(),
+        _ => "Orc Archer".to_string()
     }
 }

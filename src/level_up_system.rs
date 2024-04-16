@@ -50,6 +50,8 @@ impl<'a> System<'a> for LevelUpSystem {
         player_skills.defence.base = level_up.skills.defence.base;
         player_skills.magic.base = level_up.skills.magic.base;
 
+        player_pools.xp = 0;
+
         dirty.insert(*player_entity, EquipmentChanged{}).expect("Unable to insert");
         pending_level_up.clear();
     }

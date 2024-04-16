@@ -64,7 +64,7 @@ impl<'a> System<'a> for RangedCombatSystem {
             // default to unarmed
             let mut weapon_info = Weapon {
                 range: None,
-                attribute: crate::WeaponAttribute::Strength,
+                attribute: crate::WeaponAttribute::Dexterity,
                 hit_bonus: 0,
                 damage_n_dice: 1,
                 damage_die_type: 4,
