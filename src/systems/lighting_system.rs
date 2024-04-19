@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use super::{Viewshed, Position, Map, LightSource};
+use crate::{Viewshed, Position, Map, LightSource};
 use rltk::{RGB, Point};
 
 pub struct LightingSystem {}

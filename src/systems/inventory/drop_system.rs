@@ -1,7 +1,6 @@
 use specs::prelude::*;
 use super::{WantsToDropItem, Name, Position, InBackpack, EquipmentChanged, Item};
 use crate::gamelog;
-use crate::raws;
 
 pub struct ItemDropSystem {}
 

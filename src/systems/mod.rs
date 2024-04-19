@@ -1,0 +1,31 @@
+mod dispatcher;
+mod ai;
+mod inventory;
+mod hunger_system;
+mod level_up_system;
+mod lighting_system;
+mod map_indexing_system;
+mod melee_combat_system;
+mod movement_system;
+pub mod particle_system;
+mod ranged_combat_system;
+mod trigger_system;
+mod visibility_system;
+
+pub use dispatcher::UnifiedDispatcher;
+use ai::*;
+use inventory::*;
+use hunger_system::HungerSystem;
+use level_up_system::LevelUpSystem;
+use lighting_system::LightingSystem;
+use map_indexing_system::MapIndexingSystem;
+use melee_combat_system::MeleeCombatSystem;
+use movement_system::MovementSystem;
+use particle_system::ParticleSpawnSystem;
+use ranged_combat_system::RangedCombatSystem;
+use trigger_system::TriggerSystem;
+use visibility_system::VisibilitySystem;
+
+pub fn build() -> Box<dyn UnifiedDispatcher + 'static> {
+    dispatcher::new()
+}

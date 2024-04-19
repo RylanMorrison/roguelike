@@ -1,8 +1,8 @@
 use specs::prelude::*;
-use super::{Attributes, Skills, WantsToMelee, Name, Position,
+use crate::{Attributes, Skills, WantsToMelee, Name, Position,
     HungerClock, HungerState, Pools, Equipped, Weapon, AreaOfEffect,
     EquipmentSlot, WeaponAttribute, Wearable, NaturalAttackDefence, Map};
-use super::effects::{add_effect, aoe_tiles, EffectType, Targets};
+use crate::effects::{add_effect, aoe_tiles, EffectType, Targets};
 use rltk::{RandomNumberGenerator, RGB, Point};
 use crate::gamelog;
 

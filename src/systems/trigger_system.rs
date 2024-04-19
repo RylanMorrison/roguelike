@@ -1,6 +1,6 @@
 use specs::prelude::*;
-use super::{EntityMoved, Position, EntryTrigger, Map, Name};
-use super::effects::*;
+use crate::{EntityMoved, Position, EntryTrigger, Map, Name};
+use crate::effects::*;
 use crate::gamelog;
 
 pub struct TriggerSystem {}

@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use rltk::RGB;
-use super::{HungerClock, HungerState, MyTurn, Map};
+use crate::{HungerClock, HungerState, MyTurn, Map};
 use crate::effects::{add_effect, EffectType, Targets};
 use crate::gamelog;
 

@@ -1,7 +1,6 @@
 use specs::prelude::*;
 use super::{Name, InBackpack, WantsToUseItem, Equippable, Equipped, EquipmentChanged, EquipmentSlot, Item};
 use crate::gamelog;
-use crate::raws;
 
 pub struct ItemEquipSystem {}
 

@@ -1,7 +1,6 @@
 use specs::prelude::*;
 use super::{Name, WantsToUnequipItem, Equipped, InBackpack, EquipmentChanged, Item};
 use crate::gamelog;
-use crate::raws;
 
 pub struct ItemUnequipSystem {}
 

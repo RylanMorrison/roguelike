@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use crate::BlocksVisibility;
 
-use super::{Viewshed, Position, Map, Player};
+use crate::{Viewshed, Position, Map, Player};
 use rltk::{field_of_view, Point};
 
 pub struct VisibilitySystem {}

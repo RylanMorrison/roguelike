@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use super::{Attributes, Skills, EquipmentChanged, PendingLevelUp, RunState, Pools};
+use crate::{Attributes, Skills, EquipmentChanged, PendingLevelUp, RunState, Pools};
 use crate::{mana_at_level, player_hp_at_level};
 
 pub struct LevelUpSystem {}

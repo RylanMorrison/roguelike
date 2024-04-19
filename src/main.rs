@@ -11,44 +11,22 @@ mod map;
 pub use map::*;
 mod player;
 use player::*;
-mod ai;
-pub use ai::*;
 mod rect;
 pub use rect::Rect;
-mod visibility_system;
-use visibility_system::VisibilitySystem;
-mod map_indexing_system;
-use map_indexing_system::MapIndexingSystem;
-mod melee_combat_system;
-use melee_combat_system::MeleeCombatSystem;
-mod ranged_combat_system;
-use ranged_combat_system::RangedCombatSystem;
 mod cleanup;
 mod gui;
 mod gamelog;
 mod spawner;
-mod inventory_system;
-use inventory_system::{ItemCollectionSystem, ItemEquipSystem, ItemUnequipSystem, ItemUseSystem, ItemDropSystem, SpellUseSystem};
 pub mod saveload_system;
 pub mod random_table;
-pub mod particle_system;
-use particle_system::ParticleSpawnSystem;
-pub mod hunger_system;
-use hunger_system::HungerSystem;
 pub mod map_builders;
 pub mod raws;
 mod gamesystem;
 pub use gamesystem::*;
-pub mod lighting_system;
-use lighting_system::LightingSystem;
 pub mod spatial;
-mod movement_system;
-use movement_system::MovementSystem;
-mod trigger_system;
-use trigger_system::TriggerSystem;
 mod effects;
-mod level_up_system;
-use level_up_system::LevelUpSystem;
+mod systems;
+pub use systems::*;
 #[macro_use]
 extern crate lazy_static;
 
@@ -82,65 +60,13 @@ pub struct State {
     mapgen_next_state : Option<RunState>,
     mapgen_history : Vec<Map>,
     mapgen_index : usize,
-    mapgen_timer : f32
+    mapgen_timer : f32,
+    dispatcher: Box<dyn systems::UnifiedDispatcher + 'static>
 }
 
 impl State {
     fn run_systems(&mut self) {
-        let mut mapindex = MapIndexingSystem{};
-        mapindex.run_now(&self.ecs);
-        let mut vis = VisibilitySystem{};
-        vis.run_now(&self.ecs);
-        let mut level_ups = LevelUpSystem{};
-        level_ups.run_now(&self.ecs);
-        let mut gear_effects = GearEffectSystem{};
-        gear_effects.run_now(&self.ecs);
-        let mut initiative = InitiativeSystem{};
-        initiative.run_now(&self.ecs);
-        let mut turnstatus = TurnStatusSystem{};
-        turnstatus.run_now(&self.ecs);
-        let mut quipping = QuipSystem{};
-        quipping.run_now(&self.ecs);
-        let mut adjacent = AdjacentAI{};
-        adjacent.run_now(&self.ecs);
-        let mut visible = VisibleAI{};
-        visible.run_now(&self.ecs);
-        let mut approach = ApproachAI{};
-        approach.run_now(&self.ecs);
-        let mut flee = FleeAI{};
-        flee.run_now(&self.ecs);
-        let mut chasing = ChaseAI{};
-        chasing.run_now(&self.ecs);
-        let mut defaultmove = DefaultMoveAI{};
-        defaultmove.run_now(&self.ecs);
-        let mut movement = MovementSystem{};
-        movement.run_now(&self.ecs);
-        let mut triggers = TriggerSystem{};
-        triggers.run_now(&self.ecs);
-        let mut melee = MeleeCombatSystem{};
-        melee.run_now(&self.ecs);
-        let mut ranged = RangedCombatSystem{};
-        ranged.run_now(&self.ecs);
-        let mut pickup = ItemCollectionSystem{};
-        pickup.run_now(&self.ecs);
-        let mut itemequip = ItemEquipSystem{};
-        itemequip.run_now(&self.ecs);
-        let mut itemuse = ItemUseSystem{};
-        itemuse.run_now(&self.ecs);
-        let mut spelluse = SpellUseSystem{};
-        spelluse.run_now(&self.ecs);
-        let mut drop_items = ItemDropSystem{};
-        drop_items.run_now(&self.ecs);
-        let mut unequip_items = ItemUnequipSystem{};
-        unequip_items.run_now(&self.ecs);
-        let mut hunger = HungerSystem{};
-        hunger.run_now(&self.ecs);
-        effects::run_effects_queue(&mut self.ecs);
-        let mut particles = ParticleSpawnSystem{};
-        particles.run_now(&self.ecs);
-        let mut lighting = LightingSystem{};
-        lighting.run_now(&self.ecs);
-
+        self.dispatcher.run_now(&mut self.ecs);
         self.ecs.maintain();
     }
 
@@ -211,7 +137,7 @@ impl GameState for State {
         ctx.cls();
         ctx.set_active_console(0);
         ctx.cls();
-        particle_system::update_particles(&mut self.ecs, ctx);
+        systems::particle_system::update_particles(&mut self.ecs, ctx);
 
         match newrunstate {
             RunState::MainMenu{..} => {}
@@ -534,7 +460,8 @@ fn main() -> rltk::BError {
         mapgen_next_state : Some(RunState::MainMenu{ menu_selection: gui::MainMenuSelection::NewGame }),
         mapgen_index : 0,
         mapgen_history: Vec::new(),
-        mapgen_timer: 0.0
+        mapgen_timer: 0.0,
+        dispatcher: systems::build()
     };
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
