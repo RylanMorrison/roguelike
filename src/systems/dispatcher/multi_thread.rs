@@ -2,16 +2,14 @@ use super::UnifiedDispatcher;
 use specs::prelude::*;
 use crate::effects;
 
-pub struct SingleThreadedDispatcher<'a> {
-    pub systems: Vec<Box<dyn RunNow<'a>>>
+pub struct MultiThreadedDispatcher {
+    pub dispatcher: Dispatcher<'static, 'static>
 }
 
-impl<'a> UnifiedDispatcher for SingleThreadedDispatcher<'a> {
+impl<'a> UnifiedDispatcher for MultiThreadedDispatcher {
     fn run_now(&mut self, ecs: *mut World) {
         unsafe {
-            for sys in self.systems.iter_mut() {
-                sys.run_now(&*ecs);
-            }
+            self.dispatcher.dispatch(&mut *ecs);
             effects::run_effects_queue(&mut *ecs);
         }
     }
@@ -28,13 +26,15 @@ macro_rules! construct_dispatcher {
         ),*
     ) => {
         fn new_dispatch() -> Box<dyn UnifiedDispatcher + 'static> {
-            let mut dispatch = SingleThreadedDispatcher{
-                systems: Vec::new()
-            };
+            use specs::DispatcherBuilder;
 
-            $(
-                dispatch.systems.push( Box::new( $type {} ));
-            )*
+            let dispatcher = DispatcherBuilder::new()
+                $(
+                    .with($type{}, $name, $deps)
+                )*
+                .build();
+
+            let dispatch = MultiThreadedDispatcher{ dispatcher };
 
             Box::new(dispatch)
         }

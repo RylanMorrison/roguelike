@@ -30,7 +30,8 @@ pub use systems::*;
 #[macro_use]
 extern crate lazy_static;
 
-const SHOW_MAPGEN_VISUALIZER : bool = true;
+const SHOW_MAPGEN_VISUALIZER: bool = true;
+const SHOW_FPS: bool = true;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum RunState { 
@@ -116,9 +117,6 @@ impl State {
             let mut player_entity_writer = self.ecs.write_resource::<Entity>();
             *player_entity_writer = player_entity;
         }
-
-        // replace the world maps
-        // self.ecs.insert(map::MasterDungeonMap::new());
 
         // build a new map
         self.generate_world_map(0, 0);
@@ -442,6 +440,9 @@ impl GameState for State {
         cleanup::delete_the_dead(&mut self.ecs);
 
         rltk::render_draw_buffer(ctx).expect("Render error");
+        if SHOW_FPS {
+            ctx.print(1, 79, &format!("FPS: {}", ctx.fps));
+        }
     }
 }
 
