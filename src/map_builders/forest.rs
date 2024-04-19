@@ -1,9 +1,9 @@
 use super::{BuilderChain, CellularAutomataBuilder, XStart, YStart, AreaStartingPosition, 
     CullUnreachable, VoronoiSpawning, DistantExit, MetaMapBuilder, BuilderMap, TileType};
-use rltk::RandomNumberGenerator;
 use crate::map;
+use crate::rng;
 
-pub fn forest_builder(new_depth: i32, _rng: &mut RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
+pub fn forest_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
     let mut chain = BuilderChain::new("Into the Woods", new_depth, width, height);
     chain.start_with(CellularAutomataBuilder::new());
     chain.with(CullUnreachable::new());
@@ -16,8 +16,8 @@ pub fn forest_builder(new_depth: i32, _rng: &mut RandomNumberGenerator, width: i
 pub struct BrickRoad {}
 
 impl MetaMapBuilder for BrickRoad {
-    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
-        self.build(rng, build_data);
+    fn build_map(&mut self, build_data: &mut BuilderMap) {
+        self.build(build_data);
     }
 }
 
@@ -60,7 +60,7 @@ impl BrickRoad {
         }
     }
 
-    fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build(&mut self, build_data: &mut BuilderMap) {
         let starting_pos = build_data.starting_position.as_ref().unwrap().clone();
         let start_idx = build_data.map.xy_idx(starting_pos.x, starting_pos.y);
         
@@ -87,7 +87,7 @@ impl BrickRoad {
         build_data.take_snapshot();
 
         // pick between north-west and south west for the exit
-        let exit_dir = rng.roll_dice(1, 2);
+        let exit_dir = rng::roll_dice(1, 2);
         let (seed_x, seed_y, stream_start_x, stream_start_y) = if exit_dir == 1 {
             (build_data.map.width - 1, 1, 0, build_data.height - 1)
         } else {

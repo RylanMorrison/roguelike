@@ -1,5 +1,5 @@
 use super::{InitialMapBuilder, BuilderMap, TileType};
-use rltk::RandomNumberGenerator;
+use crate::rng;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum DistanceAlgorithm { Pythagoras, Manhattan, Chebyshev }
@@ -10,8 +10,8 @@ pub struct VoronoiCellBuilder {
 }
 
 impl InitialMapBuilder for VoronoiCellBuilder {
-    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap)  {
-        self.build(rng, build_data);
+    fn build_map(&mut self, build_data: &mut BuilderMap)  {
+        self.build(build_data);
     }
 }
 
@@ -35,13 +35,13 @@ impl VoronoiCellBuilder {
         VoronoiCellBuilder::new( 128, DistanceAlgorithm::Chebyshev)
     }
 
-    pub fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
+    pub fn build(&mut self, build_data: &mut BuilderMap) {
         // manually make a voronoi diagram
         // store n_seeds random points on the map
         let mut voronoi_seeds: Vec<(usize, rltk::Point)> = Vec::new();
         while voronoi_seeds.len() < self.n_seeds {
-            let vx = rng.roll_dice(1, build_data.map.width-1);
-            let vy = rng.roll_dice(1, build_data.map.height-1);
+            let vx = rng::roll_dice(1, build_data.map.width-1);
+            let vy = rng::roll_dice(1, build_data.map.height-1);
             let vidx = build_data.map.xy_idx(vx, vy);
             let candidate = (vidx, rltk::Point::new(vx, vy));
             if !voronoi_seeds.contains(&candidate) {

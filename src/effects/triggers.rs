@@ -1,4 +1,4 @@
-use rltk::{RandomNumberGenerator, RGB};
+use rltk::RGB;
 use specs::prelude::*;
 use super::*;
 use crate::{gamelog, raws, Attributes, Confusion, Consumable, Damage, DamageOverTime, Duration, Food, Healing, KnownSpell, KnownSpells,
@@ -63,7 +63,6 @@ pub fn spell_trigger(ecs: &mut World, creator: Option<Entity>, spell_entity: Ent
 
 fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targets: &Targets) -> bool {
     let mut did_something = false;
-    let mut rng = ecs.write_resource::<RandomNumberGenerator>();
     let names = ecs.read_storage::<Name>();
     let items = ecs.read_storage::<Item>();
     let spells = ecs.read_storage::<Spell>();
@@ -149,7 +148,7 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
 
     // damage
     if let Some(damage) = ecs.read_storage::<Damage>().get(entity) {
-        let mut amount = damage::calculate_damage(&mut rng, damage);
+        let mut amount = damage::calculate_damage(damage);
         if spells.get(entity).is_some() {
             // add attribute and skill bonuses for spells
             // TODO put this in its own system

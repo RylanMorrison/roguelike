@@ -1,5 +1,4 @@
 use specs::prelude::*;
-use rltk::RandomNumberGenerator;
 use super::{Pools, Player, Name, RunState, Position, LootTable};
 use crate::raws;
 use crate::gamelog;
@@ -39,13 +38,11 @@ pub fn delete_the_dead(ecs : &mut World) {
     {
         let positions = ecs.write_storage::<Position>();
         let loot_tables = ecs.read_storage::<LootTable>();
-        let mut rng = ecs.write_resource::<RandomNumberGenerator>();
         for victim in dead.iter() {
             let pos = positions.get(*victim);
             if let Some(table) = loot_tables.get(*victim) {
                 let drop_finder = raws::get_item_drop(
                     &raws::RAWS.lock().unwrap(),
-                    &mut rng,
                     &table.table_name
                 );
                 // store what loot to spawn

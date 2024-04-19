@@ -1,11 +1,11 @@
 use super::{MetaMapBuilder, BuilderMap, TileType, Rect};
-use rltk::RandomNumberGenerator;
+use crate::rng;
 
 pub struct RoomDrawer {}
 
 impl MetaMapBuilder for RoomDrawer {
-    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
-        self.build(rng, build_data);
+    fn build_map(&mut self, build_data: &mut BuilderMap) {
+        self.build(build_data);
     }
 }
 
@@ -43,7 +43,7 @@ impl RoomDrawer {
         }
     }
 
-    fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build(&mut self, build_data: &mut BuilderMap) {
         let rooms: Vec<Rect>;
         if let Some(rooms_builder) = &build_data.rooms {
             rooms = rooms_builder.clone();
@@ -52,7 +52,7 @@ impl RoomDrawer {
         }
 
         for room in rooms.iter() {
-            let room_type = rng.roll_dice(1, 4);
+            let room_type = rng::roll_dice(1, 4);
             match room_type {
                 1 => self.circle(build_data, room),
                 _ => self.rectangle(build_data, room)

@@ -1,4 +1,3 @@
-use rltk::RandomNumberGenerator;
 use specs::{prelude::*, saveload::SimpleMarker, saveload::MarkedBuilder};
 use super::*;
 use crate::components::{Pools, StatusEffect, DamageOverTime, Duration, Name};
@@ -6,10 +5,11 @@ use crate::{gamelog, player_xp_for_level, Map, Player};
 use crate::{spatial, Damage, SerializeMe, RunState};
 use crate::raws;
 use crate::player;
+use crate::rng;
 
-pub fn calculate_damage(rng: &mut RandomNumberGenerator, damage: &Damage) -> i32 {
+pub fn calculate_damage(damage: &Damage) -> i32 {
     let (n_dice, die_type, die_bonus) = raws::parse_dice_string(&damage.damage);
-    rng.roll_dice(n_dice, die_type) + die_bonus
+    rng::roll_dice(n_dice, die_type) + die_bonus
 }
 
 pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {

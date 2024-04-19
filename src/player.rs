@@ -1,10 +1,11 @@
-use rltk::{Point, RandomNumberGenerator, Rltk, VirtualKeyCode, RGB};
+use rltk::{Point, Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
 use std::cmp::{max, min};
 
 use crate::{spatial, gamelog, InBackpack, WantsToUseItem};
 use crate::raws::{faction_reaction, find_spell_entity, Reaction, RAWS};
 use crate::effects::{add_effect, EffectType, Targets};
+use crate::rng;
 
 use super::{Position, Player, Viewshed, State, Map, RunState, Item, 
     TileType, particle_system::ParticleBuilder, Pools, WantsToMelee, WantsToPickupItem,
@@ -324,8 +325,7 @@ pub fn skip_turn(ecs: &mut World) -> RunState {
         }
         // sometimes restore mana
         if player_pool.mana.current < player_pool.mana.max {
-            let mut rng = ecs.fetch_mut::<RandomNumberGenerator>();
-            if rng.roll_dice(1, 6) == 1 {
+            if rng::roll_dice(1, 6) == 1 {
                 player_pool.mana.current = i32::min(player_pool.mana.current + 1, player_pool.mana.max);
             }
         }

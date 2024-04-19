@@ -1,6 +1,6 @@
 use super::{Map, Rect, TileType, Position, spawner, SHOW_MAPGEN_VISUALIZER};
+use crate::rng;
 use specs::prelude::*;
-use rltk::RandomNumberGenerator;
 mod simple_map;
 mod bsp_dungeon;
 mod bsp_interior;
@@ -62,7 +62,6 @@ use corridors_lines::StraightLineCorridors;
 use corridor_spawner::CorridorSpawner;
 use door_placement::DoorPlacement;
 
-
 pub struct BuilderMap {
     pub spawn_list: Vec<(usize, String)>,
     pub map: Map,
@@ -87,11 +86,11 @@ impl BuilderMap {
 }
 
 pub trait InitialMapBuilder {
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap);
+    fn build_map(&mut self, build_data: &mut BuilderMap);
 }
 
 pub trait MetaMapBuilder {
-    fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator, build_data: &mut BuilderMap);
+    fn build_map(&mut self, build_data: &mut BuilderMap);
 }
 
 pub struct BuilderChain {
@@ -129,18 +128,18 @@ impl BuilderChain {
         self.builders.push(metabuilder);
     }
 
-    pub fn build_map(&mut self, rng: &mut rltk::RandomNumberGenerator) {
+    pub fn build_map(&mut self) {
         match &mut self.starter {
             None => panic!("Cannot run a map builder chain without a starting build system"),
             Some(starter) => {
                 // build the starting map
-                starter.build_map(rng, &mut self.build_data);
+                starter.build_map(&mut self.build_data);
             }
         }
 
         // build additional layers in turn
         for metabuilder in self.builders.iter_mut() {
-            metabuilder.build_map(rng, &mut self.build_data);
+            metabuilder.build_map(&mut self.build_data);
         }
     }
 
@@ -151,24 +150,24 @@ impl BuilderChain {
     }
 }
 
-pub fn level_builder(new_depth: i32, rng: &mut RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
+pub fn level_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
     match new_depth {
-        0 => town_builder(new_depth, rng, width, height),
-        1 => forest_builder(new_depth, rng, width, height),
-        2 => limestone_cavern_builder(new_depth, rng, width, height),
-        _ => random_builder(new_depth, rng, width, height)
+        0 => town_builder(new_depth, width, height),
+        1 => forest_builder(new_depth, width, height),
+        2 => limestone_cavern_builder(new_depth, width, height),
+        _ => random_builder(new_depth, width, height)
     }
 }
 
-pub fn random_builder(new_depth: i32, rng: &mut RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
+pub fn random_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
     let mut builder = BuilderChain::new("New Map", new_depth, width, height);
-    let type_roll = rng.roll_dice(1, 2);
+    let type_roll = rng::roll_dice(1, 2);
     match type_roll {
-        1 => random_room_builder(rng, &mut builder),
-        _ => random_shape_builder(new_depth, rng, &mut builder)
+        1 => random_room_builder(&mut builder),
+        _ => random_shape_builder(new_depth, &mut builder)
     }
 
-    if new_depth >= 10 && rng.roll_dice(1, 3) == 1 {
+    if new_depth >= 10 && rng::roll_dice(1, 3) == 1 {
         // only have a chance to add a fort from depth 10 onwards
         builder.with(PrefabBuilder::sectional(prefab_builder::prefab_sections::UNDERGROUND_FORT));
     }
@@ -177,8 +176,8 @@ pub fn random_builder(new_depth: i32, rng: &mut RandomNumberGenerator, width: i3
     builder
 }
 
-fn random_room_builder(rng: &mut RandomNumberGenerator, builder: &mut BuilderChain) {
-    let build_roll = rng.roll_dice(1, 3);
+fn random_room_builder(builder: &mut BuilderChain) {
+    let build_roll = rng::roll_dice(1, 3);
     match build_roll {
         1 => builder.start_with(SimpleMapBuilder::new()),
         2 => builder.start_with(BspDungeonBuilder::new()),
@@ -186,7 +185,7 @@ fn random_room_builder(rng: &mut RandomNumberGenerator, builder: &mut BuilderCha
     }
 
     if build_roll != 3 { // skip BSP Interior
-        let sort_roll = rng.roll_dice(1, 5);
+        let sort_roll = rng::roll_dice(1, 5);
         match sort_roll {
             // randomly sort the rooms
             1 => builder.with(RoomSorter::new(RoomSort::LEFTMOST)),
@@ -198,7 +197,7 @@ fn random_room_builder(rng: &mut RandomNumberGenerator, builder: &mut BuilderCha
 
         builder.with(RoomDrawer::new());
 
-        let corridor_roll = rng.roll_dice(1, 4);
+        let corridor_roll = rng::roll_dice(1, 4);
         match corridor_roll {
             // randomly pick a corridor type
             1 => builder.with(DoglegCorridors::new()),
@@ -207,12 +206,12 @@ fn random_room_builder(rng: &mut RandomNumberGenerator, builder: &mut BuilderCha
             _ => builder.with(BspCorridors::new())
         }
 
-        let cspawn_roll = rng.roll_dice(1, 2);
+        let cspawn_roll = rng::roll_dice(1, 2);
         if cspawn_roll == 1 {
             builder.with(CorridorSpawner::new());
         }
 
-        let modifier_roll = rng.roll_dice(1, 6);
+        let modifier_roll = rng::roll_dice(1, 6);
         match modifier_roll {
             // randomly pick a room modifier (or none)
             1 => builder.with(RoomExploder::new()),
@@ -226,24 +225,24 @@ fn random_room_builder(rng: &mut RandomNumberGenerator, builder: &mut BuilderCha
     builder.with(AreaStartingPosition::new(XStart::CENTER, YStart::CENTER));
     builder.with(CullUnreachable::new());
 
-    let start_roll = rng.roll_dice(1, 2);
+    let start_roll = rng::roll_dice(1, 2);
     match start_roll {
         // randomly pick a way to determine the player start
         1 => builder.with(RoomBasedStartingPosition::new()),
         _ => {
-            let (start_x, start_y) = random_start_position(rng);
+            let (start_x, start_y) = random_start_position();
             builder.with(AreaStartingPosition::new(start_x, start_y));
         }
     }
 
-    let exit_roll = rng.roll_dice(1, 2);
+    let exit_roll = rng::roll_dice(1, 2);
     match exit_roll {
         // randomly pick a way to determine the exit
         1 => builder.with(RoomBasedStairs::new()),
         _ => builder.with(DistantExit::new())
     }
 
-    let spawn_roll = rng.roll_dice(1, 2);
+    let spawn_roll = rng::roll_dice(1, 2);
     match spawn_roll {
         // randomly pick a way to spawn entities
         1 => builder.with(RoomBasedSpawner::new()),
@@ -251,9 +250,9 @@ fn random_room_builder(rng: &mut RandomNumberGenerator, builder: &mut BuilderCha
     }
 }
 
-fn random_shape_builder(new_depth: i32, rng: &mut RandomNumberGenerator, builder: &mut BuilderChain) {
+fn random_shape_builder(new_depth: i32, builder: &mut BuilderChain) {
     // start with the first 5 map types and add the next one very depth
-    let builder_roll = rng.roll_dice(1, new_depth + 4); 
+    let builder_roll = rng::roll_dice(1, new_depth + 4); 
     let starter: Box<dyn InitialMapBuilder>;
     match builder_roll { // order is important!
         1 => starter = DrunkardsWalkBuilder::open_area(),
@@ -278,7 +277,7 @@ fn random_shape_builder(new_depth: i32, rng: &mut RandomNumberGenerator, builder
     builder.with(CullUnreachable::new());
 
     // reset the player start to a random position
-    let (start_x, start_y) = random_start_position(rng);
+    let (start_x, start_y) = random_start_position();
     builder.with(AreaStartingPosition::new(start_x, start_y));
 
     // spawn the exit and entities
@@ -286,8 +285,8 @@ fn random_shape_builder(new_depth: i32, rng: &mut RandomNumberGenerator, builder
     builder.with(VoronoiSpawning::new());
 }
 
-fn random_start_position(rng: &mut RandomNumberGenerator) -> (XStart, YStart) {
-    let x_roll = rng.roll_dice(1, 3);
+fn random_start_position() -> (XStart, YStart) {
+    let x_roll = rng::roll_dice(1, 3);
     let x = if x_roll == 1 {
         XStart::LEFT
     } else if x_roll == 2 {
@@ -295,7 +294,7 @@ fn random_start_position(rng: &mut RandomNumberGenerator) -> (XStart, YStart) {
     } else {
         XStart::CENTER
     };
-    let y_roll = rng.roll_dice(1, 3);
+    let y_roll = rng::roll_dice(1, 3);
     let y = if y_roll == 1 {
         YStart::BOTTOM
     } else if y_roll == 2 {

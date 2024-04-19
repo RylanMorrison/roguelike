@@ -1,4 +1,4 @@
-use rltk::{RGB, RandomNumberGenerator};
+use rltk::RGB;
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, MarkedBuilder};
 use std::collections::HashMap;
@@ -11,6 +11,7 @@ use super::{Pools, Player, Renderable, Name, Position, Viewshed,
     SingleActivation, mana_at_level, player_hp_at_level, StatusEffect,
     Duration, AttributeBonus, KnownSpells
 };
+use crate::rng;
 
 pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     let attributes = Attributes::default();
@@ -80,7 +81,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     player
 }
 
-pub fn spawn_room(map: &Map, rng: &mut RandomNumberGenerator, room: &Rect, map_depth: i32, spawn_list: &mut Vec<(usize, String)>) {
+pub fn spawn_room(map: &Map, room: &Rect, map_depth: i32, spawn_list: &mut Vec<(usize, String)>) {
     let mut possible_targets: Vec<usize> = Vec::new();
     {
         for y in room.y1 + 1 .. room.y2 {
@@ -92,27 +93,27 @@ pub fn spawn_room(map: &Map, rng: &mut RandomNumberGenerator, room: &Rect, map_d
             }
         }
     }
-    spawn_region(map, rng, &possible_targets, map_depth, spawn_list);
+    spawn_region(map, &possible_targets, map_depth, spawn_list);
 }
 
-pub fn spawn_region(_map: &Map, rng: &mut RandomNumberGenerator, area: &[usize], map_depth: i32, spawn_list: &mut Vec<(usize, String)>) {
+pub fn spawn_region(_map: &Map, area: &[usize], map_depth: i32, spawn_list: &mut Vec<(usize, String)>) {
     let spawn_table = room_table(map_depth);
     let mut spawn_points: HashMap<usize, String> = HashMap::new();
     let mut areas: Vec<usize> = Vec::from(area);
 
     {
         // use min to avoid spawning more entites than we have room for
-        let num_spawns = i32::min(areas.len() as i32 / 3, rng.roll_dice(1, 7) + (map_depth / 2) - 3);
+        let num_spawns = i32::min(areas.len() as i32 / 3, rng::roll_dice(1, 7) + (map_depth / 2) - 3);
         if num_spawns == 0 { return; }
 
         for _ in 0 .. num_spawns {
             let array_index = if areas.len() == 1 { 
                 0usize 
             } else {
-                (rng.roll_dice(1, areas.len() as i32)-1) as usize
+                (rng::roll_dice(1, areas.len() as i32)-1) as usize
             };
             let map_idx = areas[array_index];
-            if let Some(roll) = spawn_table.roll(rng) {
+            if let Some(roll) = spawn_table.roll() {
                 // skip rolls that don't spawn anything
                 spawn_points.insert(map_idx, roll);
             }

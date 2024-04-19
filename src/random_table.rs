@@ -1,4 +1,4 @@
-use rltk::RandomNumberGenerator;
+use crate::rng;
 
 pub struct RandomEntry {
     name: String,
@@ -30,9 +30,9 @@ impl RandomTable {
         self
     }
 
-    pub fn roll(&self, rng: &mut RandomNumberGenerator) -> Option<String> {
+    pub fn roll(&self) -> Option<String> {
         if self.total_weight == 0 { return None; }
-        let mut roll = rng.roll_dice(1, self.total_weight) - 1;
+        let mut roll = rng::roll_dice(1, self.total_weight) - 1;
         let mut index : usize = 0;
 
         while roll > 0 {

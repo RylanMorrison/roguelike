@@ -1,8 +1,8 @@
 use super::{BuilderChain, DrunkardsWalkBuilder, XStart, YStart, AreaStartingPosition, 
     CullUnreachable, VoronoiSpawning, MetaMapBuilder, BuilderMap, TileType, DistantExit};
-use rltk::RandomNumberGenerator;
+use crate::rng;
 
-pub fn limestone_cavern_builder(new_depth: i32, _rng: &mut RandomNumberGenerator, width: i32, height: i32) -> BuilderChain {
+pub fn limestone_cavern_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
     let mut chain = BuilderChain::new("Limestone Caverns", new_depth, width, height);
     chain.start_with(DrunkardsWalkBuilder::winding_passages());
     chain.with(CullUnreachable::new());
@@ -16,8 +16,8 @@ pub fn limestone_cavern_builder(new_depth: i32, _rng: &mut RandomNumberGenerator
 pub struct CaveDecorator {}
 
 impl MetaMapBuilder for CaveDecorator {
-    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
-        self.build(rng, build_data);
+    fn build_map(&mut self, build_data: &mut BuilderMap) {
+        self.build(build_data);
     }
 }
 
@@ -26,13 +26,13 @@ impl CaveDecorator {
         Box::new(CaveDecorator{})
     }
 
-    fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build(&mut self, build_data: &mut BuilderMap) {
         let old_map = build_data.map.clone();
         for (idx, tt) in build_data.map.tiles.iter_mut().enumerate() {
-            if *tt == TileType::Floor && rng.roll_dice(1, 6) == 1 {
+            if *tt == TileType::Floor && rng::roll_dice(1, 6) == 1 {
                 // convert some floor into gravel
                 *tt = TileType::Gravel;
-            } else if *tt == TileType::Floor && rng.roll_dice(1, 10) == 1 {
+            } else if *tt == TileType::Floor && rng::roll_dice(1, 10) == 1 {
                 // convert some floors into shallow pools
                 *tt = TileType::ShallowWater;
             } else if *tt == TileType::Wall {

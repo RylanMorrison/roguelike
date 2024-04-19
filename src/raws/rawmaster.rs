@@ -1,10 +1,11 @@
 use std::collections::{HashMap, HashSet};
 use specs::prelude::*;
-use rltk::{RandomNumberGenerator, RGB};
+use rltk::RGB;
 use crate::components::*;
 use super::{Raws, Reaction, RenderableData, SpawnTableEntry};
 use crate::random_table::RandomTable;
 use crate::{attr_bonus, npc_hp, mana_at_level};
+use crate::rng;
 use regex::Regex;
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 
@@ -427,9 +428,8 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
         total_initiative_penalty: 0.0,
         gold: 
         if let Some(gold) = &mob_template.gold {
-            let mut rng = RandomNumberGenerator::new();
             let (n, d, b) = parse_dice_string(&gold);
-            rng.roll_dice(n, d) + b
+            rng::roll_dice(n, d) + b
         } else {
             0
         },
@@ -667,14 +667,14 @@ pub fn get_spawn_table_for_depth(raws: &RawMaster, depth: i32) -> RandomTable {
     rt
 }
 
-pub fn get_item_drop(raws: &RawMaster, rng: &mut RandomNumberGenerator, table_name: &str) -> Option<String> {
+pub fn get_item_drop(raws: &RawMaster, table_name: &str) -> Option<String> {
     if raws.loot_index.contains_key(table_name) {
         let mut rt = RandomTable::new();
         let available_options = &raws.raws.loot_tables[raws.loot_index[table_name]];
         for item in available_options.drops.iter() {
             rt = rt.add(item.name.clone(), item.weight);
         }
-        return rt.roll(rng);
+        return rt.roll();
     }
     None
 }

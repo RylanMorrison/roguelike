@@ -27,6 +27,8 @@ pub mod spatial;
 mod effects;
 mod systems;
 pub use systems::*;
+mod rng;
+pub use rng::*;
 #[macro_use]
 extern crate lazy_static;
 
@@ -549,7 +551,6 @@ fn main() -> rltk::BError {
     gs.ecs.insert(map::MasterDungeonMap::new());
     gs.ecs.insert(Map::new("New Map", 0, 64, 64)); // w & h don't matter here
     gs.ecs.insert(Point::new(0, 0));
-    gs.ecs.insert(rltk::RandomNumberGenerator::new());
     gs.ecs.insert(particle_system::ParticleBuilder::new());
     let player_entity = spawner::player(&mut gs.ecs, 0, 0);
     gs.ecs.insert(player_entity);

@@ -1,7 +1,8 @@
 use specs::prelude::*;
 use crate::{Attributes, Duration, EquipmentChanged, Initiative, MyTurn, Pools, Position, RunState, StatusEffect, DamageOverTime};
 use crate::effects::{add_effect, EffectType, Targets};
-use rltk::{RandomNumberGenerator, Point};
+use crate::rng;
+use rltk::Point;
 
 pub struct InitiativeSystem {}
 
@@ -11,7 +12,6 @@ impl<'a> System<'a> for InitiativeSystem {
         ReadStorage<'a, Position>,
         WriteStorage<'a, MyTurn>,
         Entities<'a>,
-        WriteExpect<'a, RandomNumberGenerator>,
         ReadStorage<'a, Attributes>,
         WriteExpect<'a, RunState>,
         ReadExpect<'a, Entity>,
@@ -24,7 +24,7 @@ impl<'a> System<'a> for InitiativeSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut initiatives, positions, mut turns, entities, mut rng,
+        let (mut initiatives, positions, mut turns, entities,
             attributes, mut runstate, player, player_pos, pools,
             mut durations, mut dirty, statuses, dots) = data;
 
@@ -37,7 +37,7 @@ impl<'a> System<'a> for InitiativeSystem {
                 let mut myturn = true;
 
                 // re-roll
-                initiative.current = 6 + rng.roll_dice(1, 6);
+                initiative.current = 6 + rng::roll_dice(1, 6);
 
                 // give a bonus for dexterity
                 if let Some(attr) = attributes.get(entity) {

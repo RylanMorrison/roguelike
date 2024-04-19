@@ -1,8 +1,8 @@
-use rltk::RandomNumberGenerator;
 use specs::prelude::*;
 use crate::{raws, spatial, Chasing, Faction, Map, MyTurn, Name, Position, SpecialAbilities, Spell, Viewshed,
     WantsToApproach, WantsToCastSpell, WantsToFlee, Confusion};
 use crate::raws::{Reaction, faction_reaction, RAWS};
+use crate::rng;
 
 pub struct VisibleAI {}
 
@@ -19,7 +19,6 @@ impl<'a> System<'a> for VisibleAI {
         ReadStorage<'a, Viewshed>,
         WriteStorage<'a, Chasing>,
         ReadStorage<'a, SpecialAbilities>,
-        WriteExpect<'a, RandomNumberGenerator>,
         WriteStorage<'a, WantsToCastSpell>,
         ReadStorage<'a, Name>,
         ReadStorage<'a, Spell>,
@@ -29,7 +28,7 @@ impl<'a> System<'a> for VisibleAI {
     fn run(&mut self, data: Self::SystemData) {
         let (turns, factions, positions, map, mut want_approach, mut want_flee,
             entities, player, viewsheds, mut chasing, special_abilities,
-            mut rng, mut wants_cast, names, spells, confused) = data;
+            mut wants_cast, names, spells, confused) = data;
 
         for (entity, _turn, my_faction, pos, viewshed) in (&entities, &turns, &factions, &positions, &viewsheds).join() {
             if entity != *player {
@@ -58,7 +57,7 @@ impl<'a> System<'a> for VisibleAI {
                                 );
                                 for ability in abilities.abilities.iter() {
                                     if range >= ability.min_range && range <= ability.range
-                                    && rng.roll_dice(1, 100) >= (ability.chance * 100.0) as i32 {
+                                    && rng::roll_dice(1, 100) >= (ability.chance * 100.0) as i32 {
                                         wants_cast.insert(
                                             entity,
                                             WantsToCastSpell{

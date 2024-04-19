@@ -1,11 +1,11 @@
 use super::{MetaMapBuilder, BuilderMap, Rect, apply_horizontal_tunnel, apply_vertical_tunnel};
-use rltk::RandomNumberGenerator;
+use crate::rng;
 
 pub struct DoglegCorridors {}
 
 impl MetaMapBuilder for DoglegCorridors {
-    fn build_map(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
-        self.build(rng, build_data);
+    fn build_map(&mut self, build_data: &mut BuilderMap) {
+        self.build(build_data);
     }
 }
 
@@ -14,7 +14,7 @@ impl DoglegCorridors {
         Box::new(DoglegCorridors{})
     }
 
-    fn build(&mut self, rng: &mut RandomNumberGenerator, build_data: &mut BuilderMap) {
+    fn build(&mut self, build_data: &mut BuilderMap) {
         let rooms: Vec<Rect>;
         if let Some(rooms_builder) = &build_data.rooms {
             rooms = rooms_builder.clone();
@@ -27,7 +27,7 @@ impl DoglegCorridors {
             if i > 0 {
                 let (new_x, new_y) = room.center();
                 let (prev_x, prev_y) = rooms[rooms.len()-1].center();
-                if rng.roll_dice(1, 2) == 1 {
+                if rng::roll_dice(1, 2) == 1 {
                     let mut c1 = apply_horizontal_tunnel(&mut build_data.map,  prev_x, new_x, prev_y);
                     let mut c2 = apply_vertical_tunnel(&mut build_data.map,  prev_y, new_y, new_x);
                     c1.append(&mut c2);

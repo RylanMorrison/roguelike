@@ -4,7 +4,6 @@ use specs::prelude::*;
 use super::{World, Map, Point, Entity, TileType};
 use crate::components::{Position, Viewshed, OtherLevelPosition};
 use crate::map_builders::level_builder;
-use rltk::RandomNumberGenerator;
 
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct MasterDungeonMap {
@@ -44,9 +43,8 @@ pub fn level_transition(ecs: &mut World, new_depth: i32, offset: i32) -> Option<
 
 /// Transition the player down to a new depth
 fn transition_to_new_map(ecs: &mut World, new_depth: i32) -> Vec<Map> {
-    let mut rng = ecs.write_resource::<RandomNumberGenerator>();
-    let mut builder = level_builder(new_depth, &mut rng, 100, 80);
-    builder.build_map(&mut rng);
+    let mut builder = level_builder(new_depth, 100, 80);
+    builder.build_map();
 
     if new_depth > 1 {
         if let Some(pos) = &builder.build_data.starting_position {
@@ -66,7 +64,6 @@ fn transition_to_new_map(ecs: &mut World, new_depth: i32) -> Vec<Map> {
         player_start = builder.build_data.starting_position.as_mut().unwrap().clone();
     }
 
-    std::mem::drop(rng);
     builder.spawn_entites(ecs);
 
     // Place the player and update resources
