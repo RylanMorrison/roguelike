@@ -3,7 +3,7 @@ use specs::prelude::*;
 use specs::saveload::{SimpleMarker, MarkedBuilder};
 use std::collections::HashMap;
 use super::raws::*;
-use crate::{MasterDungeonMap, OtherLevelPosition};
+use crate::{MasterDungeonMap, OtherLevelPosition, StatusEffectChanged};
 use super::{Pools, Player, Renderable, Name, Position, Viewshed, 
     Rect, SerializeMe, random_table::RandomTable, HungerClock, HungerState, 
     Map, TileType, Attributes, Skills, Pool, LightSource, Faction,
@@ -54,6 +54,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(LightSource{ colour: RGB::from_f32(1.0, 1.0, 0.5), range: 8 })
         .with(Faction{ name: "Player".to_string() })
         .with(EquipmentChanged{})
+        .with(StatusEffectChanged{ expired: false })
         .with(KnownSpells{ spells: Vec::new() })
         .marked::<SimpleMarker<SerializeMe>>()
         .build();

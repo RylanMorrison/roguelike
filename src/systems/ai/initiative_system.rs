@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::{Attributes, Duration, EquipmentChanged, Initiative, MyTurn, Pools, Position, RunState, StatusEffect, DamageOverTime};
+use crate::{Attributes, Duration, StatusEffectChanged, Initiative, MyTurn, Pools, Position, RunState, StatusEffect, DamageOverTime};
 use crate::effects::{add_effect, EffectType, Targets};
 use crate::rng;
 use rltk::Point;
@@ -18,7 +18,7 @@ impl<'a> System<'a> for InitiativeSystem {
         ReadExpect<'a, Point>,
         ReadStorage<'a, Pools>,
         WriteStorage<'a, Duration>,
-        WriteStorage<'a, EquipmentChanged>,
+        WriteStorage<'a, StatusEffectChanged>,
         ReadStorage<'a, StatusEffect>,
         ReadStorage<'a, DamageOverTime>
     );
@@ -81,7 +81,7 @@ impl<'a> System<'a> for InitiativeSystem {
                         );
                     }
                     if duration.turns < 1 {
-                        dirty.insert(status.target, EquipmentChanged{}).expect("Unable to insert");
+                        dirty.insert(status.target, StatusEffectChanged{ expired: true }).expect("Unable to insert");
                         entities.delete(effect_entity).expect("Unable to delete");
                     }
                 }

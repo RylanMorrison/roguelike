@@ -115,17 +115,6 @@ impl<'a> System<'a> for GearEffectSystem {
             }
         }
 
-        // total up status effect modifiers
-        for (status, bonus) in (&statuses, &attribute_bonuses).join() {
-            if to_update.contains_key(&status.target) {
-                let totals = to_update.get_mut(&status.target).unwrap();
-                totals.strength += bonus.strength.unwrap_or(0);
-                totals.dexterity += bonus.dexterity.unwrap_or(0);
-                totals.constitution += bonus.constitution.unwrap_or(0);
-                totals.intelligence += bonus.intelligence.unwrap_or(0);
-            }
-        }
-
         // total up haste/slow
         for (status, slow) in (&statuses, &slowed).join() {
             if to_update.contains_key(&status.target) {

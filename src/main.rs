@@ -197,15 +197,6 @@ impl GameState for State {
                 if should_change_target {
                     player::change_target(&mut self.ecs);
                 }
-                /*
-                    The run order of systems causes an issue where data is updated by the systems but only utilised on
-                    the next iteration. For example:
-                    - GearEffectSystem runs to ensure all gear and pools are up to date before initiative checks are run
-                    - InitiativeSystem runs to determine turn order and expire status effects
-                    - Gear and pools without the expired status effect are only updated the next time GearEffectSystem is run
-                    Therefore, run all systems again before proceeding from Ticking to ensure everything is up to date
-                 */
-                self.run_systems();
             }
             RunState::ShowInventory => {
                 let result = gui::show_inventory(self, ctx);
@@ -543,6 +534,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Target>();
     gs.ecs.register::<WantsToShoot>();
     gs.ecs.register::<Stun>();
+    gs.ecs.register::<StatusEffectChanged>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     raws::load_raws();

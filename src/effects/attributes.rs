@@ -1,6 +1,6 @@
 use specs::{prelude::*, saveload::SimpleMarker, saveload::MarkedBuilder};
 use super::*;
-use crate::components::{StatusEffect, Duration, Name, EquipmentChanged, SerializeMe};
+use crate::{Duration, StatusEffectChanged, Name, SerializeMe, StatusEffect};
 
 pub fn apply_effect(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     if let EffectType::AttributeEffect{bonus, name, duration} = &effect.effect_type {
@@ -11,7 +11,7 @@ pub fn apply_effect(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
             .with(Name{ name: name.clone() })
             .marked::<SimpleMarker<SerializeMe>>()
             .build();
-        ecs.write_storage::<EquipmentChanged>().insert(target, EquipmentChanged{}).expect("Insert failed");
+        ecs.write_storage::<StatusEffectChanged>().insert(target, StatusEffectChanged{ expired: false }).expect("Insert failed");
     }
 }
 

@@ -11,6 +11,9 @@ pub mod particle_system;
 mod ranged_combat_system;
 mod trigger_system;
 mod visibility_system;
+mod turn_status_system;
+mod gear_effect_system;
+mod status_effect_system;
 
 pub use dispatcher::UnifiedDispatcher;
 use ai::*;
@@ -25,6 +28,9 @@ use particle_system::ParticleSpawnSystem;
 use ranged_combat_system::RangedCombatSystem;
 use trigger_system::TriggerSystem;
 use visibility_system::VisibilitySystem;
+use turn_status_system::TurnStatusSystem;
+use gear_effect_system::GearEffectSystem;
+use status_effect_system::StatusEffectSystem;
 
 pub fn build() -> Box<dyn UnifiedDispatcher + 'static> {
     dispatcher::new()

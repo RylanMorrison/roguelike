@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use rltk::RGB;
-use crate::{HungerClock, HungerState, MyTurn, Map};
+use crate::{HungerClock, HungerState, MyTurn, Map, RunState};
 use crate::effects::{add_effect, EffectType, Targets};
 use crate::gamelog;
 
@@ -12,14 +12,16 @@ impl<'a> System<'a> for HungerSystem {
         WriteStorage<'a, HungerClock>,
         ReadExpect<'a, Entity>,
         ReadStorage<'a, MyTurn>,
-        ReadExpect<'a, Map>
+        ReadExpect<'a, Map>,
+        ReadExpect<'a, RunState>
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (entities, mut hunger_clock, player_entity,
-            turns, map) = data;
+            turns, map, runstate) = data;
 
         if map.depth == 0 { return; }
+        if *runstate != RunState::AwaitingInput { return; }
 
         for (entity, clock, _myturn) in (&entities, &mut hunger_clock, &turns).join() {
             // only processes if it is the entities turn

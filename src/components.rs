@@ -865,3 +865,8 @@ where
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Stun {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct StatusEffectChanged {
+    pub expired: bool
+}
