@@ -28,20 +28,6 @@ pub fn print_log(console: &mut Box<dyn Console>, pos: Point) {
     });
 }
 
-pub fn log_display() -> TextBuilder {
-    let mut buffer = TextBuilder::empty();
-
-    LOG.lock().unwrap().iter().rev().take(12).for_each(|log| {
-        log.iter().for_each(|frag| {
-            buffer.fg(frag.colour);
-            buffer.line_wrap(&frag.text);
-        });
-        buffer.ln();
-    });
-
-    buffer
-}
-
 pub fn clone_log() -> Vec<Vec<LogFragment>> {
     LOG.lock().unwrap().clone()
 }

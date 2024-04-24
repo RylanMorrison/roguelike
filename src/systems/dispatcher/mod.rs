@@ -24,14 +24,9 @@ construct_dispatcher!(
     (StatusEffectSystem, "status_effect", &[]),
     (InitiativeSystem, "initiative", &[]),
     (TurnStatusSystem, "turn_status", &[]),
+    (QuipSystem, "quips", &[]),
     (HungerSystem, "hunger", &[]),
     (LevelUpSystem, "level_up", &[]),
-    (ItemCollectionSystem, "item_collection", &[]),
-    (ItemEquipSystem, "item_equip", &[]),
-    (ItemUseSystem, "item_use", &[]),
-    (SpellUseSystem, "spell_use", &[]),
-    (ItemDropSystem, "item_drop", &[]),
-    (ItemUnequipSystem, "item_unequip", &[]),
     (AdjacentAI, "adjacent_ai", &[]),
     (VisibleAI, "visible_ai", &[]),
     (ApproachAI, "approach_ai", &[]),
@@ -40,11 +35,14 @@ construct_dispatcher!(
     (TriggerSystem, "triggers", &[]),
     (MeleeCombatSystem, "melee_combat", &[]),
     (RangedCombatSystem, "ranged_combat", &[]),
-    (FleeAI, "flee_ai", &[]),
-    (ChaseAI, "chase_ai", &[]),
+    (ItemCollectionSystem, "item_collection", &[]),
+    (ItemEquipSystem, "item_equip", &[]),
+    (ItemUseSystem, "item_use", &[]),
+    (SpellUseSystem, "spell_use", &[]),
+    (ItemDropSystem, "item_drop", &[]),
+    (ItemUnequipSystem, "item_unequip", &[]),
     (ParticleSpawnSystem, "particle_spawn", &[]),
-    (LightingSystem, "lighting", &[]),
-    (QuipSystem, "quips", &[])
+    (LightingSystem, "lighting", &[])
 );
 
 pub fn new() -> Box<dyn UnifiedDispatcher + 'static> {

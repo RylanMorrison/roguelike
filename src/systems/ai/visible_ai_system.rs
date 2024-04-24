@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use crate::{raws, spatial, Chasing, Faction, Map, MyTurn, Name, Position, SpecialAbilities, Spell, Viewshed,
-    WantsToApproach, WantsToCastSpell, WantsToFlee, Confusion};
+    WantsToApproach, WantsToCastSpell, WantsToFlee, Confusion, Equipped, Weapon, WantsToShoot};
 use crate::raws::{Reaction, faction_reaction, RAWS};
 use crate::rng;
 
@@ -22,13 +22,18 @@ impl<'a> System<'a> for VisibleAI {
         WriteStorage<'a, WantsToCastSpell>,
         ReadStorage<'a, Name>,
         ReadStorage<'a, Spell>,
-        ReadStorage<'a, Confusion>
+        ReadStorage<'a, Confusion>,
+        ReadStorage<'a, Equipped>,
+        ReadStorage<'a, Weapon>,
+        WriteStorage<'a, WantsToShoot>
+        
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (turns, factions, positions, map, mut want_approach, mut want_flee,
             entities, player, viewsheds, mut chasing, special_abilities,
-            mut wants_cast, names, spells, confused) = data;
+            mut wants_cast, names, spells, confused, equipped,
+            weapons, mut wants_shoot) = data;
 
         for (entity, _turn, my_faction, pos, viewshed) in (&entities, &turns, &factions, &positions, &viewsheds).join() {
             if entity != *player {
@@ -50,11 +55,11 @@ impl<'a> System<'a> for VisibleAI {
                     }
                     match reaction.1 {
                         Reaction::Attack => {
+                            let range = rltk::DistanceAlg::Pythagoras.distance2d(
+                                rltk::Point::new(pos.x, pos.y),
+                                rltk::Point::new(reaction.0 as i32 % map.width, reaction.0 as i32 / map.width)
+                            );
                             if let Some(abilities) = special_abilities.get(entity) {
-                                let range = rltk::DistanceAlg::Pythagoras.distance2d(
-                                    rltk::Point::new(pos.x, pos.y),
-                                    rltk::Point::new(reaction.0 as i32 % map.width, reaction.0 as i32 / map.width)
-                                );
                                 for ability in abilities.abilities.iter() {
                                     if range >= ability.min_range && range <= ability.range
                                     && rng::roll_dice(1, 100) >= (ability.chance * 100.0) as i32 {
@@ -66,6 +71,18 @@ impl<'a> System<'a> for VisibleAI {
                                             }
                                         ).expect("Unable to insert");
                                         done = true;
+                                    }
+                                }
+                            }
+                            if !done {
+                                for (weapon, equip) in (&weapons, &equipped).join() {
+                                    if let Some(weapon_range) = weapon.range {
+                                        if equip.owner == entity {
+                                            if weapon_range >= range as i32 {
+                                                wants_shoot.insert(entity, WantsToShoot{ target: reaction.2 }).expect("Insert failed");
+                                                done = true;
+                                            }
+                                        }
                                     }
                                 }
                             }

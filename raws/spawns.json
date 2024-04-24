@@ -1935,7 +1935,7 @@
             "level": 2,
             "renderable": {
                 "glyph": "g",
-                "fg": "#FF5500",
+                "fg": "#fd6417",
                 "bg": "#000000",
                 "order": 1
             },
@@ -1988,7 +1988,7 @@
             "level": 2,
             "renderable": {
                 "glyph": "o",
-                "fg": "#FF5500",
+                "fg": "#fd6417",
                 "bg": "#000000",
                 "order": 1
             },
