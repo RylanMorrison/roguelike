@@ -83,14 +83,7 @@ impl State {
         } else {
             map::thaw_level_entities(&mut self.ecs);
         }
-
         gamelog::clear_log();
-        gamelog::Logger::new()
-            .append("Welcome to")
-            .colour(RGB::named(rltk::CYAN))
-            .append("Taverns of Stoner Doom")
-            .log();
-        gamelog::clear_events();
     }
 
     fn change_level(&mut self, offset: i32) {
@@ -122,6 +115,7 @@ impl State {
 
         // build a new map
         self.generate_world_map(0, 0);
+        gamelog::clear_events();
     }
 }
 
@@ -443,7 +437,7 @@ fn main() -> rltk::BError {
     use rltk::RltkBuilder;
     let mut context = RltkBuilder::simple(100, 80)
         .unwrap()
-        .with_title("Taverns of Stoner Doom")
+        .with_title("Roguelike")
         .with_fps_cap(30.0)
         .with_font("vga8x16.png", 8, 16)
         .with_sparse_console(100, 40, "vga8x16.png")

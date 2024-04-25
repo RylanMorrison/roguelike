@@ -1,7 +1,9 @@
 use specs::prelude::*;
+use std::collections::HashMap;
 use super::{Pools, Player, Name, RunState, Position, LootTable};
 use crate::raws;
 use crate::gamelog;
+use crate::rng;
 
 pub fn delete_the_dead(ecs : &mut World) {
     let mut dead : Vec<Entity> = Vec::new();
@@ -34,21 +36,28 @@ pub fn delete_the_dead(ecs : &mut World) {
     }
 
     // loot
-    let mut to_spawn: Vec<(String, Position)> = Vec::new();
+    let mut to_spawn: HashMap<String, Position> = HashMap::new();
     {
         let positions = ecs.write_storage::<Position>();
         let loot_tables = ecs.read_storage::<LootTable>();
         for victim in dead.iter() {
-            let pos = positions.get(*victim);
+            let position = positions.get(*victim);
             if let Some(table) = loot_tables.get(*victim) {
-                let drop_finder = raws::get_item_drop(
-                    &raws::RAWS.lock().unwrap(),
-                    &table.table_name
-                );
-                // store what loot to spawn
-                if let Some(tag) = drop_finder {
-                    if let Some(pos) = pos {
-                        to_spawn.push((tag, pos.clone()));
+                for _ in 1..4 {
+                    let roll = rng::roll_dice(1, 4);
+                    if roll == 4 {
+                        let item_drop = raws::get_item_drop(
+                            &raws::RAWS.lock().unwrap(),
+                            &table.table_name
+                        );
+                        // store what loot to spawn
+                        if let Some(drop) = item_drop {
+                            if let Some(pos) = position {
+                                if !to_spawn.contains_key(&drop) {
+                                    to_spawn.insert(drop, pos.clone());
+                                }
+                            }
+                        }
                     }
                 }
             }
