@@ -155,9 +155,7 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
         &RAWS.lock().unwrap(), ecs,
         &spawn.1, SpawnType::AtPosition{ x, y }
     );
-    if spawn_result.is_some() {
-        return;
-    }
+    if spawn_result.is_some() { return; }
 
     rltk::console::log(format!("WARNING: We don't know how to spawn [{}]!", spawn.1));
 }

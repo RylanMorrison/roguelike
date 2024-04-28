@@ -3,7 +3,7 @@ use gui::LevelUpMenuResult;
 use rltk::{GameState, Rltk, Point};
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 
 pub mod components;
 pub mod map;
@@ -547,6 +547,9 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Dodge>();
     gs.ecs.register::<WantsToLearnAbility>();
     gs.ecs.register::<WantsToLevelAbility>();
+    gs.ecs.register::<Quests>();
+    gs.ecs.register::<ActiveQuests>();
+    gs.ecs.register::<QuestProgress>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     raws::load_raws();
@@ -563,5 +566,8 @@ fn main() -> rltk::BError {
     raws::spawn_all_abilities(&mut gs.ecs);
     gs.ecs.insert(ItemSets{ item_sets: HashMap::new() });
     raws::store_all_item_sets(&mut gs.ecs);
+    gs.ecs.insert(Quests{ quests: VecDeque::new() });
+    gs.ecs.insert(ActiveQuests{ quests: Vec::new() });
+    raws::store_all_quests(&mut gs.ecs);
     rltk::main_loop(context, gs)
 }

@@ -24,7 +24,8 @@ pub struct RawMaster {
     loot_index: HashMap<String, usize>,
     faction_index: HashMap<String, HashMap<String, Reaction>>,
     chest_index: HashMap<String, usize>,
-    character_class_index: HashMap<String, usize>
+    character_class_index: HashMap<String, usize>,
+    quest_index: HashMap<String, usize>
 }
 
 impl RawMaster {
@@ -41,7 +42,8 @@ impl RawMaster {
                 loot_tables: Vec::new(),
                 faction_table: Vec::new(),
                 chests: Vec::new(),
-                character_classes: Vec::new()
+                character_classes: Vec::new(),
+                quests: Vec::new()
             },
             item_index: HashMap::new(),
             item_set_index: HashMap::new(),
@@ -51,7 +53,8 @@ impl RawMaster {
             loot_index: HashMap::new(),
             faction_index: HashMap::new(),
             chest_index: HashMap::new(),
-            character_class_index: HashMap::new()
+            character_class_index: HashMap::new(),
+            quest_index: HashMap::new()
         }
     }
 
@@ -131,6 +134,20 @@ impl RawMaster {
             used_names.insert(character_class.name.clone());
         }
         
+        for (i, quest) in self.raws.quests.iter().enumerate() {
+            if used_names.contains(&quest.name) {
+                rltk::console::log(format!("WARNING - duplicate quest name in raws [{}]", quest.name));
+            }
+            for requirement in quest.requirements.iter() {
+                for target in requirement.targets.iter() {
+                    if !used_names.contains(target) {
+                        rltk::console::log(format!("WARNING - quest ({}) target references unspecified entity {}", quest.name, target));
+                    }
+                }
+            }
+            self.quest_index.insert(quest.name.clone(), i);
+            used_names.insert(quest.name.clone());
+        }
     }
 }
 
@@ -728,6 +745,54 @@ pub fn spawn_named_character_class(raws: &RawMaster, ecs: &mut World, key: &str)
     }
 
     None
+}
+
+pub fn store_all_quests(ecs: &mut World) {
+    let raws = &super::RAWS.lock().unwrap();
+    for quest in raws.raws.quests.iter() {
+        store_named_quest(raws, ecs, &quest.name);
+    }
+}
+
+pub fn store_named_quest(raws: &RawMaster, ecs: &mut World, key: &str) {
+    if raws.quest_index.contains_key(key) {
+        let quest_template = &raws.raws.quests[raws.quest_index[key]];
+
+        let mut quests = ecs.fetch_mut::<Quests>();
+        let mut quest_requirements: Vec<QuestRequirement> = Vec::new();
+        for requirement in quest_template.requirements.iter() {
+            let requirement_goal = match requirement.goal.as_str() {
+                "kill_count" => QuestRequirementGoal::KillCount,
+                _ => {
+                    rltk::console::log(format!("WARNING - Unknown quest requirement goal [{}]", requirement.goal));
+                    QuestRequirementGoal::None
+                }
+            };
+            let requirement_count = requirement.count.unwrap_or(0);
+            if requirement_goal == QuestRequirementGoal::KillCount && requirement_count == 0 {
+                rltk::console::log(format!("WARNING - Kill count requirement without a count! [{}]", requirement.goal));
+            }
+
+            quest_requirements.push(QuestRequirement {
+                requirement_goal,
+                targets: requirement.targets.clone(),
+                count: 0,
+                target_count: requirement_count,
+                complete: false
+            });
+        }
+        let quest_reward = QuestReward {
+            gold: quest_template.reward.gold.clone()
+        };
+        quests.quests.push_back(Quest {
+            name: quest_template.name.clone(),
+            reward: quest_reward,
+            requirements: quest_requirements
+        });
+
+        let mut active = ecs.fetch_mut::<ActiveQuests>();
+        active.quests.push(quests.quests.back().unwrap().clone());
+    }
 }
 
 pub fn store_all_item_sets(ecs: &mut World) {

@@ -8,6 +8,7 @@ mod faction_structs;
 mod ability_structs;
 mod chest_structs;
 mod character_class_structs;
+mod quest_structs;
 mod rawmaster;
 
 use item_structs::*;
@@ -20,6 +21,7 @@ pub use ability_structs::*;
 pub use faction_structs::*;
 pub use chest_structs::*;
 pub use character_class_structs::*;
+pub use quest_structs::*;
 pub use rawmaster::*;
 
 use serde::Deserialize;
@@ -70,7 +72,8 @@ pub struct Raws {
     pub loot_tables: Vec<LootTableData>,
     pub faction_table: Vec<FactionData>,
     pub chests: Vec<ChestData>,
-    pub character_classes: Vec<CharacterClassData>
+    pub character_classes: Vec<CharacterClassData>,
+    pub quests: Vec<QuestData>
 }
 
 pub fn load_raws() {

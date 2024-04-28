@@ -16,6 +16,7 @@ mod turn_status_system;
 mod gear_effect_system;
 mod status_effect_system;
 pub mod saveload_system;
+mod quest_system;
 
 pub use dispatcher::UnifiedDispatcher;
 use ai::*;
@@ -35,6 +36,7 @@ use turn_status_system::TurnStatusSystem;
 use gear_effect_system::GearEffectSystem;
 use status_effect_system::StatusEffectSystem;
 pub use saveload_system::*;
+use quest_system::QuestSystem;
 
 pub fn build() -> Box<dyn UnifiedDispatcher + 'static> {
     dispatcher::new()

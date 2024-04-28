@@ -2,7 +2,8 @@ use specs::prelude::*;
 use rltk::prelude::*;
 use super::{box_gray, light_gray, cyan, green, red, black, white, yellow, orange, gold, blue, draw_tooltips};
 use crate::{Map, Entity, Pools, Attributes, Attribute, Skills, Skill, Equipped, Item, Name, Consumable, InBackpack, AbilityType,
-    KnownAbilities, KnownAbility, HungerClock, StatusEffect, Duration, HungerState, player_xp_for_level, carry_capacity_lbs};
+    KnownAbilities, KnownAbility, HungerClock, StatusEffect, Duration, HungerState, QuestRequirementGoal, Quest, ActiveQuests,
+    player_xp_for_level, carry_capacity_lbs};
 use crate::raws;
 use crate::gamelog;
 
@@ -200,6 +201,46 @@ fn draw_status_effects(ecs: &World, draw_batch: &mut DrawBatch, player: &Entity)
     }
 }
 
+fn quest_box_height(quests: &Vec<Quest>) -> i32 {
+    let mut height = 0;
+    for quest in quests.iter() {
+        height += quest.requirements.len() + 1;
+    }
+    (height * 2 - 1) as i32
+}
+
+fn draw_quests(ecs: &World, draw_batch: &mut DrawBatch) {
+    let active_quests = &ecs.fetch::<ActiveQuests>().quests;
+    if active_quests.len() == 0 { return; }
+
+    let mut y = 2;
+    draw_batch.draw_box(Rect::with_size(0, 0, 40, quest_box_height(active_quests)), ColorPair::new(box_gray(), black()));
+    for quest in active_quests.iter() {
+        if quest.is_complete() {
+            draw_batch.print_color(Point::new(1, y), quest.name.clone(), ColorPair::new(green(), black()));
+        } else {
+            draw_batch.print_color(Point::new(1, y), quest.name.clone(), ColorPair::new(yellow(), black()));
+        }
+        y += 1;
+
+        let requirements = &quest.requirements;
+        for req in requirements.iter() {
+            match req.requirement_goal {
+                QuestRequirementGoal::KillCount => {
+                    if req.complete {
+                        draw_batch.print_color(Point::new(3, y), format!("{}/{} killed", req.count, req.target_count), ColorPair::new(green(), black()));
+                    } else {
+                        draw_batch.print_color(Point::new(3, y), format!("{}/{} killed", req.count, req.target_count), ColorPair::new(white(), black()));
+                    }
+                }
+                QuestRequirementGoal::None => {}
+            }
+            y += 1;
+        }
+        y += 1;
+    }
+}
+
 pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
     let mut draw_batch = DrawBatch::new();
     let player_entity = ecs.fetch::<Entity>();
@@ -214,6 +255,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
     draw_consumables(ecs, &mut draw_batch, &player_entity, &mut y);
     draw_abilities(ecs, &mut draw_batch, &player_entity, &mut y);
     draw_status_effects(ecs, &mut draw_batch, &player_entity);
+    draw_quests(ecs, &mut draw_batch);
 
     gamelog::print_log(&mut rltk::BACKEND_INTERNAL.lock().consoles[1].console, Point::new(1, 33));
     draw_tooltips(ecs, ctx);

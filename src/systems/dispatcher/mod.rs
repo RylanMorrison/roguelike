@@ -38,6 +38,7 @@ construct_dispatcher!(
     (TriggerSystem, "triggers", &[]),
     (MeleeCombatSystem, "melee_combat", &["adjacent_ai"]),
     (RangedCombatSystem, "ranged_combat", &["visible_ai"]),
+    (QuestSystem, "quests", &[]),
     (ItemCollectionSystem, "item_collection", &[]),
     (ItemEquipSystem, "item_equip", &[]),
     (ItemUseSystem, "item_use", &[]),

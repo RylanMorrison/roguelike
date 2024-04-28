@@ -1,4 +1,51 @@
 {
+    "quests": [
+        {
+            "name": "Kill 2 wolves and 3 kobolds",
+            "reward": {
+                "gold": "3d20"
+            },
+            "requirements": [
+                {
+                    "goal": "kill_count",
+                    "targets": ["Wolf"],
+                    "count": 2
+                },
+                {
+                    "goal": "kill_count",
+                    "targets": ["Kobold"],
+                    "count": 3
+                }
+            ]
+        },
+        {
+            "name": "Kill 5 bandits",
+            "reward": {
+                "gold": "3d20+10"
+            },
+            "requirements": [
+                {
+                    "goal": "kill_count",
+                    "targets": ["Bandit"],
+                    "count": 5
+                }
+            ]
+        },
+        {
+            "name": "Kill 10 forest enemies",
+            "reward": {
+                "gold": "4d20"
+            },
+            "requirements": [
+                {
+                    "goal": "kill_count",
+                    "targets": ["Wolf", "Kobold", "Bandit"],
+                    "count": 10
+                }
+            ]
+        }
+    ],
+
     "spawn_table": [ 
         { "name": "Common Chest", "weight": 3, "min_depth": 3, "max_depth": 100 },
         { "name": "Rare Chest", "weight": 2, "min_depth": 5, "max_depth": 100 },

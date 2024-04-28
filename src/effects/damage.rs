@@ -1,8 +1,9 @@
 use specs::{prelude::*, saveload::SimpleMarker, saveload::MarkedBuilder};
 use super::*;
-use crate::components::{Pools, StatusEffect, StatusEffectChanged, DamageOverTime, Duration, Name};
-use crate::{gamelog, player_xp_for_level, Map, Player};
-use crate::{spatial, SerializeMe, RunState};
+use crate::{Pools, StatusEffect, StatusEffectChanged, DamageOverTime, Duration, Name, Map, Player, QuestProgress, ProgressSource, RunState, 
+    SerializeMe, player_xp_for_level};
+use crate::gamelog;
+use crate::spatial;
 use crate::player;
 
 pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
@@ -79,6 +80,8 @@ pub fn death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     let mut gold_gain = 0;
 
     let mut pools = ecs.write_storage::<Pools>();
+    let names = ecs.read_storage::<Name>();
+    let mut quest_progress = ecs.write_storage::<QuestProgress>();
 
     if let Some(pos) = entity_position(ecs, target) {
         spatial::remove_entity(target, pos as usize);
@@ -90,6 +93,10 @@ pub fn death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
                 xp_gain += pools.level * 100;
                 gold_gain += pools.gold;
                 gamelog::record_event("Kill", 1);
+
+                if let Some(name) = names.get(target) {
+                    quest_progress.insert(source, QuestProgress { target: name.name.clone(), source: ProgressSource::Kill }).expect("Unable to insert");
+                }
             }
 
             if xp_gain != 0 || gold_gain != 0 {

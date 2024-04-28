@@ -9,7 +9,7 @@ use serde::{Serialize, Deserialize};
 use rltk::{RGB, Point, FontCharType};
 use crate::gamelog::LogFragment;
 use super::attr_bonus;
-use std::{collections::{BTreeMap, HashMap}, convert::Infallible};
+use std::{collections::{BTreeMap, HashMap, VecDeque}, convert::Infallible};
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Position {
@@ -1101,4 +1101,61 @@ pub struct WantsToLearnAbility {
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct WantsToLevelAbility {
     pub ability_name: String
+}
+
+#[derive(Component, Serialize, Deserialize, Clone)]
+pub struct Quests {
+    pub quests: VecDeque<Quest>
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct ActiveQuests {
+    pub quests: Vec<Quest>
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Quest {
+    pub name: String,
+    pub reward: QuestReward,
+    pub requirements: Vec<QuestRequirement>
+}
+
+impl Quest {
+    pub fn is_complete(&self) -> bool {
+        for requirement in self.requirements.iter() {
+            if !requirement.complete { return false; }
+        }
+        true
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct QuestReward {
+    pub gold: String
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Copy, Clone)]
+pub enum QuestRequirementGoal {
+    None,
+    KillCount
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct QuestRequirement {
+    pub requirement_goal: QuestRequirementGoal,
+    pub targets: Vec<String>,
+    pub count: i32,
+    pub target_count: i32,
+    pub complete: bool
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Copy, Clone)]
+pub enum ProgressSource {
+    Kill
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct QuestProgress {
+    pub target: String,
+    pub source: ProgressSource
 }
