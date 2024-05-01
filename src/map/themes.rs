@@ -4,8 +4,8 @@ use rltk::{RGB, FontCharType};
 pub fn tile_glyph(idx: usize, map: &Map) -> (FontCharType, RGB, RGB) {
     let (glyph, mut fg, mut bg) = 
         match map.depth {
-            1 => get_forest_glyph(idx, map),
-            2 => get_limestone_caverns_glyph(idx, map),
+            1 | 2 | 3 => get_forest_glyph(idx, map),
+            4 => get_limestone_caverns_glyph(idx, map),
             _ => get_default_glyph(idx, map)
     };
 
@@ -32,10 +32,13 @@ fn get_default_glyph(idx: usize, map: &Map) -> (FontCharType, RGB, RGB) {
             fg = RGB::from_f32(0.0, 1.0, 0.0);
         }
         TileType::Wall => {
-            let x = idx as i32 % map.width;
-            let y = idx as i32 / map.width;
+            let (x, y) = map.idx_xy(idx);
             glyph = wall_glyph(&*map, x, y);
             fg = RGB::from_f32(0.0, 1.0, 0.0);
+        }
+        TileType::TownWall => {
+            glyph = rltk::to_cp437('#');
+            fg = RGB::named(rltk::CHOCOLATE);
         }
         TileType::DownStairs => {
             glyph = rltk::to_cp437('>');
@@ -122,6 +125,10 @@ fn get_forest_glyph(idx: usize, map: &Map) -> (FontCharType, RGB, RGB) {
             glyph = rltk::to_cp437('♣');
             fg = RGB::from_f32(0.0, 0.6, 0.0);
         }
+        TileType::TownWall => {
+            glyph = rltk::to_cp437('#');
+            fg = RGB::named(rltk::CHOCOLATE);
+        }
         TileType::DownStairs => {
             glyph = rltk::to_cp437('>');
             fg = RGB::from_f32(0., 1.0, 1.0);
@@ -176,6 +183,10 @@ fn get_limestone_caverns_glyph(idx: usize, map: &Map) -> (FontCharType, RGB, RGB
         TileType::Wall => {
             glyph = rltk::to_cp437('▒');
             fg = RGB::from_f32(0.7, 0.7, 0.7);
+        }
+        TileType::TownWall => {
+            glyph = rltk::to_cp437('#');
+            fg = RGB::named(rltk::CHOCOLATE);
         }
         TileType::DownStairs => {
             glyph = rltk::to_cp437('>');

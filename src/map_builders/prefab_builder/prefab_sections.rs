@@ -12,56 +12,40 @@ pub struct PrefabSection {
     pub placement : (HorizontalPlacement, VerticalPlacement)
 }
 
-pub const UNDERGROUND_FORT : PrefabSection = PrefabSection{
-    template : RIGHT_FORT,
-    width: 15,
-    height: 43,
-    placement: ( HorizontalPlacement::Right, VerticalPlacement::Top )
+pub const ORC_CAMP : PrefabSection = PrefabSection{
+    template : ORC_CAMP_RIGHT,
+    width: 35,
+    height: 27,
+    placement: ( HorizontalPlacement::Right, VerticalPlacement::Center )
 };
 
 #[allow(dead_code)]
-const RIGHT_FORT : &str = "
-     #         
-  #######      
-  #     #      
-  #     #######
-  #  O        #
-  #     #######
-  #     #      
-  ### ###      
-    # #        
-    # #        
-    # ##       
-               
-               
-    # ##       
-    # #        
-    # #        
-    # #        
-    # #        
-  ### ###      
-  #     #      
-  #     #     D
-  #  O  #   D >
-  #     #     D
-  #     #      
-  ### ###      
-    # #        
-    # #        
-    # #        
-    # ##       
-               
-               
-    # ##       
-    # #        
-    # #        
-    # #        
-  ### ###      
-  #     #      
-  #     #######
-  #  O        #
-  #     #######
-  #     #      
-  #######      
-     #         
+const ORC_CAMP_RIGHT : &str = "
+      #############################
+      #  #####  #####  #####  #####
+      #  # o #  # o #  # o #  # o #
+      #  ## ##  ## ##  ## ##  ## ##
+      #                            
+      #                            
+      #  #####  #####  #####  #####
+      #  # o #  # o #  # o #  # o #
+      #  ## ##  ## ##  ## ##  ## ##
+   o  #                            
+                                   
+   o  #                            
+   o  #                            
+                                O >
+   o  #                            
+   o  #                            
+                                   
+   o  #                            
+      #  ## ##  ## ##  ## ##  ## ##
+      #  # o #  # o #  # o #  # o #
+      #  #####  #####  #####  #####
+      #                            
+      #                            
+      #  ## ##  ## ##  ## ##  ## ##
+      #  # o #  # o #  # o #  # o #
+      #  #####  #####  #####  #####
+      #############################
 ";

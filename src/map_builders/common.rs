@@ -1,5 +1,6 @@
 use super::{Map, TileType};
 use std::cmp::{max, min};
+use crate::rng;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum Symmetry { None, Horizontal, Vertical, Both }
@@ -28,7 +29,7 @@ pub fn apply_vertical_tunnel(map: &mut Map, y1: i32, y2: i32, x: i32) -> Vec<usi
     corridor
 }
 
-pub fn draw_corridor(map: &mut Map, x1:i32, y1:i32, x2:i32, y2:i32) -> Vec<usize> {
+pub fn draw_corridor(map: &mut Map, x1: i32, y1: i32, x2: i32, y2: i32, size: i32) -> Vec<usize> {
     let mut corridor = Vec::new();
     let mut x = x1;
     let mut y = y1;
@@ -44,12 +45,14 @@ pub fn draw_corridor(map: &mut Map, x1:i32, y1:i32, x2:i32, y2:i32) -> Vec<usize
             y -= 1;
         }
 
-        let idx = map.xy_idx(x, y);
-        if map.tiles[idx] != TileType::Floor {
-            map.tiles[idx] = TileType::Floor;
-            corridor.push(idx);
+        for i in 0..=size {
+            let idx = map.xy_idx(x + i, y + i);
+            
+            if map.tiles[idx] != TileType::Floor {
+                map.tiles[idx] = TileType::Floor;
+                corridor.push(idx);
+            }
         }
-        
     }
     corridor
 }

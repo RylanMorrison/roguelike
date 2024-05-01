@@ -64,7 +64,7 @@ impl PrefabBuilder {
     fn char_to_map(&mut self, ch: char, idx: usize, build_data: &mut BuilderMap) {
         match ch {
             ' ' => build_data.map.tiles[idx] = TileType::Floor,
-            '#' => build_data.map.tiles[idx] = TileType::Wall,
+            '#' => build_data.map.tiles[idx] = TileType::TownWall,
             '@' => {
                 let x = idx as i32 % build_data.map.width;
                 let y = idx as i32 / build_data.map.width;
@@ -306,17 +306,17 @@ fn random_shield() -> String {
 }
 
 fn random_goblin() -> String {
-    let roll = rng::roll_dice(1, 2);
+    let roll = rng::roll_dice(1, 4);
     match roll {
-        1 => "Goblin Warrior".to_string(),
-        _ => "Goblin Archer".to_string()
+        1 => "Goblin Archer".to_string(),
+        _ => "Goblin Warrior".to_string()
     }
 }
 
 fn random_orc() -> String {
-    let roll = rng::roll_dice(1, 2);
+    let roll = rng::roll_dice(1, 4);
     match roll {
-        1 => "Orc Warrior".to_string(),
-        _ => "Orc Archer".to_string()
+        1 => "Orc Archer".to_string(),
+        _ => "Orc Warrior".to_string()
     }
 }

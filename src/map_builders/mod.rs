@@ -30,9 +30,13 @@ mod corridor_spawner;
 mod door_placement;
 mod town;
 mod forest;
+mod dark_forest;
+mod orc_camp;
 mod limestone_caverns;
 use town::town_builder;
 use forest::forest_builder;
+use dark_forest::dark_forest_builder;
+use orc_camp::orc_camp_builder;
 use limestone_caverns::limestone_cavern_builder;
 use distant_exit::DistantExit;
 use simple_map::SimpleMapBuilder;
@@ -154,7 +158,9 @@ pub fn level_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
     match new_depth {
         0 => town_builder(new_depth, width, height),
         1 => forest_builder(new_depth, width, height),
-        2 => limestone_cavern_builder(new_depth, width, height),
+        2 => dark_forest_builder(new_depth, width, height),
+        3 => orc_camp_builder(new_depth, width, height),
+        4 => limestone_cavern_builder(new_depth, width, height),
         _ => random_builder(new_depth, width, height)
     }
 }
@@ -167,10 +173,6 @@ pub fn random_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
         _ => random_shape_builder(new_depth, &mut builder)
     }
 
-    if new_depth >= 10 && rng::roll_dice(1, 3) == 1 {
-        // only have a chance to add a fort from depth 10 onwards
-        builder.with(PrefabBuilder::sectional(prefab_builder::prefab_sections::UNDERGROUND_FORT));
-    }
     builder.with(DoorPlacement::new());
     builder.with(PrefabBuilder::vaults());
     builder
@@ -179,7 +181,7 @@ pub fn random_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
 fn random_room_builder(builder: &mut BuilderChain) {
     let build_roll = rng::roll_dice(1, 3);
     match build_roll {
-        1 => builder.start_with(SimpleMapBuilder::new()),
+        1 => builder.start_with(SimpleMapBuilder::new( 6, 10 )),
         2 => builder.start_with(BspDungeonBuilder::new()),
         _ => builder.start_with(BspInteriorBuilder::new())
     }
@@ -203,7 +205,7 @@ fn random_room_builder(builder: &mut BuilderChain) {
             1 => builder.with(DoglegCorridors::new()),
             2 => builder.with(NearestCorridors::new()),
             3 => builder.with(StraightLineCorridors::new()),
-            _ => builder.with(BspCorridors::new())
+            _ => builder.with(BspCorridors::new( 1 ))
         }
 
         let cspawn_roll = rng::roll_dice(1, 2);
@@ -222,7 +224,6 @@ fn random_room_builder(builder: &mut BuilderChain) {
     }
 
     // set the start position to the center for culling unreachable areas
-    builder.with(AreaStartingPosition::new(XStart::CENTER, YStart::CENTER));
     builder.with(CullUnreachable::new());
 
     let start_roll = rng::roll_dice(1, 2);
@@ -251,7 +252,7 @@ fn random_room_builder(builder: &mut BuilderChain) {
 }
 
 fn random_shape_builder(new_depth: i32, builder: &mut BuilderChain) {
-    // start with the first 5 map types and add the next one very depth
+    // start with the first 5 map types and add the next one every depth
     let builder_roll = rng::roll_dice(1, new_depth + 4); 
     let starter: Box<dyn InitialMapBuilder>;
     match builder_roll { // order is important!
@@ -273,7 +274,6 @@ fn random_shape_builder(new_depth: i32, builder: &mut BuilderChain) {
     builder.start_with(starter);
 
     // set the start position to the center for culling unreachable areas
-    builder.with(AreaStartingPosition::new(XStart::CENTER, YStart::CENTER));
     builder.with(CullUnreachable::new());
 
     // reset the player start to a random position

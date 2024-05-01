@@ -57,7 +57,7 @@ fn transition_to_new_map(ecs: &mut World, new_depth: i32) -> Vec<Map> {
     let player_start;
     {
         let mut worldmap_resource = ecs.write_resource::<Map>();
-        if new_depth > 1 {
+        if new_depth > 4 {
             builder.build_data.map.name = format!("Depth: {}", new_depth - 1);
         }
         *worldmap_resource = builder.build_data.map.clone();

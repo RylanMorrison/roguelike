@@ -37,15 +37,15 @@ pub fn delete_the_dead(ecs : &mut World) {
 
     // loot
     let mut to_spawn: HashMap<String, Position> = HashMap::new();
+    const MAX_DROPS: i32 = 4;
     {
         let positions = ecs.write_storage::<Position>();
         let loot_tables = ecs.read_storage::<LootTable>();
         for victim in dead.iter() {
             let position = positions.get(*victim);
             if let Some(table) = loot_tables.get(*victim) {
-                for _ in 1..4 {
-                    let roll = rng::roll_dice(1, 4);
-                    if roll == 4 {
+                for _ in 0..MAX_DROPS {
+                    if rng::roll_dice(1, 2) == 2 {
                         let item_drop = raws::get_item_drop(
                             &raws::RAWS.lock().unwrap(),
                             &table.table_name

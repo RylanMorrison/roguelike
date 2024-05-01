@@ -3,14 +3,14 @@
         { "name": "Wolf", "weight": 13, "min_depth": 1, "max_depth": 2 },
         { "name": "Bandit", "weight": 10, "min_depth": 1, "max_depth": 2 },
         { "name": "Kobold", "weight": 12, "min_depth": 1, "max_depth": 2 },
-        { "name": "Goblin Warrior", "weight": 10, "min_depth": 3, "max_depth": 5 },
-        { "name": "Goblin Archer", "weight": 10, "min_depth": 3, "max_depth": 5 },
-        { "name": "Orc Warrior", "weight": 1, "min_depth": 3, "max_depth": 7, "add_map_depth_to_weight": true },
-        { "name": "Orc Archer", "weight": 1, "min_depth": 3, "max_depth": 7, "add_map_depth_to_weight": true },
-        { "name": "Large Spider", "weight": 2, "min_depth": 2, "max_depth": 4 },
-        { "name": "Gelatinous Cube", "weight": 10, "min_depth": 2, "max_depth": 2 },
-        { "name": "Lizard Warrior", "weight": 3, "min_depth": 5, "max_depth": 100 },
-        { "name": "Ogre", "weight": 2, "min_depth": 6, "max_depth": 100 },
+        { "name": "Large Spider", "weight": 4, "min_depth": 2, "max_depth": 4 },
+        { "name": "Goblin Warrior", "weight": 10, "min_depth": 2, "max_depth": 5 },
+        { "name": "Goblin Archer", "weight": 6, "min_depth": 2, "max_depth": 5 },
+        { "name": "Orc Warrior", "weight": 6, "min_depth": 3, "max_depth": 5, "add_map_depth_to_weight": true },
+        { "name": "Orc Archer", "weight": 3, "min_depth": 3, "max_depth": 5, "add_map_depth_to_weight": true },
+        { "name": "Gelatinous Cube", "weight": 10, "min_depth": 6, "max_depth": 7 },
+        { "name": "Lizard Warrior", "weight": 3, "min_depth": 6, "max_depth": 100 },
+        { "name": "Ogre", "weight": 2, "min_depth": 5, "max_depth": 100 },
         { "name": "Imp", "weight": 3, "min_depth": 8, "max_depth": 100, "add_map_depth_to_weight": true },
         { "name": "Demon", "weight": 1, "min_depth": 9, "max_depth": 100, "add_map_depth_to_weight": true }
     ],
@@ -19,7 +19,7 @@
         {
             "name": "Animal",
             "drops": [
-                { "name": "Hide", "weight": 1 },
+                { "name": "Hide", "weight": 4 },
                 { "name": "Meat", "weight": 10 }
             ]
         },
@@ -329,7 +329,7 @@
                 "order": 2
             },
             "weight_lbs": 3.0,
-            "base_value": 15,
+            "base_value": 50,
             "class": "common"
         },
 
@@ -1845,7 +1845,7 @@
             "vision_range": 6,
             "movement": "static",
             "faction": "Horde",
-            "gold": "1d4",
+            "gold": "1d8",
             "attributes": {
                 "strength": 6,
                 "dexterity": 6,
@@ -1866,7 +1866,7 @@
             "vision_range": 6,
             "movement": "static",
             "faction": "Bandits",
-            "gold": "1d6",
+            "gold": "1d12+2",
             "quips": [
                 "Stand and deliver!",
                 "Your belongings or your life!"
@@ -1896,7 +1896,7 @@
             "vision_range": 8,
             "movement": "static",
             "faction": "Horde",
-            "gold": "1d6",
+            "gold": "1d12",
             "attributes": {
                 "strength": 10,
                 "dexterity": 8,
@@ -1923,7 +1923,7 @@
             "vision_range": 8,
             "movement": "static",
             "faction": "Horde",
-            "gold": "1d8",
+            "gold": "1d12+1",
             "attributes": {
                 "strength": 8,
                 "dexterity": 10,
@@ -1945,7 +1945,7 @@
             "vision_range": 8,
             "movement": "static",
             "faction": "Horde",
-            "gold": "1d6",
+            "gold": "2d8",
             "quips": [
                 "For the horde!",
                 "Taste my axe!",
@@ -1976,7 +1976,7 @@
             "vision_range": 8,
             "movement": "static",
             "faction": "Horde",
-            "gold": "1d8",
+            "gold": "2d8+1",
             "quips": [
                 "For the horde!",
                 "WAAAAAAAAAGH!"

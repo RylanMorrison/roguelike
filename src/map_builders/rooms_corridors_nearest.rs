@@ -46,7 +46,8 @@ impl NearestCorridors {
                 let corridor = draw_corridor(
                     &mut build_data.map,
                     room_center.0, room_center.1,
-                    dest_center.0, dest_center.1
+                    dest_center.0, dest_center.1,
+                    1
                 );
                 connected.insert(i);
                 build_data.take_snapshot();

@@ -113,7 +113,7 @@ impl RawMaster {
         }
         for spawn in self.raws.spawn_table.iter() {
             if !used_names.contains(&spawn.name) {
-                rltk::console::log(format!("WANRING - Spawn table references unspecified entity {}", spawn.name));
+                rltk::console::log(format!("WARNING - Spawn table references unspecified entity {}", spawn.name));
             }
         }
         for (i, loot) in self.raws.loot_tables.iter().enumerate() {
