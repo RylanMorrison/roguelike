@@ -1,6 +1,6 @@
 use rltk::prelude::*;
 use specs::prelude::*;
-use super::{white, black, magenta, yellow};
+use super::{white, black, yellow};
 use crate::Item;
 use crate::raws;
 

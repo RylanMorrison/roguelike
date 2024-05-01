@@ -1,34 +1,36 @@
 extern crate serde;
 use gui::LevelUpMenuResult;
-use rltk::{GameState, Rltk, Point, RGB};
+use rltk::{GameState, Rltk, Point};
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 use std::collections::HashMap;
 
-mod components;
-pub use components::*;
-mod map;
-pub use map::*;
-mod player;
-use player::*;
-mod rect;
-pub use rect::Rect;
+pub mod components;
+pub mod map;
+pub mod player;
+pub mod rect;
 mod cleanup;
 mod gui;
-mod gamelog;
+pub mod gamelog;
 mod spawner;
 pub mod saveload_system;
 pub mod random_table;
 pub mod map_builders;
 pub mod raws;
-mod gamesystem;
-pub use gamesystem::*;
+pub mod gamesystem;
 pub mod spatial;
 mod effects;
 mod systems;
+pub mod rng;
+
+pub use components::*;
+pub use map::*;
+pub use player::*;
+pub use rect::Rect;
 pub use systems::*;
-mod rng;
+pub use gamesystem::*;
 pub use rng::*;
+
 #[macro_use]
 extern crate lazy_static;
 

@@ -1,6 +1,5 @@
 use super::{Map, TileType};
 use std::cmp::{max, min};
-use crate::rng;
 
 #[derive(PartialEq, Copy, Clone)]
 pub enum Symmetry { None, Horizontal, Vertical, Both }
