@@ -88,6 +88,10 @@ impl PrefabBuilder {
                 build_data.map.tiles[idx] = TileType::Floor;
                 build_data.spawn_list.push((idx, "Demon".to_string()));
             }
+            'W' => {
+                build_data.map.tiles[idx] = TileType::Floor;
+                build_data.spawn_list.push((idx, "Warboss".to_string()));
+            }
             '%' => {
                 build_data.map.tiles[idx] = TileType::Floor;
                 build_data.spawn_list.push((idx, "Food Ration".to_string()));
@@ -103,6 +107,10 @@ impl PrefabBuilder {
             '0' => {
                 build_data.map.tiles[idx] = TileType::Floor;
                 build_data.spawn_list.push((idx, random_shield()));
+            }
+            '+' => {
+                build_data.map.tiles[idx] = TileType::Floor;
+                build_data.spawn_list.push((idx, "Door".to_string()));
             }
             _ => {
                 rltk::console::log(format!("Unknown glyph loading map: {}", ch));
@@ -306,7 +314,7 @@ fn random_shield() -> String {
 }
 
 fn random_goblin() -> String {
-    let roll = rng::roll_dice(1, 4);
+    let roll = rng::roll_dice(1, 5);
     match roll {
         1 => "Goblin Archer".to_string(),
         _ => "Goblin Warrior".to_string()
@@ -314,7 +322,7 @@ fn random_goblin() -> String {
 }
 
 fn random_orc() -> String {
-    let roll = rng::roll_dice(1, 4);
+    let roll = rng::roll_dice(1, 5);
     match roll {
         1 => "Orc Archer".to_string(),
         _ => "Orc Warrior".to_string()

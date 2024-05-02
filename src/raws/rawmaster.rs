@@ -521,6 +521,11 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
         eb = eb.with(Faction{ name: "Mindless".to_string() })
     }
 
+    // bosses
+    if mob_template.boss.is_some() {
+        eb = eb.with(Boss{})
+    }
+
     let new_mob = eb.build();
 
     // equipment

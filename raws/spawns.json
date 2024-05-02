@@ -1,16 +1,16 @@
 {
     "spawn_table": [ 
-        { "name": "Wolf", "weight": 13, "min_depth": 1, "max_depth": 2 },
+        { "name": "Wolf", "weight": 13, "min_depth": 1, "max_depth": 3 },
         { "name": "Bandit", "weight": 10, "min_depth": 1, "max_depth": 2 },
-        { "name": "Kobold", "weight": 12, "min_depth": 1, "max_depth": 2 },
-        { "name": "Large Spider", "weight": 4, "min_depth": 2, "max_depth": 4 },
+        { "name": "Kobold", "weight": 12, "min_depth": 1, "max_depth": 3 },
+        { "name": "Large Spider", "weight": 6, "min_depth": 2, "max_depth": 3 },
         { "name": "Goblin Warrior", "weight": 10, "min_depth": 2, "max_depth": 5 },
-        { "name": "Goblin Archer", "weight": 6, "min_depth": 2, "max_depth": 5 },
-        { "name": "Orc Warrior", "weight": 6, "min_depth": 3, "max_depth": 5, "add_map_depth_to_weight": true },
-        { "name": "Orc Archer", "weight": 3, "min_depth": 3, "max_depth": 5, "add_map_depth_to_weight": true },
+        { "name": "Goblin Archer", "weight": 2, "min_depth": 2, "max_depth": 5 },
+        { "name": "Orc Warrior", "weight": 10, "min_depth": 3, "max_depth": 5 },
+        { "name": "Orc Archer", "weight": 2, "min_depth": 3, "max_depth": 5 },
         { "name": "Gelatinous Cube", "weight": 10, "min_depth": 6, "max_depth": 7 },
         { "name": "Lizard Warrior", "weight": 3, "min_depth": 6, "max_depth": 100 },
-        { "name": "Ogre", "weight": 2, "min_depth": 5, "max_depth": 100 },
+        { "name": "Ogre", "weight": 2, "min_depth": 4, "max_depth": 100 },
         { "name": "Imp", "weight": 3, "min_depth": 8, "max_depth": 100, "add_map_depth_to_weight": true },
         { "name": "Demon", "weight": 1, "min_depth": 9, "max_depth": 100, "add_map_depth_to_weight": true }
     ],
@@ -21,7 +21,7 @@
             "drops": [
                 { "name": "Hide", "weight": 4 },
                 { "name": "Meat", "weight": 10 }
-            ]
+            ] 
         },
         {
             "name": "Lesser Monster",
@@ -67,6 +67,22 @@
                 { "name": "Oak Staff", "weight": 1 },
                 { "name": "Longbow", "weight": 4 },
                 { "name": "Rod of Fireballs", "weight": 1 }
+            ]
+        },
+        {
+            "name": "Warboss",
+            "drops": [
+                { "name": "Mithril Helmet", "weight": 3 },
+                { "name": "Mithril Plate", "weight": 3 },
+                { "name": "Mithril Greaves", "weight": 3 },
+                { "name": "Mithril Gauntlets", "weight": 3 },
+                { "name": "Mithril Longsword", "weight": 3 },
+                { "name": "Mithril Battleaxe", "weight": 3 },
+                { "name": "Mithril Greatsword", "weight": 3 },
+                { "name": "Mithril Greatsword", "weight": 3 },
+                { "name": "High on Fireaxe", "weight": 5 },
+                { "name": "Mammoth Plate", "weight": 1 },
+                { "name": "Bulwark Shield", "weight": 3 }
             ]
         }
     ],
@@ -1787,6 +1803,7 @@
     "mobs": [
         {
             "name": "Rat",
+            "level": 1,
             "renderable": {
                 "glyph": "r",
                 "fg": "#FF0000",
@@ -1810,6 +1827,7 @@
         },
         {
             "name": "Wolf",
+            "level": 1,
             "renderable": {
                 "glyph": "w",
                 "fg": "#FF0000",
@@ -1835,6 +1853,7 @@
         },
         {
             "name": "Kobold",
+            "level": 1,
             "renderable": {
                 "glyph": "k",
                 "fg": "#FF0000",
@@ -1856,6 +1875,7 @@
         },
         {
             "name": "Bandit",
+            "level": 1,
             "renderable": {
                 "glyph": "☻",
                 "fg": "#FF0000",
@@ -1886,6 +1906,7 @@
         },
         {
             "name": "Goblin Warrior",
+            "level": 1,
             "renderable": {
                 "glyph": "g",
                 "fg": "#FF0000",
@@ -1912,7 +1933,7 @@
         },
         {
             "name": "Goblin Archer",
-            "level": 2,
+            "level": 1,
             "renderable": {
                 "glyph": "g",
                 "fg": "#fd6417",
@@ -2103,6 +2124,39 @@
             },
             "equipped": ["Ogre Club", "Iron Armour", "Iron Helmet"],
             "loot_table": "Greater Monster"
+        },
+        {
+            "name": "Warboss",
+            "level": 5,
+            "renderable": {
+                "glyph": "W",
+                "fg": "#FF0000",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 6,
+            "movement": "static",
+            "faction": "Horde",
+            "boss": true,
+            "gold": "4d10+2",
+            "quips": [
+                "WAAAAAAAAAGH!"
+            ],
+            "attributes": {
+                "strength": 16,
+                "constitution": 16,
+                "intelligence": 7
+            },
+            "skills": {
+                "melee": 6,
+                "defence": 4
+            },
+            "natural" : {
+                "armour_class": 14
+            },
+            "equipped": ["High on Fireaxe", "Iron Armour", "Iron Helmet", "Iron Greaves", "Iron Gauntlets"],
+            "loot_table": "Warboss"
         },
         {
             "name": "Imp",

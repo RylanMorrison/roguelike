@@ -22,7 +22,8 @@ pub struct MobData {
     pub movement: String,
     pub gold: Option<String>,
     pub vendor: Option<Vec<String>>,
-    pub abilities: Option<Vec<MobAbilityData>>
+    pub abilities: Option<Vec<MobAbilityData>>,
+    pub boss: Option<bool>
 }
 
 #[derive(Deserialize, Debug)]

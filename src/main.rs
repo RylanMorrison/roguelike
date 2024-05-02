@@ -531,6 +531,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<WantsToShoot>();
     gs.ecs.register::<Stun>();
     gs.ecs.register::<StatusEffectChanged>();
+    gs.ecs.register::<Boss>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     raws::load_raws();

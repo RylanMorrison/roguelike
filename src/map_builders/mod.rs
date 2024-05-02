@@ -133,7 +133,8 @@ pub fn level_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
         1 => forest_builder(new_depth, width, height),
         2 => dark_forest_builder(new_depth, width, height),
         3 => orc_camp_builder(new_depth, width, height),
-        4 => limestone_cavern_builder(new_depth, width, height),
+        4 => warboss_den_builder(new_depth, width, height),
+        5 => limestone_cavern_builder(new_depth, width, height),
         _ => random_builder(new_depth, width, height)
     }
 }

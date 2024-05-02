@@ -66,7 +66,7 @@ pub fn save_game(ecs : &mut World) {
             Food, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, Duration, StatusEffect,
             KnownSpells, Spell, WantsToCastSpell, RestoresMana, TeachesSpell, Slow, DamageOverTime,
             SpecialAbilities, TileSize, PendingLevelUp, SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot,
-            Stun, StatusEffectChanged
+            Stun, StatusEffectChanged, Boss
         );
     }
 
@@ -123,7 +123,7 @@ pub fn load_game(ecs: &mut World) {
             Food, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, Duration, StatusEffect,
             KnownSpells, Spell, WantsToCastSpell, RestoresMana, TeachesSpell, Slow, DamageOverTime,
             SpecialAbilities, TileSize, PendingLevelUp, SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot,
-            Stun, StatusEffectChanged
+            Stun, StatusEffectChanged, Boss
         );
     }
 

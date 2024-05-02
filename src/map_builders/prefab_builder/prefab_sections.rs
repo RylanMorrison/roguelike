@@ -12,7 +12,7 @@ pub struct PrefabSection {
     pub placement : (HorizontalPlacement, VerticalPlacement)
 }
 
-pub const ORC_CAMP : PrefabSection = PrefabSection{
+pub const ORC_CAMP: PrefabSection = PrefabSection{
     template : ORC_CAMP_RIGHT,
     width: 35,
     height: 27,
@@ -20,7 +20,7 @@ pub const ORC_CAMP : PrefabSection = PrefabSection{
 };
 
 #[allow(dead_code)]
-const ORC_CAMP_RIGHT : &str = "
+const ORC_CAMP_RIGHT: &str = "
       #############################
       #  #####  #####  #####  #####
       #  # o #  # o #  # o #  # o #
@@ -48,4 +48,37 @@ const ORC_CAMP_RIGHT : &str = "
       #  # o #  # o #  # o #  # o #
       #  #####  #####  #####  #####
       #############################
+";
+
+pub const WARBOSS_DEN: PrefabSection = PrefabSection{
+    template: WARBOSS_DEN_TEMPLATE,
+    width: 53,
+    height: 23,
+    placement: (HorizontalPlacement::Center, VerticalPlacement::Top)
+};
+
+const WARBOSS_DEN_TEMPLATE: &str = "
+#####################################################
+#  #####  #####    ##     >     ##    #####  #####  #
+#  #   #  #   #     ##         ##     #   #  #   #  #
+#  ##+##  ##+##      #####+####       ##+##  ##+##  #
+#                                                   #
+##########################+##########################
+#                                                   #
+#                      o  W  o                      #
+#                                                   #
+#                                                   #
+##########################+##########################
+#                                                   #
+#                       O   O                       #
+#                                                   #
+######################         ######################
+#                                                   #
+#                                                   #
+#                                                   #
+#                  g g g g g g g g                  #
+#                                                   #
+#                                                   #
+#                                                   #
+#####################          ######################
 ";

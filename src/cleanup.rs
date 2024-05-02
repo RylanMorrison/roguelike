@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use std::collections::HashMap;
-use super::{Pools, Player, Name, RunState, Position, LootTable};
+use super::{Pools, Player, Name, RunState, Position, LootTable, Boss};
 use crate::raws;
 use crate::gamelog;
 use crate::rng;
@@ -37,15 +37,18 @@ pub fn delete_the_dead(ecs : &mut World) {
 
     // loot
     let mut to_spawn: HashMap<String, Position> = HashMap::new();
-    const MAX_DROPS: i32 = 4;
     {
         let positions = ecs.write_storage::<Position>();
         let loot_tables = ecs.read_storage::<LootTable>();
+        let bosses = ecs.read_storage::<Boss>();
         for victim in dead.iter() {
+            // bosses drop more loot
+            let is_boss = bosses.get(*victim).is_some();
             let position = positions.get(*victim);
             if let Some(table) = loot_tables.get(*victim) {
-                for _ in 0..MAX_DROPS {
-                    if rng::roll_dice(1, 2) == 2 {
+                let max_drops = if is_boss { 6 } else { 4 };
+                for _ in 0..max_drops {
+                    if is_boss || rng::roll_dice(1, 2) == 2 {
                         let item_drop = raws::get_item_drop(
                             &raws::RAWS.lock().unwrap(),
                             &table.table_name

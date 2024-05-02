@@ -870,3 +870,6 @@ pub struct Stun {}
 pub struct StatusEffectChanged {
     pub expired: bool
 }
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Boss {}

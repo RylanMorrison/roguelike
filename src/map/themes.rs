@@ -5,7 +5,7 @@ pub fn tile_glyph(idx: usize, map: &Map) -> (FontCharType, RGB, RGB) {
     let (glyph, mut fg, mut bg) = 
         match map.depth {
             1 | 2 | 3 => get_forest_glyph(idx, map),
-            4 => get_limestone_caverns_glyph(idx, map),
+            5 => get_limestone_caverns_glyph(idx, map),
             _ => get_default_glyph(idx, map)
     };
 
