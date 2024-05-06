@@ -873,3 +873,9 @@ pub struct StatusEffectChanged {
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Boss {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Chest {
+    pub gold: Option<String>,
+    pub capacity: i32
+}

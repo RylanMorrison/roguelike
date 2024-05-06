@@ -6,6 +6,7 @@ mod spawn_table_structs;
 mod loot_structs;
 mod faction_structs;
 mod spell_structs;
+mod chest_structs;
 mod rawmaster;
 
 use item_structs::*;
@@ -16,6 +17,7 @@ use spawn_table_structs::*;
 use loot_structs::*;
 pub use spell_structs::*;
 pub use faction_structs::*;
+pub use chest_structs::*;
 pub use rawmaster::*;
 
 use serde::Deserialize;
@@ -48,7 +50,8 @@ pub struct Raws {
     pub spells: Vec<SpellData>,
     pub spawn_table: Vec<SpawnTableEntry>,
     pub loot_tables: Vec<LootTableData>,
-    pub faction_table: Vec<FactionData>
+    pub faction_table: Vec<FactionData>,
+    pub chests: Vec<ChestData>
 }
 
 pub fn load_raws() {

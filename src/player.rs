@@ -11,14 +11,16 @@ use super::{Position, Player, Viewshed, State, Map, RunState, Item,
     TileType, particle_system::ParticleBuilder, Pools, WantsToMelee, WantsToPickupItem,
     HungerState, HungerClock, Door, BlocksVisibility, BlocksTile, Renderable, EntityMoved,
     Consumable, Ranged, Faction, Vendor, gui::VendorMode, KnownSpells, WantsToCastSpell,
-    Attributes, Skills, PendingLevelUp, Equipped, Weapon, Target, WantsToShoot, Name};
+    Attributes, Skills, PendingLevelUp, Equipped, Weapon, Target, WantsToShoot, Name,
+    Chest};
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
+    let mut result = RunState::AwaitingInput;
     let mut positions = ecs.write_storage::<Position>();
     let players = ecs.read_storage::<Player>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
     let mut playerpos = ecs.write_resource::<Point>();
-    let pools = ecs.read_storage::<Pools>();
+    let pools = ecs.write_storage::<Pools>();
     let map = ecs.fetch::<Map>();
     let entities = ecs.entities();
     let mut wants_to_melee = ecs.write_storage::<WantsToMelee>();
@@ -30,14 +32,14 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
     let mut entity_moved = ecs.write_storage::<EntityMoved>();
     let mut swap_entities: Vec<(Entity, i32, i32)> = Vec::new();
     let vendors = ecs.read_storage::<Vendor>();
-    let mut result = RunState::AwaitingInput;
-
+    let chests = ecs.read_storage::<Chest>();
+    
     for (entity, _player, pos, viewshed) in (&entities, &players, &mut positions, &mut viewsheds).join() {
         if pos.x + delta_x < 1 || pos.x + delta_x > map.width-1 || pos.y + delta_y < 1 || pos.y + delta_y > map.height-1 { return RunState::AwaitingInput; }
         let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
 
         result = spatial::for_each_tile_content_with_gamemode(destination_idx, |potential_target| {
-            if let Some(_vendor) = vendors.get(potential_target) {
+            if vendors.get(potential_target).is_some() {
                 return Some(RunState::ShowVendor{ vendor: potential_target, mode: VendorMode::Sell });
             }
 
@@ -65,15 +67,13 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
                 playerpos.x = pos.x;
                 playerpos.y = pos.y;
             } else {
-                let target = pools.get(potential_target);
-                if let Some(_target) = target {
+                if pools.get(potential_target).is_some() {
                     wants_to_melee.insert(entity, WantsToMelee { target: potential_target }).expect("Add target failed");
                     return Some(RunState::Ticking);
                 }
             }
             
-            let door = doors.get_mut(potential_target);
-            if let Some(door) = door {
+            if let Some(door) = doors.get_mut(potential_target) {
                 if !door.open {
                     door.open = true;
                     blocks_visibility.remove(potential_target);
@@ -83,6 +83,15 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
                     viewshed.dirty = true;
                     return Some(RunState::Ticking);
                 }
+            }
+
+            if chests.get(potential_target).is_some() {
+                add_effect(
+                    Some(entity),
+                    EffectType::TriggerFire{ trigger: potential_target },
+                    Targets::Tile{ tile_idx: destination_idx as i32 }
+                );
+                return Some(RunState::Ticking);
             }
             None
         });
@@ -156,13 +165,14 @@ fn get_hotkey(key: VirtualKeyCode) -> Option<i32> {
 
 pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
     // hotkeys
+    // consumables
     if ctx.shift && ctx.key.is_some() {
         let key: Option<i32> = get_hotkey(ctx.key.unwrap());
         if let Some(key) = key {
             return use_consumable_hotkey(gs, key-1);
         }
     }
-
+    // spells
     if ctx.control && ctx.key.is_some() {
         let key: Option<i32> = get_hotkey(ctx.key.unwrap());
         if let Some(key) = key {

@@ -4,33 +4,8 @@ use rltk::RGB;
 use crate::components::*;
 use super::{Raws, Reaction, RenderableData, SpawnTableEntry};
 use crate::random_table::RandomTable;
-use crate::{attr_bonus, npc_hp, mana_at_level};
-use crate::rng;
-use regex::Regex;
+use crate::{attr_bonus, npc_hp, mana_at_level, parse_dice_string, determine_roll};
 use specs::saveload::{MarkedBuilder, SimpleMarker};
-
-/// Parse a dice string into its values. TODO move to gamesystem
-/// eg. 1d10+4 => (1, 10, 4)
-pub fn parse_dice_string(dice: &str) -> (i32, i32, i32) {
-    lazy_static! {
-        static ref DICE_RE: Regex = Regex::new(r"(\d+)d(\d+)([\+\-]\d+)?").unwrap();
-    }
-    let mut n_dice = 1;
-    let mut die_type = 4;
-    let mut die_bonus = 0;
-    for cap in DICE_RE.captures_iter(dice) {
-        if let Some(group) = cap.get(1) {
-            n_dice = group.as_str().parse::<i32>().expect("Not a digit");
-        }
-        if let Some(group) = cap.get(2) {
-            die_type = group.as_str().parse::<i32>().expect("Not a digit");
-        }
-        if let Some(group) = cap.get(3) {
-            die_bonus = group.as_str().parse::<i32>().expect("Not a digit");
-        }
-    }
-    (n_dice, die_type, die_bonus)
-}
 
 pub enum SpawnType {
     AtPosition { x: i32, y: i32 },
@@ -46,7 +21,8 @@ pub struct RawMaster {
     prop_index: HashMap<String, usize>,
     spell_index: HashMap<String, usize>,
     loot_index: HashMap<String, usize>,
-    faction_index: HashMap<String, HashMap<String, Reaction>>
+    faction_index: HashMap<String, HashMap<String, Reaction>>,
+    chest_index: HashMap<String, usize>
 }
 
 impl RawMaster {
@@ -61,7 +37,8 @@ impl RawMaster {
                 spells: Vec::new(),
                 spawn_table: Vec::new(),
                 loot_tables: Vec::new(),
-                faction_table: Vec::new()
+                faction_table: Vec::new(),
+                chests: Vec::new()
             },
             item_index: HashMap::new(),
             item_set_index: HashMap::new(),
@@ -69,7 +46,8 @@ impl RawMaster {
             prop_index: HashMap::new(),
             spell_index: HashMap::new(),
             loot_index: HashMap::new(),
-            faction_index: HashMap::new()
+            faction_index: HashMap::new(),
+            chest_index: HashMap::new()
         }
     }
 
@@ -111,13 +89,22 @@ impl RawMaster {
         for (i, spell) in self.raws.spells.iter().enumerate() {
             self.spell_index.insert(spell.name.clone(), i);
         }
+        for (i, loot) in self.raws.loot_tables.iter().enumerate() {
+            self.loot_index.insert(loot.name.clone(), i);
+        }
+        for (i, chest) in self.raws.chests.iter().enumerate() {
+            if let Some(loot_table) = &chest.loot_table {
+                if !self.loot_index.contains_key(loot_table) {
+                    rltk::console::log(format!("WARNING - chest references unspecified loot table {}", loot_table));
+                }
+            }
+            self.chest_index.insert(chest.name.clone(), i);
+            used_names.insert(chest.name.clone());
+        }
         for spawn in self.raws.spawn_table.iter() {
             if !used_names.contains(&spawn.name) {
                 rltk::console::log(format!("WARNING - Spawn table references unspecified entity {}", spawn.name));
             }
-        }
-        for (i, loot) in self.raws.loot_tables.iter().enumerate() {
-            self.loot_index.insert(loot.name.clone(), i);
         }
         for faction in self.raws.faction_table.iter() {
             let mut reactions: HashMap<String, Reaction> = HashMap::new();
@@ -133,6 +120,7 @@ impl RawMaster {
             }
             self.faction_index.insert(faction.name.clone(), reactions);
         }
+        
     }
 }
 
@@ -217,6 +205,9 @@ pub fn spawn_named_entity(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spa
     }
     if raws.prop_index.contains_key(key) {
         return spawn_named_prop(raws, ecs, key, pos);
+    }
+    if raws.chest_index.contains_key(key) {
+        return spawn_named_chest(raws, ecs, key, pos);
     }
     None
 }
@@ -428,8 +419,7 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
         total_initiative_penalty: 0.0,
         gold: 
         if let Some(gold) = &mob_template.gold {
-            let (n, d, b) = parse_dice_string(&gold);
-            rng::roll_dice(n, d) + b
+            determine_roll(&gold)
         } else {
             0
         },
@@ -568,6 +558,27 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         eb = eb.with(LightSource{ range: light.range, colour: RGB::from_hex(&light.colour).expect("Bad colour") });
         eb = eb.with(Viewshed{ range: light.range, dirty: true, visible_tiles: Vec::new() });
     }
+
+    Some(eb.build())
+}
+
+pub fn spawn_named_chest(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnType) -> Option<Entity> {
+    let chest_template = &raws.raws.chests[raws.chest_index[key]];
+    let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
+
+    eb = spawn_position(pos, eb, key, raws);
+
+    if let Some(renderable) = &chest_template.renderable {
+        eb = eb.with(get_renderable_component(renderable, None));
+    }
+
+    eb = eb.with(Name{ name: chest_template.name.clone() });
+    eb = eb.with(BlocksTile{});
+    if let Some(loot) = &chest_template.loot_table {
+        eb = eb.with(LootTable{ table_name: loot.clone() });
+    }
+    eb = eb.with(Chest{ gold: chest_template.gold.clone(), capacity: chest_template.capacity });
+    eb = eb.with(SingleActivation{});
 
     Some(eb.build())
 }

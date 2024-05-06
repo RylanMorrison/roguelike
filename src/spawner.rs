@@ -30,7 +30,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(Name { name: "Player".to_string() })
         .with(Initiative{ current: 0 })
         .with(Viewshed { visible_tiles: Vec::new(), range: 8, dirty: true })
-        .with(HungerClock{ state: HungerState::WellFed, duration: 20 })
+        .with(HungerClock{ state: HungerState::Normal, duration: 20 })
         .with(attributes)
         .with(Skills::default())
         .with(Pools{

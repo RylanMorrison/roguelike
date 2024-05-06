@@ -46,7 +46,7 @@ fn transition_to_new_map(ecs: &mut World, new_depth: i32) -> Vec<Map> {
     let mut builder = level_builder(new_depth, 100, 80);
     builder.build_map();
 
-    if new_depth > 1 {
+    if new_depth > 0 {
         if let Some(pos) = &builder.build_data.starting_position {
             let up_idx = builder.build_data.map.xy_idx(pos.x, pos.y);
             builder.build_data.map.tiles[up_idx] = TileType::UpStairs;

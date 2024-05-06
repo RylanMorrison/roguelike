@@ -1,5 +1,7 @@
 {
     "spawn_table": [ 
+        { "name": "Common Chest", "weight": 3, "min_depth": 3, "max_depth": 100 },
+        { "name": "Rare Chest", "weight": 2, "min_depth": 5, "max_depth": 100 },
         { "name": "Wolf", "weight": 13, "min_depth": 1, "max_depth": 3 },
         { "name": "Bandit", "weight": 10, "min_depth": 1, "max_depth": 2 },
         { "name": "Kobold", "weight": 12, "min_depth": 1, "max_depth": 3 },
@@ -28,18 +30,18 @@
             "drops": [
                 { "name": "Food Ration", "weight": 4 },
                 { "name": "Health Potion", "weight": 3 },
-                { "name": "Magic Mapping Scroll", "weight": 1 },
-                { "name": "Town Portal Scroll", "weight": 2 },
-                { "name": "Dagger", "weight": 3},
-                { "name": "Bronze Longsword", "weight": 1 },
-                { "name": "Bronze Battleaxe", "weight": 1 },
-                { "name": "Bronze Greatsword", "weight": 1 },
-                { "name": "Bronze Greataxe", "weight": 1 },
+                { "name": "Magic Mapping Scroll", "weight": 2 },
+                { "name": "Town Portal Scroll", "weight": 3 },
+                { "name": "Dagger", "weight": 3 },
+                { "name": "Bronze Longsword", "weight": 2 },
+                { "name": "Bronze Battleaxe", "weight": 2 },
+                { "name": "Bronze Greatsword", "weight": 2 },
+                { "name": "Bronze Greataxe", "weight": 2 },
                 { "name": "Shortbow", "weight": 3 },
                 { "name": "Fir Staff", "weight": 3 },
-                { "name": "Wooden Shield", "weight": 1 },
+                { "name": "Wooden Shield", "weight": 2 },
                 { "name": "Leather Helmet", "weight": 3 },
-                { "name": "Leather Armour", "weight": 1 },
+                { "name": "Leather Armour", "weight": 2 },
                 { "name": "Leather Boots", "weight": 3 },
                 { "name": "Leather Gloves", "weight": 3 }
             ]
@@ -47,26 +49,26 @@
         {
             "name": "Greater Monster",
             "drops": [
-                { "name": "Greater Health Potion", "weight": 4 },
-                { "name": "Magic Mapping Scroll", "weight": 1 },
-                { "name": "Tower Shield", "weight": 4 },
+                { "name": "Greater Health Potion", "weight": 5 },
+                { "name": "Magic Mapping Scroll", "weight": 2 },
+                { "name": "Tower Shield", "weight": 5 },
                 { "name": "Bulwark Shield", "weight": 2 },
-                { "name": "Iron Helmet", "weight": 4 },
+                { "name": "Iron Helmet", "weight": 5 },
                 { "name": "Iron Breastplate", "weight": 2 },
-                { "name": "Iron Greaves", "weight": 4 },
-                { "name": "Iron Gauntlets", "weight": 4 },
-                { "name": "Mithril Helmet", "weight": 1 },
-                { "name": "Mithril Plate", "weight": 1 },
-                { "name": "Mithril Greaves", "weight": 1 },
-                { "name": "Mithril Gauntlets", "weight": 1 },
-                { "name": "Steel Longsword", "weight": 3 },
-                { "name": "Steel Battleaxe", "weight": 3 },
-                { "name": "Steel Greatsword", "weight": 3 },
-                { "name": "Steel Greataxe", "weight": 3 },
-                { "name": "Birch Staff", "weight": 3 },
-                { "name": "Oak Staff", "weight": 1 },
-                { "name": "Longbow", "weight": 4 },
-                { "name": "Rod of Fireballs", "weight": 1 }
+                { "name": "Iron Greaves", "weight": 5 },
+                { "name": "Iron Gauntlets", "weight": 5 },
+                { "name": "Mithril Helmet", "weight": 2 },
+                { "name": "Mithril Plate", "weight": 2 },
+                { "name": "Mithril Greaves", "weight": 2 },
+                { "name": "Mithril Gauntlets", "weight": 2 },
+                { "name": "Steel Longsword", "weight": 4 },
+                { "name": "Steel Battleaxe", "weight": 4 },
+                { "name": "Steel Greatsword", "weight": 4 },
+                { "name": "Steel Greataxe", "weight": 4 },
+                { "name": "Birch Staff", "weight": 4 },
+                { "name": "Oak Staff", "weight": 2 },
+                { "name": "Longbow", "weight": 5 },
+                { "name": "Rod of Fireballs", "weight": 2 }
             ]
         },
         {
@@ -81,8 +83,63 @@
                 { "name": "Mithril Greatsword", "weight": 3 },
                 { "name": "Mithril Greatsword", "weight": 3 },
                 { "name": "High on Fireaxe", "weight": 5 },
-                { "name": "Mammoth Plate", "weight": 1 },
+                { "name": "Mammoth Plate", "weight": 2 },
                 { "name": "Bulwark Shield", "weight": 3 }
+            ]
+        },
+        {
+            "name": "Common Chest",
+            "drops": [
+                { "name": "Hide", "weight": 5 },
+                { "name": "Health Potion", "weight": 5 },
+                { "name": "Mana Potion", "weight": 5 },
+                { "name": "Town Portal Scroll", "weight": 5 },
+                { "name": "Magic Mapping Scroll", "weight": 5 },
+                { "name": "Bronze Longsword", "weight": 5 },
+                { "name": "Bronze Battleaxe", "weight": 5 },
+                { "name": "Bronze Greatsword", "weight": 5 },
+                { "name": "Bronze Greataxe", "weight": 5 },
+                { "name": "Shortbow", "weight": 5 },
+                { "name": "Fir Staff", "weight": 5 },
+                { "name": "Wooden Shield", "weight": 5 },
+                { "name": "Leather Helmet", "weight": 5 },
+                { "name": "Leather Armour", "weight": 5 },
+                { "name": "Leather Boots", "weight": 5 },
+                { "name": "Leather Gloves", "weight": 5 }
+            ]
+        },
+        {
+            "name": "Rare Chest",
+            "drops": [
+                { "name": "Hide", "weight": 5 },
+                { "name": "Health Potion", "weight": 5 },
+                { "name": "Greater Health Potion", "weight": 3 },
+                { "name": "Magic Mapping Scroll", "weight": 3 },
+                { "name": "Iron Helmet", "weight": 3 },
+                { "name": "Iron Breastplate", "weight": 3 },
+                { "name": "Iron Greaves", "weight": 3 },
+                { "name": "Iron Gauntlets", "weight": 3 },
+                { "name": "Tower Shield", "weight": 3 },
+                { "name": "Steel Longsword", "weight": 3 },
+                { "name": "Steel Battleaxe", "weight": 3 },
+                { "name": "Steel Greatsword", "weight": 3 },
+                { "name": "Steel Greataxe", "weight": 3 },
+                { "name": "Birch Staff", "weight": 4 },
+                { "name": "Oak Staff", "weight": 3 },
+                { "name": "Longbow", "weight": 3 },
+                { "name": "Rod of Fireballs", "weight": 3 }
+            ]
+        },
+        {
+            "name": "Epic Chest",
+            "drops": [
+
+            ]
+        },
+        {
+            "name": "Legendary Chest",
+            "drops": [
+
             ]
         }
     ],
@@ -2582,6 +2639,57 @@
                     "healing": "100"
                 }
             }
+        }
+    ],
+
+    "chests": [
+        {
+            "name": "Common Chest",
+            "renderable": {
+                "glyph": "◘",
+                "fg": "#ffffff",
+                "bg": "#000000",
+                "order": 2
+            },
+            "loot_table": "Common Chest",
+            "gold": "2d10",
+            "capacity": 6
+        },
+        {
+            "name": "Rare Chest",
+            "renderable": {
+                "glyph": "◘",
+                "fg": "#3d19da",
+                "bg": "#000000",
+                "order": 2
+            },
+            "loot_table": "Rare Chest",
+            "gold": "4d10+2",
+            "capacity": 8
+        },
+        {
+            "name": "Epic Chest",
+            "renderable": {
+                "glyph": "◘",
+                "fg": "#f400f0",
+                "bg": "#000000",
+                "order": 2
+            },
+            "loot_table": "Epic Chest",
+            "gold": "6d10+4",
+            "capacity": 10
+        },
+        {
+            "name": "Legendary Chest",
+            "renderable": {
+                "glyph": "◘",
+                "fg": "#f2ee10e2",
+                "bg": "#000000",
+                "order": 2
+            },
+            "loot_table": "Legendary Chest",
+            "gold": "8d10+10",
+            "capacity": 12
         }
     ]
 }

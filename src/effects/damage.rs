@@ -7,11 +7,6 @@ use crate::raws;
 use crate::player;
 use crate::rng;
 
-pub fn calculate_damage(damage: &Damage) -> i32 {
-    let (n_dice, die_type, die_bonus) = raws::parse_dice_string(&damage.damage);
-    rng::roll_dice(n_dice, die_type) + die_bonus
-}
-
 pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
     let mut pools = ecs.write_storage::<Pools>();
     let player_entity = ecs.fetch::<Entity>();

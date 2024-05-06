@@ -3,7 +3,7 @@ use specs::prelude::*;
 use super::*;
 use crate::{gamelog, raws, Attributes, Confusion, Consumable, Damage, DamageOverTime, Duration, Food, Healing, KnownSpell, KnownSpells,
     MagicMapping, Map, Name, Pools, RestoresMana, RunState, SingleActivation, Skills, Slow, SpawnParticleBurst, SpawnParticleLine, Spell,
-    TeachesSpell, TeleportTo, TownPortal, Stun, Item};
+    TeachesSpell, TeleportTo, TownPortal, Stun, Item, Chest, LootTable, determine_roll};
 
 pub fn item_trigger(ecs: &mut World, creator: Option<Entity>, item_entity: Entity, targets: &Targets) {
     // check charges
@@ -63,9 +63,6 @@ pub fn spell_trigger(ecs: &mut World, creator: Option<Entity>, spell_entity: Ent
 
 fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targets: &Targets) -> bool {
     let mut did_something = false;
-    let names = ecs.read_storage::<Name>();
-    let items = ecs.read_storage::<Item>();
-    let spells = ecs.read_storage::<Spell>();
 
     // single particle
     if let Some(particle) = ecs.read_storage::<SpawnParticleBurst>().get(entity) {
@@ -105,6 +102,9 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
 
     // food
     if ecs.read_storage::<Food>().get(entity).is_some() {
+        let names = ecs.read_storage::<Name>();
+        let items = ecs.read_storage::<Item>();
+
         add_effect(creator, EffectType::WellFed, targets.clone());
         gamelog::Logger::new()
             .append("You eat the")
@@ -148,7 +148,9 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
 
     // damage
     if let Some(damage) = ecs.read_storage::<Damage>().get(entity) {
-        let mut amount = damage::calculate_damage(damage);
+        let spells = ecs.read_storage::<Spell>();
+
+        let mut amount = determine_roll(&damage.damage);
         if spells.get(entity).is_some() {
             // add attribute and skill bonuses for spells
             // TODO put this in its own system
@@ -164,8 +166,9 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
             }
         }
         add_effect(creator, EffectType::Damage{ amount }, targets.clone());
+        let names = ecs.read_storage::<Name>();
         let items = ecs.read_storage::<Item>();
-        
+
         // TODO clean this up
         if let Some(item) = items.get(entity) {
             gamelog::Logger::new()
@@ -301,6 +304,46 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
                 }
             }
         }
+    }
+
+    // open chests
+    let mut spawn_loot: Vec<(String, i32, i32)> = Vec::new();
+    if let Some(chest) = ecs.read_storage::<Chest>().get(entity) {
+        if creator.is_some() {
+            if let Some(gold) = &chest.gold {
+                if let Some(pools) = ecs.write_storage::<Pools>().get_mut(creator.unwrap()) {
+                    pools.gold += determine_roll(gold);
+                    did_something = true;
+                }
+            }
+            if let Some(loot_table) = ecs.read_storage::<LootTable>().get(entity) {
+                for _ in 0..chest.capacity {
+                    let item_drop = raws::get_item_drop(
+                        &raws::RAWS.lock().unwrap(),
+                        &loot_table.table_name
+                    );
+                    if let Some(drop) = item_drop {
+                        match targets {
+                            Targets::Tile{tile_idx} => {
+                                let map = ecs.fetch::<Map>();
+                                let (x, y) = map.idx_xy(*tile_idx as usize);
+                                spawn_loot.push((drop, x, y));
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+            }
+        }
+    }
+    for loot in spawn_loot.iter() {
+        raws::spawn_named_item(
+            &raws::RAWS.lock().unwrap(),
+            ecs,
+            &loot.0,
+            raws::SpawnType::AtPosition { x: loot.1, y: loot.2 }
+        );
+        did_something = true;
     }
 
     did_something

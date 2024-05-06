@@ -112,6 +112,10 @@ impl PrefabBuilder {
                 build_data.map.tiles[idx] = TileType::Floor;
                 build_data.spawn_list.push((idx, "Door".to_string()));
             }
+            '◘' => {
+                build_data.map.tiles[idx] = TileType::Floor;
+                build_data.spawn_list.push((idx, random_chest()));
+            }
             _ => {
                 rltk::console::log(format!("Unknown glyph loading map: {}", ch));
             }
@@ -326,5 +330,15 @@ fn random_orc() -> String {
     match roll {
         1 => "Orc Archer".to_string(),
         _ => "Orc Warrior".to_string()
+    }
+}
+
+fn random_chest() -> String {
+    let roll = rng::roll_dice(1, 13);
+    match roll {
+        1 | 2 | 3 | 4 | 5 | 6 => "Common Chest".to_string(),
+        7 | 8 | 9 | 10 => "Rare Chest".to_string(),
+        11 | 12 => "Epic Chest".to_string(),
+        _ => "Legendary Chest".to_string()
     }
 }
