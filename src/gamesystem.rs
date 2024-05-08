@@ -1,4 +1,4 @@
-use crate::Attribute;
+use crate::{Attribute, ItemQuality};
 use crate::rng;
 use regex::Regex;
 

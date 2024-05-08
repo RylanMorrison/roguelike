@@ -78,11 +78,15 @@ pub struct Item {
     pub initiative_penalty: f32,
     pub weight_lbs: f32,
     pub base_value: i32,
-    pub class: ItemClass
+    pub class: ItemClass,
+    pub quality: Option<ItemQuality>
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
 pub enum ItemClass { Common, Rare, Legendary, Set, Unique }
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
+pub enum ItemQuality { Damaged, Worn, Improved, Exceptional }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct MagicItem {}
@@ -336,8 +340,7 @@ pub struct Weapon {
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Wearable {
-    pub armour_class: f32,
-    pub slot: EquipmentSlot
+    pub armour_class: f32
 }
 
 #[derive(Component, Debug)]

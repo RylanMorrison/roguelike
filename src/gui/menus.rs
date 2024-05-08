@@ -1,7 +1,7 @@
 use rltk::prelude::*;
 use specs::prelude::*;
 use super::{white, black, yellow};
-use crate::Item;
+use crate::{Item, ItemQuality};
 use crate::raws;
 
 #[derive(PartialEq, Copy, Clone, Debug)]

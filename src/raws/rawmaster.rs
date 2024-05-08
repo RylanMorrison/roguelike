@@ -6,6 +6,7 @@ use super::{Raws, Reaction, RenderableData, SpawnTableEntry};
 use crate::random_table::RandomTable;
 use crate::{attr_bonus, npc_hp, mana_at_level, parse_dice_string, determine_roll};
 use specs::saveload::{MarkedBuilder, SimpleMarker};
+use crate::rng;
 
 pub enum SpawnType {
     AtPosition { x: i32, y: i32 },
@@ -259,11 +260,16 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         eb = eb.with(get_renderable_component(renderable, item_class_colours.get(&item_template.class)));
     }
 
-    eb = eb.with(Name{ name: item_template.name.clone() });
+    let item_quality = if item_template.consumable.is_some() {
+        None 
+    } else {
+        roll_item_quality(item_template.class.as_str()) 
+    };
+    eb = eb.with(Name{ name: item_display_name(&item_quality, &item_template.name) });
     eb = eb.with(Item{
         initiative_penalty: item_template.initiative_penalty.unwrap_or(0.0),
         weight_lbs: item_template.weight_lbs.unwrap_or(0.0),
-        base_value: item_template.base_value.unwrap_or(0),
+        base_value: item_value(&item_quality, item_template.base_value.unwrap_or(0)),
         class: {
             let class_name = item_template.class.as_str();
             match class_name {
@@ -277,20 +283,14 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
                     ItemClass::Common
                 }
             }
-        }
+        },
+        quality: item_quality.clone()
     });
-
-    // consumables
-    if let Some(consumable) = &item_template.consumable {
-        let max_charges = consumable.charges.unwrap_or(1);
-        eb = eb.with(Consumable{ max_charges, charges: max_charges });
-        apply_effects!(consumable.effects, eb);
-    }
 
     // equipment
     if let Some(weapon) = &item_template.weapon {
         eb = eb.with(Equippable{ slot: string_to_weapon_slot(&weapon.slot) });
-        let (n_dice, die_type, bonus) = parse_dice_string(&weapon.base_damage);
+        let (n_dice, die_type, bonus, hit_bonus) = quality_weapon_stats(&item_quality, &weapon.base_damage, weapon.hit_bonus);
         let wpn = Weapon {
             range: if weapon.range == "melee" { None } else { Some(weapon.range.parse::<i32>().expect("Not a number")) },
             attribute: if weapon.attribute.as_str() == "Strength" {
@@ -301,9 +301,9 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
             damage_n_dice: n_dice,
             damage_die_type: die_type,
             damage_bonus: bonus,
-            hit_bonus: weapon.hit_bonus,
+            hit_bonus,
             proc_chance: weapon.proc_chance,
-            proc_target: weapon.proc_target.clone()
+            proc_target: weapon.proc_target.clone(),
         };
         eb = eb.with(wpn);
         if let Some(proc_effects) = &weapon.proc_effects {
@@ -313,7 +313,14 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
     if let Some(wearable) = &item_template.wearable {
         let slot = string_to_wearable_slot(&wearable.slot);
         eb = eb.with(Equippable{ slot });
-        eb = eb.with(Wearable{ slot, armour_class: wearable.armour_class });
+        eb = eb.with(Wearable{ armour_class: quality_armour_class(&item_quality, wearable.armour_class) });
+    }
+
+    // consumables
+    if let Some(consumable) = &item_template.consumable {
+        let max_charges = consumable.charges.unwrap_or(1);
+        eb = eb.with(Consumable{ max_charges, charges: max_charges });
+        apply_effects!(consumable.effects, eb);
     }
 
     // attribute bonuses
@@ -758,4 +765,74 @@ fn parse_particle(token_string: &str) -> SpawnParticleBurst {
     }
 }
 
+fn roll_item_quality(item_class: &str) -> Option<ItemQuality> {
+    if item_class == "unique" || item_class == "set" { return None; }
 
+    match rng::roll_dice(1, 12) {
+        1 | 2 => Some(ItemQuality::Damaged),
+        3 | 4 | 5 => Some(ItemQuality::Worn),
+        6 | 7 | 8 => None,
+        9 | 10 => Some(ItemQuality::Improved),
+        _ => Some(ItemQuality::Exceptional)
+    }
+}
+
+fn item_display_name(item_quality: &Option<ItemQuality>, name: &str) -> String {
+    match item_quality {
+        None => name.to_string(),
+        Some(ItemQuality::Damaged) => format!("Damaged {}", name),
+        Some(ItemQuality::Worn) => format!("Worn {}", name),
+        Some(ItemQuality::Improved) => format!("Improved {}", name),
+        Some(ItemQuality::Exceptional) => format!("Exceptional {}", name)
+    }
+}
+
+// TODO remove exceptional from drop chance and make only attainable from NPCs / quests / events / giga enemies ?
+fn quality_weapon_stats(quality: &Option<ItemQuality>, base_damage: &str, base_hit_bonus: i32) -> (i32, i32, i32, i32) {
+    let (n_dice, mut die_type, mut die_bonus) = parse_dice_string(base_damage);
+    let mut hit_bonus = base_hit_bonus;
+    match quality {
+        None => {},
+        Some(ItemQuality::Damaged) => {
+            die_type -= 1;
+            die_bonus -= 2;
+            hit_bonus -= 1;
+        }
+        Some(ItemQuality::Worn) => {
+            die_bonus -= 1;
+            hit_bonus -= 1;
+        }
+        Some(ItemQuality::Improved) => {
+            die_bonus += 1;
+            hit_bonus += 1;
+        }
+        Some(ItemQuality::Exceptional) => {
+            die_type += 1;
+            die_bonus += 2;
+            hit_bonus += 1;
+        }
+    }
+    (n_dice, die_type, die_bonus, hit_bonus)
+}
+
+fn quality_armour_class(quality: &Option<ItemQuality>, base_armour_class: f32) -> f32 {
+    match quality {
+        None => base_armour_class,
+        Some(ItemQuality::Damaged) => base_armour_class * 0.5,
+        Some(ItemQuality::Worn) => base_armour_class * 0.75,
+        Some(ItemQuality::Improved) => base_armour_class * 1.25,
+        Some(ItemQuality::Exceptional) => base_armour_class * 1.5
+    }
+}
+
+fn item_value(quality: &Option<ItemQuality>, base_value: i32) -> i32 {
+    let mut value = base_value as f32;
+    match quality {
+        None => {},
+        Some(ItemQuality::Damaged) => value *= 0.25,
+        Some(ItemQuality::Worn) => value *= 0.5,
+        Some(ItemQuality::Improved) => value *= 1.5,
+        Some(ItemQuality::Exceptional) => value *= 2.0
+    }
+    value as i32
+}

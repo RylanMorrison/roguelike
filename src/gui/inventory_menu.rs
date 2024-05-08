@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use rltk::prelude::*;
-use super::{ItemMenuResult, item_result_menu};
+use super::{item_result_menu, ItemMenuResult};
 use crate::{Name, InBackpack, Item, State};
 
 pub fn show_inventory(gs : &mut State, ctx : &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
