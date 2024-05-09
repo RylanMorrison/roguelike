@@ -383,8 +383,37 @@ impl GameState for State {
                             self.ecs.write_storage::<EquipmentChanged>().insert(*self.ecs.fetch::<Entity>(), EquipmentChanged{}).expect("Unable to insert");
                         }
                     }
+                    gui::VendorResult::Improve => {
+                        let cost = result.3.unwrap();
+                        let mut pools = self.ecs.write_storage::<Pools>();
+                        let player_entity = self.ecs.fetch::<Entity>();
+                        let player_pools = pools.get_mut(*player_entity).unwrap();
+                        let mut names = self.ecs.write_storage::<Name>();
+                        if player_pools.gold >= cost {
+                            player_pools.gold -= cost;
+                            std::mem::drop(pools);
+                            let mut items = self.ecs.write_storage::<Item>();
+                            let item = items.get_mut(result.1.unwrap()).unwrap();
+                            // improve the item
+                            match item.quality {
+                                Some(ItemQuality::Damaged) => item.quality = Some(ItemQuality::Worn),
+                                Some(ItemQuality::Worn) => item.quality = None,
+                                None => item.quality = Some(ItemQuality::Improved),
+                                _ => item.quality = Some(ItemQuality::Exceptional)
+                            }
+                            item.base_value = raws::get_item_value(&item.quality, item.base_value);
+                            // update the name TODO store name in item instead?
+                            let stored_name = names.get_mut(result.1.unwrap()).unwrap();
+                            let mut current_name = stored_name.name.clone();
+                            let end = current_name.chars().position(|x| x == ' ').unwrap() + 1;
+                            current_name.replace_range(0..end, "");
+                            stored_name.name = raws::get_item_display_name(&item.quality, &current_name);
+                            self.ecs.write_storage::<EquipmentChanged>().insert(*player_entity, EquipmentChanged{}).expect("Unable to insert");
+                        }
+                    }
                     gui::VendorResult::BuyMode => newrunstate = RunState::ShowVendor { vendor, mode: gui::VendorMode::Buy },
-                    gui::VendorResult::SellMode => newrunstate = RunState::ShowVendor { vendor, mode: gui::VendorMode::Sell }
+                    gui::VendorResult::SellMode => newrunstate = RunState::ShowVendor { vendor, mode: gui::VendorMode::Sell },
+                    gui::VendorResult::ImproveMode => newrunstate = RunState::ShowVendor { vendor, mode: gui::VendorMode::Improve }
                 }
                 self.run_systems();
             }

@@ -2300,7 +2300,7 @@
             "skills": {
                 "melee": 2
             },
-            "vendor": [ "food" ]
+            "vendor": "food"
         },
         {
             "name": "Shady Salesman",
@@ -2486,7 +2486,7 @@
             "skills": {
                 "melee": 2
             },
-            "vendor": [ "alchemy" ]
+            "vendor": "alchemy"
         },
         {
             "name": "Librarian",
@@ -2506,7 +2506,7 @@
             "skills": {
                 "melee": 2
             },
-            "vendor": [ "scrolls" ]
+            "vendor": "scrolls"
         },
         {
             "name": "Weaponsmith",
@@ -2526,7 +2526,7 @@
             "skills": {
                 "melee": 2
             },
-            "vendor": [ "weapons" ]
+            "vendor": "weapons"
         },
         {
             "name": "Armoursmith",
@@ -2546,7 +2546,7 @@
             "skills": {
                 "melee": 2
             },
-            "vendor": [ "wearables" ]
+            "vendor": "wearables"
         }
     ],
 

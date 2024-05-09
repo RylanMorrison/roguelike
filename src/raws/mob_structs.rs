@@ -21,7 +21,7 @@ pub struct MobData {
     pub light: Option<MobLight>,
     pub movement: String,
     pub gold: Option<String>,
-    pub vendor: Option<Vec<String>>,
+    pub vendor: Option<String>,
     pub abilities: Option<Vec<MobAbilityData>>,
     pub boss: Option<bool>
 }

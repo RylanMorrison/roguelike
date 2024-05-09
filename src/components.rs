@@ -79,7 +79,8 @@ pub struct Item {
     pub weight_lbs: f32,
     pub base_value: i32,
     pub class: ItemClass,
-    pub quality: Option<ItemQuality>
+    pub quality: Option<ItemQuality>,
+    pub vendor_category: Option<String>
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
@@ -603,7 +604,7 @@ pub struct EquipmentChanged {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Vendor {
-    pub categories: Vec<String>
+    pub category: String
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]

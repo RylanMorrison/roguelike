@@ -166,15 +166,15 @@ fn string_to_wearable_slot(slot: &str) -> EquipmentSlot {
     }
 }
 
-fn spawn_position<'a>(pos: SpawnType, new_entity: EntityBuilder<'a>, tag: &str, raws: &RawMaster) -> EntityBuilder<'a> {
+fn spawn_position<'a>(pos: &SpawnType, new_entity: EntityBuilder<'a>, tag: &str, raws: &RawMaster) -> EntityBuilder<'a> {
     let eb = new_entity;
 
     match pos {
-        SpawnType::AtPosition{x,y} => eb.with(Position{ x, y }),
-        SpawnType::Carried{by} => eb.with(InBackpack{ owner: by }),
+        SpawnType::AtPosition{x,y} => eb.with(Position{ x: *x, y: *y }),
+        SpawnType::Carried{by} => eb.with(InBackpack{ owner: *by }),
         SpawnType::Equipped{by} => {
             let slot = find_slot_for_equippable_item(tag, raws);
-            eb.with(Equipped{ owner: by, slot })
+            eb.with(Equipped{ owner: *by, slot })
         }
     }
 }
@@ -253,23 +253,30 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
     let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
 
     // spawn in the specified location
-    eb = spawn_position(pos, eb, key, raws);
+    eb = spawn_position(&pos, eb, key, raws);
 
     // renderable
     if let Some(renderable) = &item_template.renderable {
         eb = eb.with(get_renderable_component(renderable, item_class_colours.get(&item_template.class)));
     }
 
-    let item_quality = if item_template.consumable.is_some() {
-        None 
-    } else {
-        roll_item_quality(item_template.class.as_str()) 
+    let item_quality = match pos {
+        SpawnType::AtPosition {..} => {
+            if item_template.consumable.is_none() {
+                roll_item_quality(item_template.class.as_str())
+            } else {
+                // don't add quality to consumable items
+                None
+            }
+        }
+        // default to no quality for items not dropped as loot
+        _ => None
     };
-    eb = eb.with(Name{ name: item_display_name(&item_quality, &item_template.name) });
+    eb = eb.with(Name{ name: get_item_display_name(&item_quality, &item_template.name) });
     eb = eb.with(Item{
         initiative_penalty: item_template.initiative_penalty.unwrap_or(0.0),
         weight_lbs: item_template.weight_lbs.unwrap_or(0.0),
-        base_value: item_value(&item_quality, item_template.base_value.unwrap_or(0)),
+        base_value: get_item_value(&item_quality, item_template.base_value.unwrap_or(0)),
         class: {
             let class_name = item_template.class.as_str();
             match class_name {
@@ -284,7 +291,8 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
                 }
             }
         },
-        quality: item_quality.clone()
+        quality: item_quality.clone(),
+        vendor_category: item_template.vendor_category.clone()
     });
 
     // equipment
@@ -355,7 +363,7 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
     let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
 
     // spawn in the specified location
-    eb = spawn_position(pos, eb, key, raws);
+    eb = spawn_position(&pos, eb, key, raws);
 
     // name
     eb = eb.with(Name{ name: mob_template.name.clone() });
@@ -503,7 +511,7 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
     }
 
     if let Some(vendor) = &mob_template.vendor {
-        eb = eb.with(Vendor{ categories: vendor.clone() });
+        eb = eb.with(Vendor{ category: vendor.clone() });
     }
 
     // light
@@ -539,7 +547,7 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
     let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
 
     // spawn in the specified location
-    eb = spawn_position(pos, eb, key, raws);
+    eb = spawn_position(&pos, eb, key, raws);
 
     // renderable
     if let Some(renderable) = &prop_template.renderable {
@@ -573,7 +581,7 @@ pub fn spawn_named_chest(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spaw
     let chest_template = &raws.raws.chests[raws.chest_index[key]];
     let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
 
-    eb = spawn_position(pos, eb, key, raws);
+    eb = spawn_position(&pos, eb, key, raws);
 
     if let Some(renderable) = &chest_template.renderable {
         eb = eb.with(get_renderable_component(renderable, None));
@@ -714,11 +722,11 @@ pub fn faction_reaction(my_faction: &str, their_faction: &str, raws: &RawMaster)
     Reaction::Ignore
 }
 
-pub fn get_vendor_items(categories: &[String], raws: &RawMaster) -> Vec<(String, i32, RGB)> {
+pub fn get_vendor_items(category: &String, raws: &RawMaster) -> Vec<(String, i32, RGB)> {
     let mut result: Vec<(String, i32, RGB)> = Vec::new();
     for item in raws.raws.items.iter() {
         if let Some(cat) = &item.vendor_category {
-            if categories.contains(cat) && item.base_value.is_some() {
+            if category == cat && item.base_value.is_some() {
                 result.push((
                     item.name.clone(),
                     item.base_value.unwrap(),
@@ -768,16 +776,16 @@ fn parse_particle(token_string: &str) -> SpawnParticleBurst {
 fn roll_item_quality(item_class: &str) -> Option<ItemQuality> {
     if item_class == "unique" || item_class == "set" { return None; }
 
-    match rng::roll_dice(1, 12) {
+    match rng::roll_dice(1, 10) {
         1 | 2 => Some(ItemQuality::Damaged),
         3 | 4 | 5 => Some(ItemQuality::Worn),
         6 | 7 | 8 => None,
-        9 | 10 => Some(ItemQuality::Improved),
-        _ => Some(ItemQuality::Exceptional)
+        // exceptional items cannot drop
+        _ => Some(ItemQuality::Improved)
     }
 }
 
-fn item_display_name(item_quality: &Option<ItemQuality>, name: &str) -> String {
+pub fn get_item_display_name(item_quality: &Option<ItemQuality>, name: &str) -> String {
     match item_quality {
         None => name.to_string(),
         Some(ItemQuality::Damaged) => format!("Damaged {}", name),
@@ -825,7 +833,7 @@ fn quality_armour_class(quality: &Option<ItemQuality>, base_armour_class: f32) -
     }
 }
 
-fn item_value(quality: &Option<ItemQuality>, base_value: i32) -> i32 {
+pub fn get_item_value(quality: &Option<ItemQuality>, base_value: i32) -> i32 {
     let mut value = base_value as f32;
     match quality {
         None => {},
