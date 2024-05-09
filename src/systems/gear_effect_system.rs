@@ -1,6 +1,7 @@
 use specs::prelude::*;
 use crate::{attr_bonus, gamelog, AttributeBonus, Attributes, EquipmentChanged, Equipped, InBackpack, Item, Weapon, 
-    Pools, Slow, StatusEffect, Wearable, Skills, SkillBonus, player_hp_at_level, mana_at_level, carry_capacity_lbs, ItemSets, PartOfSet};
+    Pools, Slow, StatusEffect, Wearable, Skills, SkillBonus, player_hp_at_level, mana_at_level, carry_capacity_lbs,
+    ItemSets, PartOfSet, StatusEffectChanged};
 use std::collections::HashMap;
 use rltk::RGB;
 
@@ -39,14 +40,16 @@ impl<'a> System<'a> for GearEffectSystem {
         WriteStorage<'a, Skills>,
         ReadStorage<'a, SkillBonus>,
         ReadExpect<'a, ItemSets>,
-        ReadStorage<'a, PartOfSet>
+        ReadStorage<'a, PartOfSet>,
+        WriteStorage<'a, StatusEffectChanged>
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (mut equip_dirty, entities, items, backpacks, wielded,
             mut pools, mut attributes, player, attribute_bonuses, 
             statuses, slowed, weapons, wearables, mut skills, 
-            skill_bonuses, item_sets, set_pieces) = data;
+            skill_bonuses, item_sets, set_pieces,
+            mut status_dirty) = data;
 
         if equip_dirty.is_empty() { return; }
 
@@ -66,6 +69,7 @@ impl<'a> System<'a> for GearEffectSystem {
                 total_armour_class: 10.0, // TODO use armour class from entity's pools
                 base_damage: "1 - 4".to_string()
             });
+            status_dirty.insert(entity, StatusEffectChanged{ expired: false }).expect("Failed to insert");
         }
         equip_dirty.clear();
 
