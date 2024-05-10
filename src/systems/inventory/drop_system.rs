@@ -35,7 +35,7 @@ impl<'a> System<'a> for ItemDropSystem {
                 if let Some(item) = items.get(to_drop.item) {
                     gamelog::Logger::new()
                         .append("You drop the")
-                        .item_name(item, &names.get(to_drop.item).unwrap().name)
+                        .item_name(item)
                         .log();
                 }
             }

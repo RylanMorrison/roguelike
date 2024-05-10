@@ -9,16 +9,16 @@ pub enum ItemMenuResult { Cancel, NoResponse, Selected }
 
 pub fn menu_box<T: ToString>(draw_batch: &mut DrawBatch, x: i32, y: i32, height: i32, title: T) {
     draw_batch.draw_box(
-        Rect::with_size(x, y - 2, 51, height),
+        Rect::with_size(x, y - 2, 55, height),
         ColorPair::new(white(), black())
     );
     draw_batch.print_color(
-        Point::new(18, y - 2),
+        Point::new(x + 3, y - 2),
         &title.to_string(),
         ColorPair::new(yellow(), black())
     );
     draw_batch.print_color(
-        Point::new(18, y + height - 2), 
+        Point::new(x + 3, y + height - 2), 
         "ESCAPE to cancel",
         ColorPair::new(yellow(), black())
     );
@@ -51,7 +51,7 @@ pub fn item_result_menu<T: ToString>(draw_batch: &mut DrawBatch, title: T, items
     let count = items.len();
     let mut y = (25 - (count / 2)) as i32;
     draw_batch.draw_box(
-        Rect::with_size(15, y - 2, 31, (count+3) as i32),
+        Rect::with_size(15, y - 2, 35, (count+3) as i32),
         ColorPair::new(RGB::named(rltk::WHITE), RGB::named(rltk::BLACK))
     );
     draw_batch.print_color(

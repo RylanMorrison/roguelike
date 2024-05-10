@@ -388,7 +388,6 @@ impl GameState for State {
                         let mut pools = self.ecs.write_storage::<Pools>();
                         let player_entity = self.ecs.fetch::<Entity>();
                         let player_pools = pools.get_mut(*player_entity).unwrap();
-                        let mut names = self.ecs.write_storage::<Name>();
                         if player_pools.gold >= cost {
                             player_pools.gold -= cost;
                             std::mem::drop(pools);
@@ -402,12 +401,6 @@ impl GameState for State {
                                 _ => item.quality = Some(ItemQuality::Exceptional)
                             }
                             item.base_value = raws::get_item_value(&item.quality, item.base_value);
-                            // update the name TODO store name in item instead?
-                            let stored_name = names.get_mut(result.1.unwrap()).unwrap();
-                            let mut current_name = stored_name.name.clone();
-                            let end = current_name.chars().position(|x| x == ' ').unwrap() + 1;
-                            current_name.replace_range(0..end, "");
-                            stored_name.name = raws::get_item_display_name(&item.quality, &current_name);
                             self.ecs.write_storage::<EquipmentChanged>().insert(*player_entity, EquipmentChanged{}).expect("Unable to insert");
                         }
                     }

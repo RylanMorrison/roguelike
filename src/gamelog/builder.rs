@@ -53,13 +53,13 @@ impl Logger {
         self
     }
 
-    pub fn item_name<T: ToString>(mut self, item: &Item, text: T) -> Self {
+    pub fn item_name(mut self, item: &Item) -> Self {
         let colour = raws::get_item_colour(item, &raws::RAWS.lock().unwrap());
 
         self.fragments.push(
             LogFragment{
                 colour,
-                text: text.to_string()
+                text: item.full_name()
             }
         );
         self

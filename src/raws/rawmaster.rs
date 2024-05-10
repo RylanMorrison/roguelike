@@ -272,8 +272,8 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         // default to no quality for items not dropped as loot
         _ => None
     };
-    eb = eb.with(Name{ name: get_item_display_name(&item_quality, &item_template.name) });
     eb = eb.with(Item{
+        name: item_template.name.clone(),
         initiative_penalty: item_template.initiative_penalty.unwrap_or(0.0),
         weight_lbs: item_template.weight_lbs.unwrap_or(0.0),
         base_value: get_item_value(&item_quality, item_template.base_value.unwrap_or(0)),
@@ -782,16 +782,6 @@ fn roll_item_quality(item_class: &str) -> Option<ItemQuality> {
         6 | 7 | 8 => None,
         // exceptional items cannot drop
         _ => Some(ItemQuality::Improved)
-    }
-}
-
-pub fn get_item_display_name(item_quality: &Option<ItemQuality>, name: &str) -> String {
-    match item_quality {
-        None => name.to_string(),
-        Some(ItemQuality::Damaged) => format!("Damaged {}", name),
-        Some(ItemQuality::Worn) => format!("Worn {}", name),
-        Some(ItemQuality::Improved) => format!("Improved {}", name),
-        Some(ItemQuality::Exceptional) => format!("Exceptional {}", name)
     }
 }
 

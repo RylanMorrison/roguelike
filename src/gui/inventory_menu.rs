@@ -1,20 +1,19 @@
 use specs::prelude::*;
 use rltk::prelude::*;
 use super::{item_result_menu, ItemMenuResult};
-use crate::{Name, InBackpack, Item, State};
+use crate::{InBackpack, Item, State};
 
 pub fn show_inventory(gs : &mut State, ctx : &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
     let player_entity = gs.ecs.fetch::<Entity>();
-    let names = gs.ecs.read_storage::<Name>();
     let backpacks = gs.ecs.read_storage::<InBackpack>();
     let items = gs.ecs.read_storage::<Item>();
     let entities = gs.ecs.entities();
     let mut draw_batch = DrawBatch::new();
 
     let mut inventory: Vec<(Entity, Item, String)> = Vec::new();
-    for (entity, item, name, backpack) in (&entities, &items, &names, &backpacks).join() {
+    for (entity, item, backpack) in (&entities, &items, &backpacks).join() {
         if backpack.owner == *player_entity {
-            inventory.push((entity, item.clone(), name.name.clone()))
+            inventory.push((entity, item.clone(), item.full_name()))
         }
     }
 

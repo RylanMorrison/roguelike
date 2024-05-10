@@ -10,9 +10,8 @@ pub fn item_trigger(ecs: &mut World, creator: Option<Entity>, item_entity: Entit
     if let Some(consumable) = ecs.write_storage::<Consumable>().get_mut(item_entity) {
         if consumable.charges < 1 {
             if let Some(item) = ecs.read_storage::<Item>().get(item_entity) {
-                let names = ecs.read_storage::<Name>();
                 gamelog::Logger::new()
-                    .item_name(&item, &names.get(item_entity).unwrap().name)
+                    .item_name(&item)
                     .append("is out of charges.")
                     .log();
             }
@@ -102,13 +101,12 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
 
     // food
     if ecs.read_storage::<Food>().get(entity).is_some() {
-        let names = ecs.read_storage::<Name>();
         let items = ecs.read_storage::<Item>();
 
         add_effect(creator, EffectType::WellFed, targets.clone());
         gamelog::Logger::new()
             .append("You eat the")
-            .item_name(&items.get(entity).unwrap(), &names.get(entity).unwrap().name)
+            .item_name(&items.get(entity).unwrap())
             .log();
         did_something = true;
     }
@@ -176,7 +174,7 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
                 .append("deals")
                 .damage(amount)
                 .append("damage with")
-                .item_name(item, &names.get(entity).unwrap().name)
+                .item_name(item)
                 .log();
         } else if spells.get(entity).is_some() {
             gamelog::Logger::new()

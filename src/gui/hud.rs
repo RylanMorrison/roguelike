@@ -120,10 +120,9 @@ fn draw_equipment(ecs: &World, draw_batch: &mut DrawBatch, player: &Entity) -> i
     let mut y = 23;
     let equipped = ecs.read_storage::<Equipped>();
     let items = ecs.read_storage::<Item>();
-    let names = ecs.read_storage::<Name>();
-    for (item, equipment, item_name) in (&items, &equipped, &names).join() {
+    for (item, equipment) in (&items, &equipped).join() {
         if equipment.owner == *player {
-            draw_batch.print_color(Point::new(70, y), &item_name.name, ColorPair::new(raws::get_item_colour(&item, &raws::RAWS.lock().unwrap()), black()));
+            draw_batch.print_color(Point::new(70, y), item.full_name(), ColorPair::new(raws::get_item_colour(&item, &raws::RAWS.lock().unwrap()), black()));
             y += 1;
         }
     }
@@ -132,20 +131,18 @@ fn draw_equipment(ecs: &World, draw_batch: &mut DrawBatch, player: &Entity) -> i
 
 fn draw_consumables(ecs: &World, draw_batch: &mut DrawBatch, player: &Entity, y: &mut i32) {
     let backpacks = ecs.read_storage::<InBackpack>();
-    let names = ecs.read_storage::<Name>();
     let items = ecs.read_storage::<Item>();
     let consumables = ecs.read_storage::<Consumable>();
 
     *y += 1;
     let mut index = 1;
-    for (carried_by, item_name, item, consumable) in (&backpacks, &names, &items, &consumables).join() {
+    for (carried_by, item, consumable) in (&backpacks, &items, &consumables).join() {
         if carried_by.owner == *player && index < 10 {
             draw_batch.print_color(Point::new(70, *y), &format!("↑{}", index), ColorPair::new(yellow(), black()));
-            let display_name = if consumable.max_charges > 1 {
-                format!("{} ({})", item_name.name.clone(), consumable.charges)
-            } else {
-                item_name.name.clone()
-            };
+            let mut display_name = item.full_name();
+            if consumable.max_charges > 1 {
+                display_name = format!("{} ({})", item.full_name(), consumable.charges);
+            }
             draw_batch.print_color(Point::new(73, *y), display_name, ColorPair::new(raws::get_item_colour(&item, &raws::RAWS.lock().unwrap()), black()));
             *y += 1;
             index += 1;

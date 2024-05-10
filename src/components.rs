@@ -75,12 +75,25 @@ where
 
 #[derive(Component, Serialize, Deserialize, Clone, Debug)]
 pub struct Item {
+    pub name: String,
     pub initiative_penalty: f32,
     pub weight_lbs: f32,
     pub base_value: i32,
     pub class: ItemClass,
     pub quality: Option<ItemQuality>,
     pub vendor_category: Option<String>
+}
+
+impl Item {
+    pub fn full_name(&self) -> String {
+        match self.quality {
+            Some(ItemQuality::Damaged) => format!("Damaged {}", self.name),
+            Some(ItemQuality::Worn) => format!("Worn {}", self.name),
+            Some(ItemQuality::Improved) => format!("Improved {}", self.name),
+            Some(ItemQuality::Exceptional) => format!("Exceptional {}", self.name),
+            _ => self.name.clone()
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]

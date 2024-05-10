@@ -27,7 +27,7 @@ impl<'a> System<'a> for ItemUnequipSystem {
                 if let Some(item) = items.get(to_unequip.item) {
                     gamelog::Logger::new()
                     .append("You unequip")
-                    .item_name(item, &names.get(to_unequip.item).unwrap().name)
+                    .item_name(item)
                     .log();
                 }
             }

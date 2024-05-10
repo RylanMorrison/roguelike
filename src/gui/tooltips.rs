@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use rltk::prelude::*;
 use super::{box_gray, light_gray, white, black};
-use crate::{Map, Name, Position, Pools, StatusEffect, Duration};
+use crate::{Map, Name, Position, Pools, StatusEffect, Duration, Item};
 use crate::camera;
 
 struct Tooltip {
@@ -42,6 +42,7 @@ pub fn draw_tooltips(ecs: &World, ctx : &mut Rltk) {
     let (min_x, _max_x, min_y, _max_y) = camera::get_screen_bounds(ecs, ctx);
     let map = ecs.fetch::<Map>();
     let names = ecs.read_storage::<Name>();
+    let items = ecs.read_storage::<Item>();
     let positions = ecs.read_storage::<Position>();
     // let attributes = ecs.read_storage::<Attributes>();
     let pools = ecs.read_storage::<Pools>();
@@ -88,6 +89,14 @@ pub fn draw_tooltips(ecs: &World, ctx : &mut Rltk) {
                 tip.add(format!("Level: {}", stat.level));
             }
 
+            tip_boxes.push(tip);
+        }
+    }
+
+    for (item, position) in (&items, &positions).join() {
+        if position.x == mouse_map_pos.0 && position.y == mouse_map_pos.1 {
+            let mut tip = Tooltip::new();
+            tip.add(item.full_name());
             tip_boxes.push(tip);
         }
     }

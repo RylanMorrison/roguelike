@@ -52,7 +52,7 @@ impl<'a> System<'a> for ItemEquipSystem {
                         if let Some(item) = items.get(*item_entity) {
                             gamelog::Logger::new()
                                 .append("You unequip")
-                                .item_name(item, &names.get(*item_entity).unwrap().name)
+                                .item_name(item)
                                 .log();
                         }
                     }
@@ -65,7 +65,7 @@ impl<'a> System<'a> for ItemEquipSystem {
                     if let Some(item) = items.get(useitem.item) {
                         gamelog::Logger::new()
                             .append("You equip")
-                            .item_name(item, &names.get(useitem.item).unwrap().name)
+                            .item_name(item)
                             .log();
                     }
                 }

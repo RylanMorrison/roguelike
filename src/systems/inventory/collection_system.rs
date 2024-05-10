@@ -32,7 +32,7 @@ impl<'a> System<'a> for ItemCollectionSystem {
                     if let Some(item) = items.get(pickup.item) {
                         gamelog::Logger::new()
                             .append("You pick up the")
-                            .item_name(item, &names.get(pickup.item).unwrap().name)
+                            .item_name(item)
                             .log();
                     }
                 }
