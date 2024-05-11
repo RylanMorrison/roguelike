@@ -257,7 +257,7 @@ impl TownBuilder {
     }
 
     fn build_library(&mut self, building: &(i32, i32, i32, i32), build_data: &mut BuilderMap) {
-        let mut to_place: Vec<&str> = vec!["Librarian", "Bookcase", "Bookcase", "Bookcase",
+        let mut to_place: Vec<&str> = vec!["Wizard", "Bookcase", "Bookcase", "Bookcase",
             "Table", "Table", "Table", "Chair", "Chair", "Chair", "Chair", "Patron", "Patron"];
         self.random_building_spawn(building, build_data, &mut to_place, 0);
     }

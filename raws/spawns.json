@@ -538,7 +538,7 @@
             },
             "weight_lbs": 0.5,
             "base_value": 50,
-            "vendor_category": "alchemy",
+            "vendor_category": "magic",
             "class": "common"
         },
         
@@ -556,7 +556,7 @@
             },
             "weight_lbs": 0.5,
             "base_value": 150,
-            "vendor_category": "scrolls",
+            "vendor_category": "magic",
             "class": "common"
         },
         {
@@ -573,7 +573,7 @@
             },
             "weight_lbs": 0.5,
             "base_value": 50,
-            "vendor_category": "scrolls",
+            "vendor_category": "magic",
             "class": "common"
         },
         {
@@ -590,7 +590,7 @@
             },
             "weight_lbs": 0.5,
             "base_value": 150,
-            "vendor_category": "scrolls",
+            "vendor_category": "magic",
             "class": "common"
         },
         {
@@ -607,7 +607,7 @@
             },
             "weight_lbs": 0.5,
             "base_value": 150,
-            "vendor_category": "scrolls",
+            "vendor_category": "magic",
             "class": "common"
         },
         {
@@ -624,7 +624,7 @@
             },
             "weight_lbs": 0.5,
             "base_value": 150,
-            "vendor_category": "scrolls",
+            "vendor_category": "magic",
             "class": "common"
         },
         {
@@ -641,7 +641,7 @@
             },
             "weight_lbs": 0.5,
             "base_value": 300,
-            "vendor_category": "scrolls",
+            "vendor_category": "magic",
             "class": "rare"
         },
         {
@@ -658,7 +658,7 @@
             },
             "weight_lbs": 0.5,
             "base_value": 500,
-            "vendor_category": "scrolls",
+            "vendor_category": "magic",
             "class": "rare"
         },
         {
@@ -680,7 +680,7 @@
             "weight_lbs": 1.0,
             "base_value": 500,
             "class": "rare",
-            "vendor_category": "scrolls"
+            "vendor_category": "magic"
         },
 
         {
@@ -907,7 +907,7 @@
             "base_value": 150,
             "initiative_penalty": 0.1,
             "class": "common",
-            "vendor_category": "weapons",
+            "vendor_category": "magic",
             "skill_bonuses": {
                 "magic": 1
             }
@@ -930,7 +930,7 @@
             "base_value": 400,
             "initiative_penalty": 0.1,
             "class": "rare",
-            "vendor_category": "weapons",
+            "vendor_category": "magic",
             "skill_bonuses": {
                 "magic": 2
             }
@@ -953,7 +953,7 @@
             "base_value": 800,
             "initiative_penalty": 0.1,
             "class": "legendary",
-            "vendor_category": "weapons",
+            "vendor_category": "magic",
             "skill_bonuses": {
                 "magic": 3
             },
@@ -979,7 +979,7 @@
             "base_value": 1500,
             "initiative_penalty": 0.1,
             "class": "unique",
-            "vendor_category": "weapons",
+            "vendor_category": "magic",
             "skill_bonuses": {
                 "melee": -4,
                 "magic": 5,
@@ -1007,7 +1007,7 @@
             "base_value": 2000,
             "initiative_penalty": 0.1,
             "class": "unique",
-            "vendor_category": "weapons",
+            "vendor_category": "magic",
             "skill_bonuses": {
                 "melee": -5,
                 "magic": 8,
@@ -1596,6 +1596,78 @@
             }
         },
         {
+            "name": "Initiate Robe",
+            "renderable": {
+                "glyph": "(",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 1.0,
+                "slot": "Body"
+            },
+            "weight_lbs": 5.0,
+            "base_value": 150,
+            "initiative_penalty": 0.0,
+            "class": "common",
+            "vendor_category": "magic",
+            "skill_bonuses": {
+                "magic": 1,
+                "defence": -1,
+                "melee": -2
+            }
+        },
+        {
+            "name": "Apprentice Robe",
+            "renderable": {
+                "glyph": "(",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 1.5,
+                "slot": "Body"
+            },
+            "weight_lbs": 5.0,
+            "base_value": 400,
+            "initiative_penalty": 0.0,
+            "class": "common",
+            "vendor_category": "magic",
+            "skill_bonuses": {
+                "magic": 2,
+                "melee": -2
+            },
+            "attribute_bonuses": {
+                "intelligence": 1,
+                "constitution": -1
+            }
+        },
+        {
+            "name": "Adept Robe",
+            "renderable": {
+                "glyph": "(",
+                "bg": "#000000",
+                "order": 2
+            },
+            "wearable": {
+                "armour_class": 2.0,
+                "slot": "Body"
+            },
+            "weight_lbs": 5.0,
+            "base_value": 800,
+            "initiative_penalty": 0.0,
+            "class": "common",
+            "vendor_category": "magic",
+            "skill_bonuses": {
+                "magic": 4,
+                "defence": 1,
+                "melee": -2
+            },
+            "attribute_bonuses": {
+                "intelligence": 3
+            }
+        },
+        {
             "name": "Mammoth Plate",
             "renderable": {
                 "glyph": "[",
@@ -1730,7 +1802,7 @@
             "initiative_penalty": 0.1,
             "class": "set",
             "set_name": "Electric Wizard's Set",
-            "vendor_category": "wearables",
+            "vendor_category": "magic",
             "attribute_bonuses": {
                 "strength": -2
             },
@@ -1756,7 +1828,7 @@
             "initiative_penalty": 0.0,
             "class": "set",
             "set_name": "Electric Wizard's Set",
-            "vendor_category": "wearables",
+            "vendor_category": "magic",
             "attribute_bonuses": {
                 "dexterity": -1,
                 "constitution": -1
@@ -1783,7 +1855,7 @@
             "initiative_penalty": 0.0,
             "class": "set",
             "set_name": "Electric Wizard's Set",
-            "vendor_category": "wearables",
+            "vendor_category": "magic",
             "attribute_bonuses": {
                 "dexterity": 1,
                 "constitution": -1
@@ -1810,7 +1882,7 @@
             "initiative_penalty": 0.1,
             "class": "set",
             "set_name": "Electric Wizard's Set",
-            "vendor_category": "wearables",
+            "vendor_category": "magic",
             "attribute_bonuses": {
                 "strength": -1,
                 "dexterity": 1,
@@ -1842,7 +1914,7 @@
             "initiative_penalty": 0.2,
             "class": "set",
             "set_name": "Electric Wizard's Set",
-            "vendor_category": "weapons",
+            "vendor_category": "magic",
             "attribute_bonuses": {
                 "strength": -1,
                 "dexterity": -2,
@@ -2489,7 +2561,7 @@
             "vendor": "alchemy"
         },
         {
-            "name": "Librarian",
+            "name": "Wizard",
             "renderable": {
                 "glyph": "☺",
                 "fg": "#EE82EE",
@@ -2506,7 +2578,7 @@
             "skills": {
                 "melee": 2
             },
-            "vendor": "scrolls"
+            "vendor": "magic"
         },
         {
             "name": "Weaponsmith",

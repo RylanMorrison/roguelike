@@ -43,7 +43,9 @@ pub fn improve_item(gs: &mut State, item_entity: Entity, improve_cost: i32) {
             _ => item.quality = Some(ItemQuality::Exceptional)
         }
         item.base_value = raws::get_item_value(&item.quality, item.base_value);
-        
+
         gs.ecs.write_storage::<EquipmentChanged>().insert(*player_entity, EquipmentChanged{}).expect("Unable to insert");
+    } else {
+        gamelog::Logger::new().append("You cannot afford that.").log();
     }
 }

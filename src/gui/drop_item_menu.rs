@@ -19,7 +19,7 @@ pub fn drop_item_menu(gs : &mut State, ctx : &mut Rltk) -> (ItemMenuResult, Opti
 
     let result = item_result_menu(
         &mut draw_batch,
-        "Remove which item?",
+        "Drop which item?",
         &inventory,
         ctx.key
     );
