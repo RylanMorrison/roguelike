@@ -7,7 +7,7 @@ use crate::raws::{faction_reaction, find_spell_entity, Reaction, RAWS};
 use crate::effects::{add_effect, EffectType, Targets};
 use crate::rng;
 
-use super::{Position, Player, Viewshed, State, Map, RunState, Item, 
+use crate::{Position, Player, Viewshed, State, Map, RunState, Item, 
     TileType, particle_system::ParticleBuilder, Pools, WantsToMelee, WantsToPickupItem,
     HungerState, HungerClock, Door, BlocksVisibility, BlocksTile, Renderable, EntityMoved,
     Consumable, Ranged, Faction, Vendor, gui::VendorMode, KnownSpells, WantsToCastSpell,

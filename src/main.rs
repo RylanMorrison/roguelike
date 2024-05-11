@@ -7,28 +7,20 @@ use std::collections::HashMap;
 
 pub mod components;
 pub mod map;
-pub mod player;
-pub mod rect;
-mod cleanup;
 mod gui;
+pub mod helpers;
 pub mod gamelog;
-mod spawner;
-pub mod saveload_system;
-pub mod random_table;
 pub mod map_builders;
 pub mod raws;
-pub mod gamesystem;
 pub mod spatial;
 mod effects;
 mod systems;
 pub mod rng;
 
+pub use helpers::*;
 pub use components::*;
 pub use map::*;
-pub use player::*;
-pub use rect::Rect;
 pub use systems::*;
-pub use gamesystem::*;
 pub use rng::*;
 
 #[macro_use]
@@ -365,44 +357,17 @@ impl GameState for State {
                     gui::VendorResult::Cancel => newrunstate = RunState::AwaitingInput,
                     gui::VendorResult::NoResponse => {}
                     gui::VendorResult::Sell => {
-                        let price = self.ecs.read_storage::<Item>().get(result.1.unwrap()).unwrap().base_value as f32 * 0.8;
-                        self.ecs.write_storage::<Pools>().get_mut(*self.ecs.fetch::<Entity>()).unwrap().gold += price as i32;
-                        self.ecs.delete_entity(result.1.unwrap()).expect("Unable to delete");
-                        self.ecs.write_storage::<EquipmentChanged>().insert(*self.ecs.fetch::<Entity>(), EquipmentChanged{}).expect("Unable to insert");
+                        vendor::sell_item(self, result.1.unwrap());
                     }
                     gui::VendorResult::Buy => {
-                        let tag = result.2.unwrap();
-                        let price = result.3.unwrap();
-                        let mut pools = self.ecs.write_storage::<Pools>();
-                        let player_pools = pools.get_mut(*self.ecs.fetch::<Entity>()).unwrap();
-                        if player_pools.gold >= price {
-                            player_pools.gold -= price;
-                            std::mem::drop(pools);
-                            let player_entity = *self.ecs.fetch::<Entity>();
-                            raws::spawn_named_item(&raws::RAWS.lock().unwrap(), &mut self.ecs, &tag, raws::SpawnType::Carried{ by: player_entity });
-                            self.ecs.write_storage::<EquipmentChanged>().insert(*self.ecs.fetch::<Entity>(), EquipmentChanged{}).expect("Unable to insert");
-                        }
+                        vendor::buy_item(self, 
+                            result.2.unwrap(), result.3.unwrap()
+                        );
                     }
                     gui::VendorResult::Improve => {
-                        let cost = result.3.unwrap();
-                        let mut pools = self.ecs.write_storage::<Pools>();
-                        let player_entity = self.ecs.fetch::<Entity>();
-                        let player_pools = pools.get_mut(*player_entity).unwrap();
-                        if player_pools.gold >= cost {
-                            player_pools.gold -= cost;
-                            std::mem::drop(pools);
-                            let mut items = self.ecs.write_storage::<Item>();
-                            let item = items.get_mut(result.1.unwrap()).unwrap();
-                            // improve the item
-                            match item.quality {
-                                Some(ItemQuality::Damaged) => item.quality = Some(ItemQuality::Worn),
-                                Some(ItemQuality::Worn) => item.quality = None,
-                                None => item.quality = Some(ItemQuality::Improved),
-                                _ => item.quality = Some(ItemQuality::Exceptional)
-                            }
-                            item.base_value = raws::get_item_value(&item.quality, item.base_value);
-                            self.ecs.write_storage::<EquipmentChanged>().insert(*player_entity, EquipmentChanged{}).expect("Unable to insert");
-                        }
+                        vendor::improve_item(self, 
+                            result.1.unwrap(), result.3.unwrap()
+                        );
                     }
                     gui::VendorResult::BuyMode => newrunstate = RunState::ShowVendor { vendor, mode: gui::VendorMode::Buy },
                     gui::VendorResult::SellMode => newrunstate = RunState::ShowVendor { vendor, mode: gui::VendorMode::Sell },

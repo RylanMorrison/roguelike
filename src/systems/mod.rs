@@ -14,6 +14,7 @@ mod visibility_system;
 mod turn_status_system;
 mod gear_effect_system;
 mod status_effect_system;
+pub mod saveload_system;
 
 pub use dispatcher::UnifiedDispatcher;
 use ai::*;
@@ -31,6 +32,7 @@ use visibility_system::VisibilitySystem;
 use turn_status_system::TurnStatusSystem;
 use gear_effect_system::GearEffectSystem;
 use status_effect_system::StatusEffectSystem;
+pub use saveload_system::*;
 
 pub fn build() -> Box<dyn UnifiedDispatcher + 'static> {
     dispatcher::new()

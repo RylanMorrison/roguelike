@@ -3,10 +3,10 @@ use specs::prelude::*;
 use rltk::RGB;
 use crate::components::*;
 use super::{Raws, Reaction, RenderableData, SpawnTableEntry};
-use crate::random_table::RandomTable;
 use crate::{attr_bonus, npc_hp, mana_at_level, parse_dice_string, determine_roll};
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use crate::rng;
+use crate::helpers::*;
 
 pub enum SpawnType {
     AtPosition { x: i32, y: i32 },

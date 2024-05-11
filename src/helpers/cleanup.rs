@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use std::collections::HashMap;
-use super::{Pools, Player, Name, RunState, Position, LootTable, Boss};
+use crate::{Pools, Player, Name, RunState, Position, LootTable, Boss};
 use crate::raws;
 use crate::gamelog;
 use crate::rng;

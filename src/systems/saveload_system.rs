@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator, SerializeComponents, DeserializeComponents, MarkedBuilder};
 use specs::error::NoError;
-use super::components::*;
+use crate::components::*;
 use std::fs::File;
 use std::path::Path;
 use std::fs;
@@ -31,8 +31,8 @@ pub fn save_game(ecs : &mut World) {
     // Create helper
 
     use crate::gamelog;
-    let mapcopy = ecs.get_mut::<super::map::Map>().unwrap().clone();
-    let dungeon_master = ecs.get_mut::<super::map::MasterDungeonMap>().unwrap().clone();
+    let mapcopy = ecs.get_mut::<crate::map::Map>().unwrap().clone();
+    let dungeon_master = ecs.get_mut::<crate::map::MasterDungeonMap>().unwrap().clone();
     let savehelper = ecs
         .create_entity()
         .with(SerializationHelper{ map : mapcopy })
@@ -136,13 +136,13 @@ pub fn load_game(ecs: &mut World) {
         let player = ecs.read_storage::<Player>();
         let position = ecs.read_storage::<Position>();
         for (e, h) in (&entities, &helper).join() {
-            let mut worldmap = ecs.write_resource::<super::map::Map>();
+            let mut worldmap = ecs.write_resource::<crate::map::Map>();
             *worldmap = h.map.clone();
             spatial::set_size((worldmap.height * worldmap.width) as usize);
             deleteme = Some(e);
         }
         for (e, h) in (&entities, &dm_helper).join() {
-            let mut dungeonmaster = ecs.write_resource::<super::map::MasterDungeonMap>();
+            let mut dungeonmaster = ecs.write_resource::<crate::map::MasterDungeonMap>();
             *dungeonmaster = h.map.clone();
             dm_deleteme = Some(e);
             gamelog::restore_log(&mut h.log.clone());

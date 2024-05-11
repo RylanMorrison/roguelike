@@ -2,9 +2,9 @@ use rltk::RGB;
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, MarkedBuilder};
 use std::collections::HashMap;
-use super::raws::*;
+use crate::raws::*;
 use crate::{MasterDungeonMap, OtherLevelPosition, StatusEffectChanged};
-use super::{Pools, Player, Renderable, Name, Position, Viewshed, 
+use crate::{Pools, Player, Renderable, Name, Position, Viewshed, 
     Rect, SerializeMe, random_table::RandomTable, HungerClock, HungerState, 
     Map, TileType, Attributes, Skills, Pool, LightSource, Faction,
     Initiative, EquipmentChanged, Point, EntryTrigger, TeleportTo, 
