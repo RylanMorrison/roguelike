@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use rltk::prelude::*;
 use super::{black, menu_box, white, yellow};
-use crate::{InBackpack, Item, ItemQuality, Name, State, Vendor};
+use crate::{Consumable, InBackpack, Item, ItemClass, ItemQuality, State, Vendor};
 use crate::raws;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
@@ -120,6 +120,7 @@ fn vendor_improve_menu(gs: &mut State, ctx: &mut Rltk, vendor_entity: Entity) ->
     let player_entity = gs.ecs.fetch::<Entity>();
     let backpacks = gs.ecs.read_storage::<InBackpack>();
     let items = gs.ecs.read_storage::<Item>();
+    let consumables = gs.ecs.read_storage::<Consumable>();
     let vendors = gs.ecs.read_storage::<Vendor>();
     let vendor = vendors.get(vendor_entity).unwrap();
     let entities = gs.ecs.entities();
@@ -127,7 +128,7 @@ fn vendor_improve_menu(gs: &mut State, ctx: &mut Rltk, vendor_entity: Entity) ->
 
     let mut inventory: Vec<(Entity, &Item, String, i32)> = Vec::new();
     for (entity, item, backpack) in (&entities, &items, &backpacks).join() {
-        if backpack.owner == *player_entity {
+        if backpack.owner == *player_entity && consumables.get(entity).is_none() {
             if item_can_be_improved(item, &vendor.category) {
                 inventory.push((entity, item, item.full_name(), item.base_value * 2));
             }
@@ -173,6 +174,8 @@ fn vendor_improve_menu(gs: &mut State, ctx: &mut Rltk, vendor_entity: Entity) ->
 }
 
 fn item_can_be_improved(item: &Item, vendor_category: &String) -> bool {
+    if item.class == ItemClass::Set || item.class == ItemClass::Unique { return false; }
+
     if let Some(category) = &item.vendor_category {
         if category.as_str() == vendor_category.as_str() {
             if item.quality.as_ref() != Some(&ItemQuality::Exceptional) {
