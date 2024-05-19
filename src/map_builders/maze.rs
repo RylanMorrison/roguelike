@@ -65,7 +65,6 @@ impl Cell {
     }
 }
 
-// 'a ensures that rng is not cleaned up before Grid
 struct Grid {
     width: i32,
     height: i32,

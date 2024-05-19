@@ -1,6 +1,6 @@
 use serde::Deserialize;
 use std::collections::HashMap;
-use super::RenderableData;
+use super::{RenderableData, AttributeBonusData, SkillBonusData};
 
 #[derive(Deserialize, Debug)]
 pub struct ItemData {
@@ -14,8 +14,8 @@ pub struct ItemData {
     pub base_value: Option<i32>,
     pub vendor_category: Option<String>,
     pub class: String,
-    pub attribute_bonuses: Option<ItemAttributeBonusData>,
-    pub skill_bonuses: Option<ItemSkillBonusData>,
+    pub attribute_bonuses: Option<AttributeBonusData>,
+    pub skill_bonuses: Option<SkillBonusData>,
     pub set_name: Option<String>
 }
 
@@ -41,19 +41,4 @@ pub struct WeaponData {
 pub struct WearableData {
     pub armour_class: f32,
     pub slot: String
-}
-
-#[derive(Deserialize, Debug)]
-pub struct ItemAttributeBonusData {
-    pub strength: Option<i32>,
-    pub dexterity: Option<i32>,
-    pub constitution: Option<i32>,
-    pub intelligence: Option<i32>
-}
-
-#[derive(Deserialize, Debug)]
-pub struct ItemSkillBonusData {
-    pub melee: Option<i32>,
-    pub defence: Option<i32>,
-    pub magic: Option<i32>
 }

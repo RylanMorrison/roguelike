@@ -1,4 +1,4 @@
-use super::{prefab_builder, AreaStartingPosition, BuilderChain, CullUnreachable, DrunkardsWalkBuilder, PrefabBuilder, VoronoiCellBuilder, VoronoiSpawning, XStart, YStart};
+use super::{prefab_builder, AreaStartingPosition, BuilderChain, CullUnreachable, PrefabBuilder, VoronoiCellBuilder, VoronoiSpawning, XStart, YStart};
 
 pub fn warboss_den_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
     let mut chain = BuilderChain::new("Warboss Den", new_depth, width, height);

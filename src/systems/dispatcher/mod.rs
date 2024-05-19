@@ -38,7 +38,7 @@ construct_dispatcher!(
     (ItemCollectionSystem, "item_collection", &[]),
     (ItemEquipSystem, "item_equip", &[]),
     (ItemUseSystem, "item_use", &[]),
-    (SpellUseSystem, "spell_use", &[]),
+    (AbilityUseSystem, "ability_use", &[]),
     (ItemDropSystem, "item_drop", &[]),
     (ItemUnequipSystem, "item_unequip", &[]),
     (ParticleSpawnSystem, "particle_spawn", &[]),

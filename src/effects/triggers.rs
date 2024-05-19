@@ -1,9 +1,9 @@
 use rltk::RGB;
 use specs::prelude::*;
 use super::*;
-use crate::{gamelog, raws, Attributes, Confusion, Consumable, Damage, DamageOverTime, Duration, Food, Healing, KnownSpell, KnownSpells,
-    MagicMapping, Map, Name, Pools, RestoresMana, RunState, SingleActivation, Skills, Slow, SpawnParticleBurst, SpawnParticleLine, Spell,
-    TeachesSpell, TeleportTo, TownPortal, Stun, Item, Chest, LootTable, determine_roll};
+use crate::{determine_roll, gamelog, raws, Attributes, Chest, Confusion, Consumable, Damage, DamageOverTime, Duration, Food, Healing,
+    Item, KnownAbilities, KnownAbility, LootTable, MagicMapping, Map, Name, Pools, RestoresMana, RunState, SingleActivation,
+    Skills, Slow, SpawnParticleBurst, SpawnParticleLine, Ability, Stun, TeachesAbility, TeleportTo, TownPortal};
 
 pub fn item_trigger(ecs: &mut World, creator: Option<Entity>, item_entity: Entity, targets: &Targets) {
     // check charges
@@ -40,23 +40,26 @@ pub fn environment_trigger(ecs: &mut World, creator: Option<Entity>, trigger: En
     }
 }
 
-pub fn spell_trigger(ecs: &mut World, creator: Option<Entity>, spell_entity: Entity, targets: &Targets) {
+pub fn ability_trigger(ecs: &mut World, creator: Option<Entity>, ability_entity: Entity, targets: &Targets) {
     let mut did_something = false;
-    if let Some(spell) = ecs.read_storage::<Spell>().get(spell_entity) {
+    if let Some(ability) = ecs.read_storage::<Ability>().get(ability_entity) {
         let mut pools = ecs.write_storage::<Pools>();
         if let Some(caster) = creator {
             if let Some(pool) = pools.get_mut(caster) {
-                if spell.mana_cost <= pool.mana.current {
-                    if !pool.god_mode {
-                        pool.mana.current -= spell.mana_cost;
+                if let Some(level) = ability.levels.get(&ability.current_level) {
+                    let mana_cost = level.mana_cost.unwrap_or(0);
+                    if mana_cost <= pool.mana.current {
+                        if !pool.god_mode {
+                            pool.mana.current -= mana_cost;
+                        }
+                        did_something = true;
                     }
-                    did_something = true;
                 }
             }
         }
     }
     if did_something {
-        event_trigger(ecs, creator, spell_entity, targets);
+        event_trigger(ecs, creator, ability_entity, targets);
     }
 }
 
@@ -146,11 +149,11 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
 
     // damage
     if let Some(damage) = ecs.read_storage::<Damage>().get(entity) {
-        let spells = ecs.read_storage::<Spell>();
+        let abilities = ecs.read_storage::<Ability>();
 
         let mut amount = determine_roll(&damage.damage);
-        if spells.get(entity).is_some() {
-            // add attribute and skill bonuses for spells
+        if abilities.get(entity).is_some() {
+            // add attribute and skill bonuses for abilities
             // TODO put this in its own system
             if let Some(source) = creator {
                 let attributes = ecs.read_storage::<Attributes>();
@@ -176,13 +179,13 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
                 .append("damage with")
                 .item_name(item)
                 .log();
-        } else if spells.get(entity).is_some() {
+        } else if abilities.get(entity).is_some() {
             gamelog::Logger::new()
                 .character_name(&names.get(creator.unwrap()).unwrap().name)
                 .append("deals")
                 .damage(amount)
                 .append("damage with")
-                .spell_name(&names.get(entity).unwrap().name)
+                .ability_name(&names.get(entity).unwrap().name)
                 .log();
         } else {
             gamelog::Logger::new()
@@ -279,24 +282,28 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
         did_something = true;
     }
 
-    // learn spells
-    if let Some(teacher) = ecs.read_storage::<TeachesSpell>().get(entity) {
-        if let Some(known) = ecs.write_storage::<KnownSpells>().get_mut(creator.unwrap()) {
-            if let Some(spell_entity) = raws::find_spell_entity(ecs, &teacher.spell) {
-                if let Some(spell) = ecs.read_storage::<Spell>().get(spell_entity) {
+    // learn abilities
+    if let Some(teacher) = ecs.read_storage::<TeachesAbility>().get(entity) {
+        if let Some(known) = ecs.write_storage::<KnownAbilities>().get_mut(creator.unwrap()) {
+            if let Some(ability_entity) = raws::find_ability_entity(ecs, &teacher.ability) {
+                if let Some(ability) = ecs.read_storage::<Ability>().get(ability_entity) {
                     let mut already_known = false;
-                    known.spells.iter().for_each(|s| if s.name == teacher.spell { already_known = true });
+                    known.abilities.iter().for_each(|s| if s.name == teacher.ability { already_known = true });
                     if !already_known {
-                        known.spells.push(KnownSpell{ name: teacher.spell.clone(), mana_cost: spell.mana_cost });
+                        known.abilities.push(KnownAbility{ 
+                            name: teacher.ability.clone(), 
+                            mana_cost: ability.levels.get(&ability.current_level).unwrap().mana_cost.unwrap_or(0),
+                            level: ability.current_level // need each character to keep track of their abilities?
+                        });
                         gamelog::Logger::new()
-                            .append("You now know how to cast")
-                            .spell_name(&teacher.spell)
+                            .append("You now know how ")
+                            .ability_name(&teacher.ability)
                             .log();
                         did_something = true;
                     } else {
                         gamelog::Logger::new()
                             .append("You already know how to cast")
-                            .spell_name(&teacher.spell)
+                            .ability_name(&teacher.ability)
                             .log();
                     }
                 }

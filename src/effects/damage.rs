@@ -2,10 +2,8 @@ use specs::{prelude::*, saveload::SimpleMarker, saveload::MarkedBuilder};
 use super::*;
 use crate::components::{Pools, StatusEffect, DamageOverTime, Duration, Name};
 use crate::{gamelog, player_xp_for_level, Map, Player};
-use crate::{spatial, Damage, SerializeMe, RunState};
-use crate::raws;
+use crate::{spatial, SerializeMe, RunState};
 use crate::player;
-use crate::rng;
 
 pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
     let mut pools = ecs.write_storage::<Pools>();
@@ -101,7 +99,7 @@ pub fn death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
                 if player_pools.xp >= player_xp_for_level(player_pools.level) {
                     player::level_up(ecs, source, player_pools);
                     let mut runstate = ecs.fetch_mut::<RunState>();
-                    *runstate = RunState::LevelUp{ attribute_points: 1, skill_points: 2 };
+                    *runstate = RunState::LevelUp;
                 }
             }
         }

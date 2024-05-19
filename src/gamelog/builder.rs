@@ -65,7 +65,7 @@ impl Logger {
         self
     }
 
-    pub fn spell_name<T: ToString>(mut self, text: T) -> Self {
+    pub fn ability_name<T: ToString>(mut self, text: T) -> Self {
         self.fragments.push(
             LogFragment{
                 colour: RGB::named(rltk::CYAN),

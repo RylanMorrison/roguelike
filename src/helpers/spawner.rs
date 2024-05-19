@@ -9,7 +9,7 @@ use crate::{Pools, Player, Renderable, Name, Position, Viewshed,
     Map, TileType, Attributes, Skills, Pool, LightSource, Faction,
     Initiative, EquipmentChanged, Point, EntryTrigger, TeleportTo, 
     SingleActivation, mana_at_level, player_hp_at_level, StatusEffect,
-    Duration, AttributeBonus, KnownSpells
+    Duration, AttributeBonus, KnownAbilities
 };
 use crate::rng;
 
@@ -55,7 +55,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(Faction{ name: "Player".to_string() })
         .with(EquipmentChanged{})
         .with(StatusEffectChanged{ expired: false })
-        .with(KnownSpells{ spells: Vec::new() })
+        .with(KnownAbilities{ abilities: Vec::new() })
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 
@@ -73,13 +73,28 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 
-    // spawn starting items
-    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Family Longsword", SpawnType::Equipped{ by: player });
+    player
+}
+
+pub fn spawn_starting_items(ecs: &mut World, class_name: &str) {
+    let player = *ecs.read_resource::<Entity>();
+    match class_name {
+        "Warrior" => {
+            spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Family Longsword", SpawnType::Equipped{ by: player });
+            spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Wooden Shield", SpawnType::Equipped { by: player });
+            spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Leather Boots", SpawnType::Equipped { by: player });
+        }
+        "Sorceror" => {
+            spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Family Staff", SpawnType::Equipped{ by: player });
+            spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Initiate Robe", SpawnType::Equipped{ by: player });
+        }
+        _ => {
+            spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Family Dagger", SpawnType::Equipped { by: player });
+            spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Leather Gloves", SpawnType::Equipped { by: player });
+        }
+    }
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Food Ration", SpawnType::Carried { by: player });
     spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Town Portal Scroll", SpawnType::Carried { by: player });
-    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Wooden Shield", SpawnType::Equipped { by: player });
-    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Leather Boots", SpawnType::Equipped { by: player });
-    player
 }
 
 pub fn spawn_room(map: &Map, room: &Rect, map_depth: i32, spawn_list: &mut Vec<(usize, String)>) {

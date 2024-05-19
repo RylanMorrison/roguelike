@@ -20,10 +20,11 @@ pub struct RawMaster {
     item_set_index: HashMap<String, usize>,
     mob_index: HashMap<String, usize>,
     prop_index: HashMap<String, usize>,
-    spell_index: HashMap<String, usize>,
+    ability_index: HashMap<String, usize>,
     loot_index: HashMap<String, usize>,
     faction_index: HashMap<String, HashMap<String, Reaction>>,
-    chest_index: HashMap<String, usize>
+    chest_index: HashMap<String, usize>,
+    character_class_index: HashMap<String, usize>
 }
 
 impl RawMaster {
@@ -35,20 +36,22 @@ impl RawMaster {
                 item_class_colours: HashMap::new(),
                 mobs: Vec::new(),
                 props: Vec::new(),
-                spells: Vec::new(),
+                abilities: Vec::new(),
                 spawn_table: Vec::new(),
                 loot_tables: Vec::new(),
                 faction_table: Vec::new(),
-                chests: Vec::new()
+                chests: Vec::new(),
+                character_classes: Vec::new()
             },
             item_index: HashMap::new(),
             item_set_index: HashMap::new(),
             mob_index: HashMap::new(),
             prop_index: HashMap::new(),
-            spell_index: HashMap::new(),
+            ability_index: HashMap::new(),
             loot_index: HashMap::new(),
             faction_index: HashMap::new(),
-            chest_index: HashMap::new()
+            chest_index: HashMap::new(),
+            character_class_index: HashMap::new()
         }
     }
 
@@ -87,8 +90,8 @@ impl RawMaster {
             self.prop_index.insert(prop.name.clone(), i);
             used_names.insert(prop.name.clone());
         }
-        for (i, spell) in self.raws.spells.iter().enumerate() {
-            self.spell_index.insert(spell.name.clone(), i);
+        for (i, ability) in self.raws.abilities.iter().enumerate() {
+            self.ability_index.insert(ability.name.clone(), i);
         }
         for (i, loot) in self.raws.loot_tables.iter().enumerate() {
             self.loot_index.insert(loot.name.clone(), i);
@@ -120,6 +123,13 @@ impl RawMaster {
                 );
             }
             self.faction_index.insert(faction.name.clone(), reactions);
+        }
+        for (i, character_class) in self.raws.character_classes.iter().enumerate() {
+            if used_names.contains(&character_class.name) {
+                rltk::console::log(format!("WARNING - duplicate character class name in raws [{}]", character_class.name));
+            }
+            self.character_class_index.insert(character_class.name.clone(), i);
+            used_names.insert(character_class.name.clone());
         }
         
     }
@@ -238,7 +248,7 @@ macro_rules! apply_effects {
                 "particle_line" => $eb = $eb.with(parse_particle_line(&effect.1)),
                 "particle" => $eb = $eb.with(parse_particle(&effect.1)),
                 "duration" => $eb = $eb.with(Duration{ turns: effect.1.parse::<i32>().unwrap() }),
-                "teach_spell" => $eb = $eb.with(TeachesSpell{ spell: effect.1.to_string() }),
+                "teach_ability" => $eb = $eb.with(TeachesAbility{ ability: effect.1.to_string() }),
                 "slow" => $eb = $eb.with(Slow{ initiative_penalty: effect.1.parse::<f32>().unwrap() }),
                 "damage_over_time" => $eb = $eb.with(DamageOverTime{ damage: effect.1.parse::<i32>().unwrap() }),
                 _ => rltk::console::log(format!("WARNING - Effect not implemented: {}", effect_name))
@@ -346,6 +356,7 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         eb = eb.with(SkillBonus{
             melee: bonus.melee,
             defence: bonus.defence,
+            ranged: bonus.ranged,
             magic: bonus.magic
         });
     }
@@ -482,18 +493,18 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
 
     // special abilities
     if let Some(ability_list) = &mob_template.abilities {
-        let mut sabilities = SpecialAbilities{ abilities: Vec::new() };
+        let mut special_abilities = SpecialAbilities{ abilities: Vec::new() };
         for ability in ability_list.iter() {
-            sabilities.abilities.push(
+            special_abilities.abilities.push(
                 SpecialAbility{
-                    spell: ability.spell.clone(),
+                    name: ability.ability.clone(),
                     chance: ability.chance,
                     range: ability.range,
                     min_range: ability.min_range
                 }
             );
         }
-        eb = eb.with(sabilities);
+        eb = eb.with(special_abilities);
     }
 
     // visibility
@@ -598,17 +609,89 @@ pub fn spawn_named_chest(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spaw
     Some(eb.build())
 }
 
-pub fn spawn_named_spell(raws: &RawMaster, ecs: &mut World, key: &str) -> Option<Entity> {
-    if raws.spell_index.contains_key(key) {
-        let spell_template = &raws.raws.spells[raws.spell_index[key]];
+pub fn spawn_named_ability(raws: &RawMaster, ecs: &mut World, key: &str) -> Option<Entity> {
+    if raws.ability_index.contains_key(key) {
+        let ability_template = &raws.raws.abilities[raws.ability_index[key]];
 
         let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
-        eb = eb.with(Spell{ mana_cost: spell_template.mana_cost });
-        eb = eb.with(Name{ name: spell_template.name.clone() });
-        apply_effects!(spell_template.effects, eb);
+        let mut levels: HashMap<i32, AbilityLevel> = HashMap::new();
+        for level in &ability_template.levels {
+            levels.insert(level.0.parse::<i32>().unwrap(), AbilityLevel{
+                mana_cost: level.1.mana_cost,
+                effects: level.1.effects.clone()
+            });
+        }
+
+        apply_effects!(&levels[&1].effects, eb);
+        eb = eb.with(Ability{
+            name: ability_template.name.clone(),
+            description: ability_template.description.clone(),
+            current_level: 1,
+            levels
+        });
+        eb = eb.with(Name{ name: ability_template.name.clone() });
 
         return Some(eb.build());
     }
+    None
+}
+
+pub fn get_character_class_description(raws: &RawMaster, key: &str) -> Option<String> {
+    if raws.character_class_index.contains_key(key) {
+        let character_class_template = &raws.raws.character_classes[raws.character_class_index[key]];
+        return Some(character_class_template.description.clone());
+    }
+    None
+}
+
+pub fn spawn_named_character_class(raws: &RawMaster, ecs: &mut World, key: &str) -> Option<Entity> {
+    let player = ecs.read_resource::<Entity>();
+
+    if raws.character_class_index.contains_key(key) {
+        let character_class_template = &raws.raws.character_classes[raws.character_class_index[key]];
+        let mut character_classes = ecs.write_storage::<CharacterClass>();
+        character_classes.clear();
+
+        let mut passives: HashMap<String, Passive> = HashMap::new();
+        for passive_data in character_class_template.passives.iter() {
+            let mut levels: HashMap<i32, PassiveLevel> = HashMap::new();
+            for level in passive_data.levels.iter() {
+                let passive_level = PassiveLevel{
+                    attribute_bonus: if let Some(attribute_bonus) = &level.1.attribute_bonus {
+                        Some(AttributeBonus {
+                            strength: attribute_bonus.strength,
+                            dexterity: attribute_bonus.dexterity,
+                            constitution: attribute_bonus.constitution,
+                            intelligence: attribute_bonus.intelligence
+                        })
+                    } else { None },
+                    skill_bonus: if let Some(skill_bonus) = &level.1.skill_bonus {
+                        Some(SkillBonus {
+                            melee: skill_bonus.melee,
+                            defence: skill_bonus.defence,
+                            ranged: skill_bonus.ranged,
+                            magic: skill_bonus.magic
+                        })
+                    } else { None },
+                    learn_ability: level.1.teaches_ability.clone(),
+                    level_ability: level.1.levels_ability.clone()
+                };
+                levels.insert(level.0.parse::<i32>().unwrap(), passive_level);
+            }
+            let passive = Passive{
+                name: passive_data.name.clone(),
+                description: passive_data.description.clone(),
+                current_level: 0,
+                levels
+            };
+            passives.insert(passive.name.clone(), passive);
+        }
+        character_classes.insert(*player, CharacterClass {
+            name: character_class_template.name.clone(),
+            passives
+        }).expect("Unable to insert");
+    }
+
     None
 }
 
@@ -641,6 +724,7 @@ pub fn store_named_item_set(raws: &RawMaster, ecs: &mut World, key: &str) {
                 skill_bonus = Some(SkillBonus{
                     melee: sk_bonus.melee,
                     defence: sk_bonus.defence,
+                    ranged: sk_bonus.ranged,
                     magic: sk_bonus.magic
                 });
             }
@@ -651,33 +735,28 @@ pub fn store_named_item_set(raws: &RawMaster, ecs: &mut World, key: &str) {
     }
 }
 
-pub fn spawn_all_spells(ecs: &mut World) {
+pub fn spawn_all_abilities(ecs: &mut World) {
     let raws = &super::RAWS.lock().unwrap();
-    for spell in raws.raws.spells.iter() {
-        spawn_named_spell(raws, ecs, &spell.name);
+    for ability in raws.raws.abilities.iter() {
+        spawn_named_ability(raws, ecs, &ability.name);
     }
 }
 
-pub fn find_spell_entity(ecs: &World, name: &str) -> Option<Entity> {
-    let names: Storage<'_, Name, specs::shred::Fetch<'_, specs::storage::MaskedStorage<Name>>> = ecs.read_storage::<Name>();
-    let spells = ecs.read_storage::<Spell>();
+pub fn find_ability_entity_by_name(name: &str, names: &ReadStorage::<Name>, abilities: &ReadStorage::<Ability>, entities: &Entities) -> Option<Entity> {
+    for (entity, sname, _ability) in (entities, names, abilities).join() {
+        if name == sname.name {
+            return Some(entity);
+        }
+    }
+    None
+}
+
+pub fn find_ability_entity(ecs: &World, name: &str) -> Option<Entity> {
+    let names = ecs.read_storage::<Name>();
+    let abilities = ecs.read_storage::<Ability>();
     let entities = ecs.entities();
 
-    for (entity, sname, _spell) in (&entities, &names, &spells).join() {
-        if name == sname.name {
-            return Some(entity);
-        }
-    }
-    None
-}
-
-pub fn find_spell_entity_by_name(name: &str, names: &ReadStorage::<Name>, spells: &ReadStorage::<Spell>, entities: &Entities) -> Option<Entity> {
-    for (entity, sname, _spell) in (entities, names, spells).join() {
-        if name == sname.name {
-            return Some(entity);
-        }
-    }
-    None
+    find_ability_entity_by_name(name, &names, &abilities, &entities)
 }
 
 pub fn get_spawn_table_for_depth(raws: &RawMaster, depth: i32) -> RandomTable {

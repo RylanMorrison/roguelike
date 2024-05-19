@@ -1,4 +1,4 @@
-use super::{AreaStartingPosition, BuilderChain, CellularAutomataBuilder, CullUnreachable, DistantExit, RoomBasedSpawner, RoomDrawer, SimpleMapBuilder, VoronoiSpawning, XStart, YStart};
+use super::{AreaStartingPosition, BuilderChain, CellularAutomataBuilder, CullUnreachable, DistantExit, RoomDrawer, SimpleMapBuilder, VoronoiSpawning, XStart, YStart};
 
 pub fn dark_forest_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
     let mut chain = BuilderChain::new("The Dark Forest", new_depth, width, height);

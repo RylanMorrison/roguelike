@@ -5,8 +5,9 @@ mod prop_structs;
 mod spawn_table_structs;
 mod loot_structs;
 mod faction_structs;
-mod spell_structs;
+mod ability_structs;
 mod chest_structs;
+mod character_class_structs;
 mod rawmaster;
 
 use item_structs::*;
@@ -15,9 +16,10 @@ use mob_structs::*;
 use prop_structs::*;
 use spawn_table_structs::*;
 use loot_structs::*;
-pub use spell_structs::*;
+pub use ability_structs::*;
 pub use faction_structs::*;
 pub use chest_structs::*;
+pub use character_class_structs::*;
 pub use rawmaster::*;
 
 use serde::Deserialize;
@@ -41,17 +43,34 @@ pub struct RenderableData {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct AttributeBonusData {
+    pub strength: Option<i32>,
+    pub dexterity: Option<i32>,
+    pub constitution: Option<i32>,
+    pub intelligence: Option<i32>
+}
+
+#[derive(Deserialize, Debug)]
+pub struct SkillBonusData {
+    pub melee: Option<i32>,
+    pub defence: Option<i32>,
+    pub ranged: Option<i32>,
+    pub magic: Option<i32>
+}
+
+#[derive(Deserialize, Debug)]
 pub struct Raws {
     pub items: Vec<ItemData>,
     pub item_sets: Vec<ItemSetData>,
     pub item_class_colours: HashMap<String, String>,
     pub mobs: Vec<MobData>,
     pub props: Vec<PropData>,
-    pub spells: Vec<SpellData>,
+    pub abilities: Vec<AbilityData>,
     pub spawn_table: Vec<SpawnTableEntry>,
     pub loot_tables: Vec<LootTableData>,
     pub faction_table: Vec<FactionData>,
-    pub chests: Vec<ChestData>
+    pub chests: Vec<ChestData>,
+    pub character_classes: Vec<CharacterClassData>
 }
 
 pub fn load_raws() {
@@ -66,5 +85,3 @@ pub fn load_raws() {
 
     RAWS.lock().unwrap().load(decoder);
 }
-
-

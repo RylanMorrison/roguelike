@@ -13,7 +13,7 @@ pub fn main_menu(gs : &mut State, ctx : &mut Rltk) -> MainMenuResult {
     let runstate = gs.ecs.fetch::<RunState>();
     let mut draw_batch = DrawBatch::new();
 
-    draw_batch.print_color_centered(15, "Taverns of Stoner Doom", ColorPair::new(yellow(), black()));
+    draw_batch.print_color_centered(15, "Roguelike", ColorPair::new(yellow(), black()));
 
     if let RunState::MainMenu{ menu_selection : selection } = *runstate {
         // menu items and selection highlighting

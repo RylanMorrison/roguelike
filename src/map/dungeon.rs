@@ -26,6 +26,10 @@ impl MasterDungeonMap {
         }
         None
     }
+
+    pub fn reset(&mut self) {
+        self.maps = HashMap::new();
+    }
 }
 
 pub fn level_transition(ecs: &mut World, new_depth: i32, offset: i32) -> Option<Vec<Map>> {

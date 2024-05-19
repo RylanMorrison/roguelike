@@ -41,6 +41,7 @@ pub enum RunState {
     ShowDropItem,
     ShowTargeting { range : i32, source : Entity},
     MainMenu { menu_selection : gui::MainMenuSelection },
+    CharacterClassSelectMenu { menu_selection: gui::CharacterClassSelection },
     SaveGame,
     MagicMapReveal { row: i32 },
     GameOver,
@@ -49,7 +50,7 @@ pub enum RunState {
     ShowVendor { vendor: Entity, mode: gui::VendorMode },
     TownPortal,
     TeleportingToOtherLevel { x: i32, y: i32, depth: i32 },
-    LevelUp{ attribute_points: i32, skill_points: i32 }
+    LevelUp
 }
 
 pub struct State {
@@ -100,15 +101,8 @@ impl State {
             self.ecs.delete_entity(*del).expect("Deletion failed");
         }
 
-        // Spawn a new player
-        {
-            let player_entity = spawner::player(&mut self.ecs, 0, 0);
-            let mut player_entity_writer = self.ecs.write_resource::<Entity>();
-            *player_entity_writer = player_entity;
-        }
-
-        // build a new map
-        self.generate_world_map(0, 0);
+        let mut dungeon_master = self.ecs.write_resource::<MasterDungeonMap>();
+        dungeon_master.reset();
         gamelog::clear_events();
     }
 }
@@ -129,6 +123,7 @@ impl GameState for State {
 
         match newrunstate {
             RunState::MainMenu{..} => {}
+            RunState::CharacterClassSelectMenu{..} => {}
             RunState::GameOver{..} => {}
             _ => {
                 camera::render_camera(&self.ecs, ctx);
@@ -178,7 +173,7 @@ impl GameState for State {
                         RunState::MagicMapReveal { .. } => newrunstate = RunState::MagicMapReveal { row: 0 },
                         RunState::TownPortal => newrunstate = RunState::TownPortal,
                         RunState::TeleportingToOtherLevel{ x, y, depth } => newrunstate = RunState::TeleportingToOtherLevel { x, y, depth },
-                        RunState::LevelUp { attribute_points, skill_points } => newrunstate = RunState::LevelUp{ attribute_points, skill_points },
+                        RunState::LevelUp => newrunstate = RunState::LevelUp,
                         _ => newrunstate = RunState::Ticking
                     }
                 }
@@ -237,9 +232,9 @@ impl GameState for State {
                     gui::ItemMenuResult::Cancel => newrunstate = RunState::AwaitingInput,
                     gui::ItemMenuResult::NoResponse => {}
                     gui::ItemMenuResult::Selected => {
-                        if self.ecs.read_storage::<Spell>().get(source).is_some() {
-                            let mut intent = self.ecs.write_storage::<WantsToCastSpell>();
-                            intent.insert(*self.ecs.fetch::<Entity>(), WantsToCastSpell{ spell: source, target: result.1 }).expect("Unable to insert intent");
+                        if self.ecs.read_storage::<Ability>().get(source).is_some() {
+                            let mut intent = self.ecs.write_storage::<WantsToUseAbility>();
+                            intent.insert(*self.ecs.fetch::<Entity>(), WantsToUseAbility{ ability: source, target: result.1 }).expect("Unable to insert intent");
                             newrunstate = RunState::Ticking;
                         } else {
                             let mut intent = self.ecs.write_storage::<WantsToUseItem>();
@@ -267,7 +262,7 @@ impl GameState for State {
                     gui::MainMenuResult::NoSelection{ selected } => newrunstate = RunState::MainMenu{ menu_selection: selected },
                     gui::MainMenuResult::Selected{ selected } => {
                         match selected {
-                            gui::MainMenuSelection::NewGame => newrunstate = RunState::PreRun,
+                            gui::MainMenuSelection::NewGame => { newrunstate = RunState::CharacterClassSelectMenu { menu_selection: gui::CharacterClassSelection::Warrior } }
                             gui::MainMenuSelection::LoadGame => {
                                 saveload_system::load_game(&mut self.ecs);
                                 newrunstate = RunState::AwaitingInput;
@@ -276,6 +271,31 @@ impl GameState for State {
                             }
                             gui::MainMenuSelection::Quit => { ::std::process::exit(0); }
                         }
+                    }
+                }
+            }
+            RunState::CharacterClassSelectMenu { .. } => {
+                let result = gui::character_class_select_menu(self, ctx);
+                match result {
+                    gui::CharacterClassResult::NoSelection { selected } => newrunstate = RunState::CharacterClassSelectMenu { menu_selection: selected },
+                    gui::CharacterClassResult::Selected { selected } => {
+                        match selected {
+                            gui::CharacterClassSelection::Warrior => {
+                                raws::spawn_named_character_class(&raws::RAWS.lock().unwrap(), &mut self.ecs, "Warrior");
+                                spawner::spawn_starting_items(&mut self.ecs, "Warrior");
+                            }
+                            gui::CharacterClassSelection::Sorceror => {
+                                raws::spawn_named_character_class(&raws::RAWS.lock().unwrap(), &mut self.ecs, "Sorceror");
+                                spawner::spawn_starting_items(&mut self.ecs, "Sorceror");
+                            }
+                            gui::CharacterClassSelection::Ranger => {
+                                raws::spawn_named_character_class(&raws::RAWS.lock().unwrap(), &mut self.ecs, "Ranger");
+                                spawner::spawn_starting_items(&mut self.ecs, "Ranger");
+                            }
+                        }
+                        self.mapgen_next_state = Some(RunState::PreRun);
+                        self.generate_world_map(0, 0);
+                        newrunstate = RunState::MapGeneration;
                     }
                 }
             }
@@ -299,8 +319,7 @@ impl GameState for State {
                     gui::GameOverResult::NoSelection => {}
                     gui::GameOverResult::QuitToMenu => {
                         self.game_over_cleanup();
-                        newrunstate = RunState::MapGeneration;
-                        self.mapgen_next_state = Some(RunState::MainMenu{ menu_selection: gui::MainMenuSelection::NewGame });
+                        newrunstate = RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame };
                     }
                 }
             }
@@ -340,7 +359,7 @@ impl GameState for State {
                         let mut pools = self.ecs.write_storage::<Pools>();
                         let player_pools = pools.get_mut(*player).unwrap();
                         player::level_up(&self.ecs, *player, player_pools);
-                        newrunstate = RunState::LevelUp{ attribute_points: 1, skill_points: 2 };
+                        newrunstate = RunState::LevelUp;
                     }
                     gui::CheatMenuResult::MakeRich => {
                         let player = self.ecs.fetch::<Entity>();
@@ -398,12 +417,12 @@ impl GameState for State {
                 self.mapgen_next_state = Some(RunState::PreRun);
                 newrunstate = RunState::MapGeneration;
             }
-            RunState::LevelUp{attribute_points, skill_points} => {
-                let result = gui::show_levelup_menu(self, ctx, attribute_points, skill_points);
+            RunState::LevelUp => {
+                let result = gui::show_levelup_menu(self, ctx);
                 match result {
                     LevelUpMenuResult::NoResponse => {},
-                    LevelUpMenuResult::AssignedAttribute => newrunstate = RunState::LevelUp { attribute_points: attribute_points - 1, skill_points },
-                    LevelUpMenuResult::AssignedSkill => newrunstate = RunState::LevelUp { attribute_points, skill_points: skill_points - 1 },
+                    LevelUpMenuResult::SelectedPassive => newrunstate = RunState::LevelUp,
+                    LevelUpMenuResult::DeselectedPassive => newrunstate = RunState::LevelUp,
                     LevelUpMenuResult::Done => newrunstate = RunState::Ticking
                 }
             }
@@ -502,11 +521,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SkillBonus>();
     gs.ecs.register::<Duration>();
     gs.ecs.register::<StatusEffect>();
-    gs.ecs.register::<KnownSpells>();
-    gs.ecs.register::<Spell>();
-    gs.ecs.register::<WantsToCastSpell>();
     gs.ecs.register::<RestoresMana>();
-    gs.ecs.register::<TeachesSpell>();
+    gs.ecs.register::<TeachesAbility>();
     gs.ecs.register::<Slow>();
     gs.ecs.register::<DamageOverTime>();
     gs.ecs.register::<SpecialAbilities>();
@@ -520,6 +536,10 @@ fn main() -> rltk::BError {
     gs.ecs.register::<StatusEffectChanged>();
     gs.ecs.register::<Boss>();
     gs.ecs.register::<Chest>();
+    gs.ecs.register::<CharacterClass>();
+    gs.ecs.register::<Ability>();
+    gs.ecs.register::<KnownAbilities>();
+    gs.ecs.register::<WantsToUseAbility>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     raws::load_raws();
@@ -529,13 +549,12 @@ fn main() -> rltk::BError {
     gs.ecs.insert(Map::new("New Map", 0, 64, 64)); // w & h don't matter here
     gs.ecs.insert(Point::new(0, 0));
     gs.ecs.insert(particle_system::ParticleBuilder::new());
+    gs.ecs.insert(RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame });
     let player_entity = spawner::player(&mut gs.ecs, 0, 0);
     gs.ecs.insert(player_entity);
-    gs.ecs.insert(RunState::MapGeneration{});
 
-    raws::spawn_all_spells(&mut gs.ecs);
+    raws::spawn_all_abilities(&mut gs.ecs);
     gs.ecs.insert(ItemSets{ item_sets: HashMap::new() });
     raws::store_all_item_sets(&mut gs.ecs);
-    gs.generate_world_map(0, 0);
     rltk::main_loop(context, gs)
 }

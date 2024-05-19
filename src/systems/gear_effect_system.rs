@@ -15,6 +15,7 @@ struct ItemUpdate {
     intelligence: i32,
     melee: i32,
     defence: i32,
+    ranged: i32,
     magic: i32,
     total_armour_class: f32,
     base_damage: String
@@ -65,6 +66,7 @@ impl<'a> System<'a> for GearEffectSystem {
                 intelligence: 0,
                 melee: 0,
                 defence: 0,
+                ranged: 0,
                 magic: 0,
                 total_armour_class: 10.0, // TODO use armour class from entity's pools
                 base_damage: "1 - 4".to_string()
@@ -88,6 +90,7 @@ impl<'a> System<'a> for GearEffectSystem {
                 if let Some(skill) = skill_bonuses.get(entity) {
                     totals.melee += skill.melee.unwrap_or(0);
                     totals.defence += skill.defence.unwrap_or(0);
+                    totals.ranged += skill.ranged.unwrap_or(0);
                     totals.magic += skill.magic.unwrap_or(0);
                 }
             }
@@ -159,6 +162,7 @@ impl<'a> System<'a> for GearEffectSystem {
                     if let Some(skill_bonus) = &set_bonus.skill_bonus {
                         totals.melee += skill_bonus.melee.unwrap_or(0);
                         totals.defence += skill_bonus.defence.unwrap_or(0);
+                        totals.ranged += skill_bonus.ranged.unwrap_or(0);
                         totals.magic += skill_bonus.magic.unwrap_or(0);
                     }
                 }
@@ -206,6 +210,7 @@ impl<'a> System<'a> for GearEffectSystem {
                 if let Some(skill) = skills.get_mut(*entity) {
                     skill.melee.modifiers = item.melee;
                     skill.defence.modifiers = item.defence;
+                    skill.ranged.modifiers = item.ranged;
                     skill.magic.modifiers = item.magic;
                 }
             }

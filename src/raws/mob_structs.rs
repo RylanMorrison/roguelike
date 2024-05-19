@@ -55,7 +55,7 @@ pub struct MobLight {
 
 #[derive(Deserialize, Debug)]
 pub struct MobAbilityData {
-    pub spell: String,
+    pub ability: String,
     pub chance: f32,
     pub range: f32,
     pub min_range: f32

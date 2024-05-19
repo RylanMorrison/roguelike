@@ -2,7 +2,7 @@ use specs::prelude::*;
 use rltk::prelude::*;
 use super::{box_gray, light_gray, cyan, green, red, black, white, yellow, orange, gold, blue, draw_tooltips};
 use crate::{Map, Entity, Pools, Attributes, Attribute, Skills, Skill, Equipped, Item, Name, Consumable, InBackpack,
-    KnownSpells, HungerClock, StatusEffect, Duration, HungerState, player_xp_for_level, carry_capacity_lbs};
+    KnownAbilities, HungerClock, StatusEffect, Duration, HungerState, player_xp_for_level, carry_capacity_lbs};
 use crate::raws;
 use crate::gamelog;
 
@@ -12,13 +12,13 @@ fn draw_borders(ecs: &World, draw_batch: &mut DrawBatch) {
     draw_batch.draw_hollow_box(Rect::with_size(0, 0, 99, 79), ColorPair::new(box_gray(), black())); // Overall box
     draw_batch.draw_hollow_box(Rect::with_size(0, 0, 69, 65), ColorPair::new(box_gray(), black())); // Map box
     draw_batch.draw_hollow_box(Rect::with_size(0, 65, 99, 14), ColorPair::new(box_gray(), black())); // Log box
-    draw_batch.draw_hollow_box(Rect::with_size(69, 0, 30, 16), ColorPair::new(box_gray(), black())); // Top-right panel
+    draw_batch.draw_hollow_box(Rect::with_size(69, 0, 30, 17), ColorPair::new(box_gray(), black())); // Top-right panel
 
     draw_batch.set(Point::new(0, 65), ColorPair::new(box_gray(), black()), to_cp437('├'));
-    draw_batch.set(Point::new(69, 16), ColorPair::new(box_gray(), black()), to_cp437('├'));
+    draw_batch.set(Point::new(69, 17), ColorPair::new(box_gray(), black()), to_cp437('├'));
     draw_batch.set(Point::new(69, 0), ColorPair::new(box_gray(), black()), to_cp437('┬'));
     draw_batch.set(Point::new(69, 65), ColorPair::new(box_gray(), black()), to_cp437('┴'));
-    draw_batch.set(Point::new(99, 16), ColorPair::new(box_gray(), black()), to_cp437('┤'));
+    draw_batch.set(Point::new(99, 17), ColorPair::new(box_gray(), black()), to_cp437('┤'));
     draw_batch.set(Point::new(99, 65), ColorPair::new(box_gray(), black()), to_cp437('┤'));
 
     // map name
@@ -45,11 +45,11 @@ fn draw_stats(draw_batch: &mut DrawBatch, player_pools: &Pools) {
     draw_batch.print_color(Point::new(70, 3), &level, ColorPair::new(white(), black()));
     draw_batch.bar_horizontal(Point::new(80, 3), 18, player_pools.xp, player_xp_for_level(player_pools.level), ColorPair::new(gold(), black()));
 
-    draw_batch.print_color(Point::new(70, 14), "Armour Class:", ColorPair::new(light_gray(), black()));
-    draw_batch.print_color(Point::new(87, 14), player_pools.total_armour_class, ColorPair::new(white(), black()));
+    draw_batch.print_color(Point::new(70, 15), "Armour Class:", ColorPair::new(light_gray(), black()));
+    draw_batch.print_color(Point::new(87, 15), player_pools.total_armour_class, ColorPair::new(white(), black()));
 
-    draw_batch.print_color(Point::new(70, 15), "Base Damage:", ColorPair::new(light_gray(), black()));
-    draw_batch.print_color(Point::new(87, 15), player_pools.base_damage.clone(), ColorPair::new(white(), black()));
+    draw_batch.print_color(Point::new(70, 16), "Base Damage:", ColorPair::new(light_gray(), black()));
+    draw_batch.print_color(Point::new(87, 16), player_pools.base_damage.clone(), ColorPair::new(white(), black()));
 
     draw_batch.print_color(Point::new(70, 19), &format!("Initiative Penalty: {:.0}", player_pools.total_initiative_penalty), ColorPair::new(white(), black()));
     
@@ -101,7 +101,8 @@ fn draw_skills(ecs: &World, draw_batch: &mut DrawBatch, player: &Entity) {
 
     draw_skill("Melee:", &player_skills.melee, 10, draw_batch);
     draw_skill("Defence:", &player_skills.defence, 11, draw_batch);
-    draw_skill("Magic:", &player_skills.magic, 12, draw_batch);
+    draw_skill("Ranged", &player_skills.ranged, 12, draw_batch);
+    draw_skill("Magic:", &player_skills.magic, 13, draw_batch);
 }
 
 fn draw_skill(name: &str, skill: &Skill, y: i32, draw_batch: &mut DrawBatch) {
@@ -117,7 +118,7 @@ fn draw_skill(name: &str, skill: &Skill, y: i32, draw_batch: &mut DrawBatch) {
 }
 
 fn draw_equipment(ecs: &World, draw_batch: &mut DrawBatch, player: &Entity) -> i32 {
-    let mut y = 23;
+    let mut y = 24;
     let equipped = ecs.read_storage::<Equipped>();
     let items = ecs.read_storage::<Item>();
     for (item, equipment) in (&items, &equipped).join() {
@@ -151,14 +152,14 @@ fn draw_consumables(ecs: &World, draw_batch: &mut DrawBatch, player: &Entity, y:
     *y += 1;
 }
 
-fn draw_spells(ecs: &World, draw_batch: &mut DrawBatch, player: &Entity, y: &mut i32) {
+fn draw_abilities(ecs: &World, draw_batch: &mut DrawBatch, player: &Entity, y: &mut i32) {
     *y += 1;
-    let known_spells = ecs.read_storage::<KnownSpells>();
-    let player_spells = &known_spells.get(*player).unwrap().spells;
+    let known_abilities = ecs.read_storage::<KnownAbilities>();
+    let player_abilities = &known_abilities.get(*player).unwrap().abilities;
     let mut index = 1;
-    for spell in player_spells.iter() {
+    for ability in player_abilities.iter() {
         draw_batch.print_color(Point::new(70, *y), &format!("^{}", index), ColorPair::new(cyan(), black()));
-        draw_batch.print_color(Point::new(73, *y), &format!("{} ({})", spell.name, spell.mana_cost), ColorPair::new(cyan(), black()));
+        draw_batch.print_color(Point::new(73, *y), &format!("{} ({})", ability.name, ability.mana_cost), ColorPair::new(cyan(), black()));
         index += 1;
         *y += 1;
     }
@@ -207,7 +208,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
 
     let mut y = draw_equipment(ecs, &mut draw_batch, &player_entity) + 1;
     draw_consumables(ecs, &mut draw_batch, &player_entity, &mut y);
-    draw_spells(ecs, &mut draw_batch, &player_entity, &mut y);
+    draw_abilities(ecs, &mut draw_batch, &player_entity, &mut y);
     draw_status_effects(ecs, &mut draw_batch, &player_entity);
 
     gamelog::print_log(&mut rltk::BACKEND_INTERNAL.lock().consoles[1].console, Point::new(1, 33));

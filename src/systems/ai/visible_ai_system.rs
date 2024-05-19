@@ -1,6 +1,5 @@
 use specs::prelude::*;
-use crate::{raws, spatial, Chasing, Faction, Map, MyTurn, Name, Position, SpecialAbilities, Spell, Viewshed,
-    WantsToApproach, WantsToCastSpell, WantsToFlee, Confusion, Equipped, Weapon, WantsToShoot};
+use crate::{raws, spatial, Chasing, Confusion, Equipped, Faction, Map, MyTurn, Name, Position, SpecialAbilities, Ability, Viewshed, WantsToApproach, WantsToUseAbility, WantsToFlee, WantsToShoot, Weapon};
 use crate::raws::{Reaction, faction_reaction, RAWS};
 use crate::rng;
 
@@ -19,9 +18,9 @@ impl<'a> System<'a> for VisibleAI {
         ReadStorage<'a, Viewshed>,
         WriteStorage<'a, Chasing>,
         ReadStorage<'a, SpecialAbilities>,
-        WriteStorage<'a, WantsToCastSpell>,
+        WriteStorage<'a, WantsToUseAbility>,
         ReadStorage<'a, Name>,
-        ReadStorage<'a, Spell>,
+        ReadStorage<'a, Ability>,
         ReadStorage<'a, Confusion>,
         ReadStorage<'a, Equipped>,
         ReadStorage<'a, Weapon>,
@@ -32,7 +31,7 @@ impl<'a> System<'a> for VisibleAI {
     fn run(&mut self, data: Self::SystemData) {
         let (turns, factions, positions, map, mut want_approach, mut want_flee,
             entities, player, viewsheds, mut chasing, special_abilities,
-            mut wants_cast, names, spells, confused, equipped,
+            mut wants_cast, names, abilities, confused, equipped,
             weapons, mut wants_shoot) = data;
 
         for (entity, _turn, my_faction, pos, viewshed) in (&entities, &turns, &factions, &positions, &viewsheds).join() {
@@ -59,14 +58,14 @@ impl<'a> System<'a> for VisibleAI {
                                 rltk::Point::new(pos.x, pos.y),
                                 rltk::Point::new(reaction.0 as i32 % map.width, reaction.0 as i32 / map.width)
                             );
-                            if let Some(abilities) = special_abilities.get(entity) {
-                                for ability in abilities.abilities.iter() {
+                            if let Some(special_ability) = special_abilities.get(entity) {
+                                for ability in special_ability.abilities.iter() {
                                     if range >= ability.min_range && range <= ability.range
                                     && rng::roll_dice(1, 100) >= (ability.chance * 100.0) as i32 {
                                         wants_cast.insert(
                                             entity,
-                                            WantsToCastSpell{
-                                                spell: raws::find_spell_entity_by_name(&ability.spell, &names, &spells, &entities).unwrap(),
+                                            WantsToUseAbility{
+                                                ability: raws::find_ability_entity_by_name(&ability.name, &names, &abilities, &entities).unwrap(),
                                                 target: Some(rltk::Point::new(reaction.0 as i32 % map.width, reaction.0 as i32 / map.width))
                                             }
                                         ).expect("Unable to insert");

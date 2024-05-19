@@ -52,7 +52,7 @@
                 { "name": "Greater Health Potion", "weight": 5 },
                 { "name": "Magic Mapping Scroll", "weight": 2 },
                 { "name": "Tower Shield", "weight": 5 },
-                { "name": "Bulwark Shield", "weight": 2 },
+                { "name": "Mithril Shield", "weight": 2 },
                 { "name": "Iron Helmet", "weight": 5 },
                 { "name": "Iron Breastplate", "weight": 2 },
                 { "name": "Iron Greaves", "weight": 5 },
@@ -84,7 +84,7 @@
                 { "name": "Mithril Greatsword", "weight": 3 },
                 { "name": "High on Fireaxe", "weight": 5 },
                 { "name": "Mammoth Plate", "weight": 2 },
-                { "name": "Bulwark Shield", "weight": 3 }
+                { "name": "Mithril Shield", "weight": 3 }
             ]
         },
         {
@@ -175,120 +175,175 @@
         }
     ],
 
-    "spells": [
+    "abilities": [
         {
             "name": "Zap",
-            "mana_cost": 2,
-            "effects": {
-                "ranged": "6",
-                "damage": "1d10",
-                "stun": "2",
-                "particle_line": "▓;#f7ff02;400.0"
+            "description": "Zap an enemy with electricity",
+            "levels": {
+                "1": {
+                    "mana_cost": 2,
+                    "effects": {
+                        "ranged": "6",
+                        "damage": "1d10",
+                        "stun": "2",
+                        "particle_line": "▓;#f7ff02;400.0"
+                    }
+                }
             }
         },
         {
             "name": "Lightning Bolt",
-            "mana_cost": 6,
-            "effects": {
-                "ranged": "6",
-                "damage": "1d20",
-                "stun": "4",
-                "particle_line": "▓;#f7ff02;400.0"
+            "description": "Blast an enemy with a bolt of lightning",
+            "levels": {
+                "1": {
+                    "mana_cost": 6,
+                    "effects": {
+                        "ranged": "6",
+                        "damage": "1d20",
+                        "stun": "4",
+                        "particle_line": "▓;#f7ff02;400.0"
+                    }
+                }
             }
         },
         {
             "name": "Frost Bolt",
-            "mana_cost": 6,
-            "effects": {
-                "ranged": "6",
-                "damage": "3d5",
-                "slow": "10",
-                "duration": "6",
-                "particle_line" : "*;#00FFFF;400.0"
+            "description": "Throw a bolt of frost at an enemy",
+            "levels": {
+                "1": {
+                    "mana_cost": 6,
+                    "effects": {
+                        "ranged": "6",
+                        "damage": "3d5",
+                        "slow": "10",
+                        "duration": "6",
+                        "particle_line" : "*;#00FFFF;400.0"
+                    }
+                }
             }
         },
         {
             "name": "Magic Missile",
-            "mana_cost": 2,
-            "effects": {
-                "ranged": "8",
-                "damage": "3d6",
-                "particle_line": "*;#ff0623;200.0"
+            "description": "Shoot three magical missiles at an enemy",
+            "levels": {
+                "1": {
+                    "mana_cost": 2,
+                    "effects": {
+                        "ranged": "8",
+                        "damage": "3d6",
+                        "particle_line": "*;#ff0623;200.0"
+                    }
+                }
             }
         },
         {
             "name": "Confusion",
-            "mana_cost": 4,
-            "effects": {
-                "ranged": "6",
-                "confusion": "4"
+            "description": "Confuse an enemy",
+            "levels": {
+                "1": {
+                    "mana_cost": 4,
+                    "effects": {
+                        "ranged": "6",
+                        "confusion": "4"
+                    }
+                }
             }
         },
         {
             "name": "Mass Confusion",
-            "mana_cost": 10,
-            "effects": {
-                "ranged": "6",
-                "confusion": "4",
-                "area_of_effect": "3",
-                "particle": "?;#fc1cfc;200.0"
+            "description": "Confuse a group of enemies",
+            "levels": {
+                "1": {
+                    "mana_cost": 10,
+                    "effects": {
+                        "ranged": "6",
+                        "confusion": "4",
+                        "area_of_effect": "3",
+                        "particle": "?;#fc1cfc;200.0"
+                    }
+                }
             }
         },
         {
             "name": "Ray of Sickness",
-            "mana_cost": 6,
-            "effects": {
-                "ranged": "6",
-                "damage": "2d5",
-                "damage_over_time": "8",
-                "duration": "5",
-                "particle_line": "▓;#00FF00;400.0"
+            "description": "Shoot a sickening ray at and enemy",
+            "levels": {
+                "1": {
+                    "mana_cost": 6,
+                    "effects": {
+                        "ranged": "6",
+                        "damage": "2d5",
+                        "damage_over_time": "8",
+                        "duration": "5",
+                        "particle_line": "▓;#00FF00;400.0"
+                    }
+                }
             }
         },
         {
             "name": "Fireball",
-            "mana_cost": 10,
-            "effects": {
-                "ranged": "6",
-                "damage": "2d10",
-                "area_of_effect": "3",
-                "damage_over_time": "2",
-                "duration": "3",
-                "particle": "*;#FFA500;200.0"
+            "description": "Throw a ball of fire at the target",
+            "levels": {
+                "1": {
+                    "mana_cost": 10,
+                    "effects": {
+                        "ranged": "6",
+                        "damage": "2d10",
+                        "area_of_effect": "3",
+                        "damage_over_time": "2",
+                        "duration": "3",
+                        "particle": "*;#FFA500;200.0"
+                    }
+                }
             }
         },
         {
             "name": "Web",
-            "mana_cost": 4,
-            "effects": {
-                "ranged": "6",
-                "slow": "10",
-                "area_of_effect": "3",
-                "duration": "5",
-                "particle_line" : "☼;#FFFFFF;400.0"
+            "description": "Cover an area in webbing",
+            "levels": {
+                "1": {
+                    "mana_cost": 4,
+                    "effects": {
+                        "ranged": "6",
+                        "slow": "10",
+                        "area_of_effect": "3",
+                        "duration": "5",
+                        "particle_line" : "☼;#FFFFFF;400.0"
+                    }
+                }
             }
         },
         {
             "name": "Scorching Ray",
-            "mana_cost": 6,
-            "effects": {
-                "ranged": "6",
-                "particle_line" : "▓;#FFA500;400.0",
-                "damage_over_time": "4",
-                "duration": "5",
-                "damage": "2d6+2"
+            "description": "Shoot a scorching ray",
+            "levels": {
+                "1": {
+                    "mana_cost": 6,
+                    "effects": {
+                        "ranged": "6",
+                        "particle_line" : "▓;#FFA500;400.0",
+                        "damage_over_time": "4",
+                        "duration": "5",
+                        "damage": "2d6+2"
+                    }
+                }
             }
         },
         {
             "name": "Drain Soul",
-            "mana_cost": 10,
-            "effects": {
-                "ranged": "6",
-                "particle_line" : "☼;#c045f1;400.0",
-                "slow": "10",
-                "duration": "5",
-                "damage": "4d8",
-                "healing": "10"
+            "description": "Drain the soul of the target",
+            "levels": {
+                "1": {
+                    "mana_cost": 10,
+                    "effects": {
+                        "ranged": "6",
+                        "particle_line" : "☼;#c045f1;400.0",
+                        "slow": "10",
+                        "duration": "5",
+                        "damage": "4d8",
+                        "healing": "10"
+                    }
+                }
             }
         }
     ],
@@ -577,91 +632,6 @@
             "class": "common"
         },
         {
-            "name": "Beginner Lightning Magic",
-            "renderable": {
-                "glyph": "&",
-                "bg": "#000000",
-                "order": 2
-            },
-            "consumable": {
-                "effects": {
-                    "teach_spell": "Zap"
-                }
-            },
-            "weight_lbs": 0.5,
-            "base_value": 150,
-            "vendor_category": "magic",
-            "class": "common"
-        },
-        {
-            "name": "Beginner Arcane Magic",
-            "renderable": {
-                "glyph": "&",
-                "bg": "#000000",
-                "order": 2
-            },
-            "consumable": {
-                "effects": {
-                    "teach_spell": "Magic Missile"
-                }
-            },
-            "weight_lbs": 0.5,
-            "base_value": 150,
-            "vendor_category": "magic",
-            "class": "common"
-        },
-        {
-            "name": "Beginner Chaos Magic",
-            "renderable": {
-                "glyph": "&",
-                "bg": "#000000",
-                "order": 2
-            },
-            "consumable": {
-                "effects": {
-                    "teach_spell": "Confusion"
-                }
-            },
-            "weight_lbs": 0.5,
-            "base_value": 150,
-            "vendor_category": "magic",
-            "class": "common"
-        },
-        {
-            "name": "Intermediate Poison Magic",
-            "renderable": {
-                "glyph": "&",
-                "bg": "#000000",
-                "order": 2
-            },
-            "consumable": {
-                "effects": {
-                    "teach_spell": "Ray of Sickness"
-                }
-            },
-            "weight_lbs": 0.5,
-            "base_value": 300,
-            "vendor_category": "magic",
-            "class": "rare"
-        },
-        {
-            "name": "Intermediate Fire Magic",
-            "renderable": {
-                "glyph": "&",
-                "bg": "#000000",
-                "order": 2
-            },
-            "consumable": {
-                "effects": {
-                    "teach_spell": "Fireball"
-                }
-            },
-            "weight_lbs": 0.5,
-            "base_value": 500,
-            "vendor_category": "magic",
-            "class": "rare"
-        },
-        {
             "name": "Rod of Fireballs",
             "renderable": {
                 "glyph": "|",
@@ -701,7 +671,26 @@
             "vendor_category": "food",
             "class": "common"
         },
-
+        {
+            "name": "Family Dagger",
+            "renderable": {
+                "glyph": "/",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "1d6+1",
+                "hit_bonus": -1,
+                "slot": "Main Hand"
+            },
+            "weight_lbs": 1.0,
+            "base_value": 30,
+            "initiative_penalty": 0,
+            "class": "unique",
+            "vendor_category": "weapon"
+        },
         {
             "name": "Dagger",
             "renderable": {
@@ -890,6 +879,33 @@
             }
         },
         {
+            "name": "Family Staff",
+            "renderable": {
+                "glyph": "|",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "melee",
+                "attribute": "Dexterity",
+                "base_damage": "1d6",
+                "hit_bonus": 0,
+                "slot": "Two Handed"
+            },
+            "weight_lbs": 5.0,
+            "base_value": 50,
+            "initiative_penalty": 0.0,
+            "class": "unique",
+            "vendor_category": "magic",
+            "skill_bonuses": {
+                "magic": 1,
+                "defence": -1
+            },
+            "attribute_bonuses": {
+                "intelligence": 1
+            }
+        },
+        {
             "name": "Fir Staff",
             "renderable": {
                 "glyph": "|",
@@ -909,7 +925,10 @@
             "class": "common",
             "vendor_category": "magic",
             "skill_bonuses": {
-                "magic": 1
+                "magic": 2
+            },
+            "attribute_bonuses": {
+                "intelligence": 1
             }
         },
         {
@@ -932,7 +951,10 @@
             "class": "rare",
             "vendor_category": "magic",
             "skill_bonuses": {
-                "magic": 2
+                "magic": 3
+            },
+            "attribute_bonuses": {
+                "intelligence": 1
             }
         },
         {
@@ -955,10 +977,10 @@
             "class": "legendary",
             "vendor_category": "magic",
             "skill_bonuses": {
-                "magic": 3
+                "magic": 4
             },
             "attribute_bonuses": {
-                "intelligence": 1
+                "intelligence": 2
             }
         },
         {
@@ -1329,7 +1351,7 @@
             "vendor_category": "wearables"
         },
         {
-            "name": "Bulwark Shield",
+            "name": "Mithril Shield",
             "renderable": {
                 "glyph": "0",
                 "bg": "#000000",
@@ -2161,7 +2183,7 @@
                 ]
             },
             "abilities": [
-                { "spell": "Web", "chance": 0.2, "range": 6.0, "min_range": 3.0 }
+                { "ability": "Web", "chance": 0.2, "range": 6.0, "min_range": 3.0 }
             ]
         },
         {
@@ -2311,7 +2333,7 @@
                 "magic": 4
             },
             "abilities": [
-                { "spell": "Scorching Ray", "chance": 0.4, "range": 6.0, "min_range": 2.0 }
+                { "ability": "Scorching Ray", "chance": 0.4, "range": 6.0, "min_range": 2.0 }
             ],
             "loot_table": "Lesser Monster"
         },
@@ -2350,7 +2372,7 @@
             },
             "equipped": ["Mithril Greataxe", "Mithril Plate", "Mithril Helmet"],
             "abilities": [
-                { "spell": "Drain Soul", "chance": 0.2, "range": 6.0, "min_range": 0.0 }
+                { "ability": "Drain Soul", "chance": 0.2, "range": 6.0, "min_range": 0.0 }
             ],
             "loot_table": "Greater Monster"
         },
@@ -2762,6 +2784,577 @@
             "loot_table": "Legendary Chest",
             "gold": "8d10+10",
             "capacity": 12
+        }
+    ],
+
+    "character_classes": [
+        {
+            "name": "Warrior",
+            "description": "Strength, Melee Weapons, Shields, Heavy Armour",
+            "passives": [
+                {
+                    "name": "Two-Handed Melee Weapon Mastery",
+                    "description": "Improve your effectiveness when wielding a two-handed melee weapon.",
+                    "levels": {
+                        "1": {
+                            "teaches_ability": "Heavy Strike",
+                            "attribute_bonus": {
+                                "strength": 1
+                            },
+                            "skill_bonus": {
+                                "melee": 1
+                            }
+                        },
+                        "2": {
+                            "teaches_ability": "Cleave",
+                            "attribute_bonus": {
+                                "strength": 1
+                            },
+                            "skill_bonus": {
+                                "melee": 1
+                            }
+                        },
+                        "3": {
+                            "levels_ability": "Heavy Strike",
+                            "attribute_bonus": {
+                                "strength": 1,
+                                "constitution": 1
+                            },
+                            "skill_bonus": {
+                                "melee": 2
+                            }
+                        },
+                        "4": {
+                            "levels_ability": "Cleave",
+                            "attribute_bonus": {
+                                "strength": 1,
+                                "constitution": 1,
+                                "dexterity": 1
+                            },
+                            "skill_bonus": {
+                                "melee": 2,
+                                "defence": 1
+                            }
+                        },
+                        "5": {
+                            "teaches_ability": "Rage",
+                            "attribute_bonus": {
+                                "strength": 2,
+                                "constitution": 2,
+                                "dexterity": 2
+                            },
+                            "skill_bonus": {
+                                "melee": 4,
+                                "defence": 2
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Shield Mastery",
+                    "description": "Improve your effectiveness when wielding a one-handed melee weapon and shield.",
+                    "levels": {
+                        "1": {
+                            "teaches_ability": "Shield Bash",
+                            "attribute_bonus": {
+                                "strength": 1,
+                                "constitution": 1
+                            },
+                            "skill_bonus": {
+                                "defence": 1,
+                                "melee": 1
+                            }
+                        },
+                        "2": {
+                            "teaches_ability": "Bulwark",
+                            "attribute_bonus": {
+                                "strength": 1,
+                                "constitution": 1
+                            },
+                            "skill_bonus": {
+                                "defence": 1,
+                                "melee": 1
+                            }
+                        },
+                        "3": {
+                            "levels_ability": "Shield Bash",
+                            "attribute_bonus": {
+                                "strength": 1,
+                                "constitution": 2,
+                                "dexterity": 1
+                            },
+                            "skill_bonus": {
+                                "defence": 2,
+                                "melee": 1
+                            }
+                        },
+                        "4": {
+                            "levels_ability": "Bulwark",
+                            "attribute_bonus": {
+                                "strength": 1,
+                                "constitution": 2,
+                                "dexterity": 1
+                            },
+                            "skill_bonus": {
+                                "defence": 2,
+                                "melee": 2
+                            }
+                        },
+                        "5": {
+                            "teaches_ability": "Walking Fortress",
+                            "attribute_bonus": {
+                                "strength": 2,
+                                "constitution": 2,
+                                "dexterity": 2
+                            },
+                            "skill_bonus": {
+                                "defence": 4,
+                                "melee": 2
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Fortitude",
+                    "description": "Increases your physical capabilities.",
+                    "levels": {
+                        "1": {
+                            "attribute_bonus": {
+                                "strength": 2,
+                                "constitution": 2
+                            }
+                        },
+                        "2": {
+                            "attribute_bonus": {
+                                "strength": 2,
+                                "constitution": 2
+                            },
+                            "skill_bonus": {
+                                "melee": 2,
+                                "defence": 2
+                            }
+                        },
+                        "3": {
+                            "attribute_bonus": {
+                                "strength": 2,
+                                "constitution": 2
+                            },
+                            "skill_bonus": {
+                                "melee": 2,
+                                "defence": 2
+                            }
+                        },
+                        "4": {
+                            "attribute_bonus": {
+                                "strength": 3,
+                                "constitution": 3
+                            },
+                            "skill_bonus": {
+                                "melee": 3,
+                                "defence": 3
+                            }
+                        },
+                        "5": {
+                            "attribute_bonus": {
+                                "strength": 4,
+                                "constitution": 4
+                            },
+                            "skill_bonus": {
+                                "melee": 4,
+                                "defence": 4
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Sorceror",
+            "description": "Intelligence, Powerful Abilities, Light Armour",
+            "passives": [
+                {
+                    "name": "Fire Mastery",
+                    "description": "Improve your mastery over fire magic.",
+                    "levels": {
+                        "1": {
+                            "teaches_ability": "Fireball",
+                            "skill_bonus": {
+                                "magic": 2
+                            }
+                        },
+                        "2": {
+                            "levels_ability": "Fireball",
+                            "skill_bonus": {
+                                "magic": 2
+                            },
+                            "attribute_bonus": {
+                                "intelligence": 1
+                            }
+                        },
+                        "3": {
+                            "teaches_ability": "Flame Nova",
+                            "skill_bonus": {
+                                "magic": 3
+                            },
+                            "attribute_bonus": {
+                                "intelligence": 1
+                            }
+                        },
+                        "4": {
+                            "levels_ability": "Flame Nova",
+                            "skill_bonus": {
+                                "magic": 3
+                            },
+                            "attribute_bonus": {
+                                "intelligence": 2,
+                                "strength": 1
+                            }
+                        },
+                        "5": {
+                            "teaches_ability": "Incinerate",
+                            "skill_bonus": {
+                                "magic": 4
+                            },
+                            "attribute_bonus": {
+                                "intelligence": 2,
+                                "strength": 2
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Lightning Mastery",
+                    "description": "Improves your mastery over lightning magic.",
+                    "levels": {
+                        "1": {
+                            "teaches_ability": "Zap",
+                            "skill_bonus": {
+                                "magic": 1
+                            },
+                            "attribute_bonus": {
+                                "intelligence": 1
+                            }
+                        },
+                        "2": {
+                            "levels_ability": "Zap",
+                            "skill_bonus": {
+                                "magic": 2
+                            },
+                            "attribute_bonus": {
+                                "intelligence": 1,
+                                "dexterity": 1
+                            }
+                        },
+                        "3": {
+                            "teaches_ability": "Lightning Bolt",
+                            "skill_bonus": {
+                                "magic": 2
+                            },
+                            "attribute_bonus": {
+                                "intelligence": 1,
+                                "dexterity": 1
+                            }
+                        },
+                        "4": {
+                            "levels_ability": "Lightning Bolt",
+                            "skill_bonus": {
+                                "magic": 3
+                            },
+                            "attribute_bonus": {
+                                "intelligence": 2,
+                                "dexterity": 2
+                            }
+                        },
+                        "5": {
+                            "teaches_ability": "Lightning Storm",
+                            "skill_bonus": {
+                                "magic": 4
+                            },
+                            "attribute_bonus": {
+                                "intelligence": 3,
+                                "dexterity": 2
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Cold Mastery",
+                    "description": "Improves your mastery over cold magic.",
+                    "levels": {
+                        "1": {
+                            "teaches_ability": "Frostbolt",
+                            "skill_bonus": {
+                                "magic": 1,
+                                "defence": 1
+                            }
+                        },
+                        "2": {
+                            "levels_ability": "Frostbolt",
+                            "skill_bonus": {
+                                "magic": 1,
+                                "defence": 1
+                            },
+                            "attribute_bonus": {
+                                "intelligence": 1
+                            }
+                        },
+                        "3": {
+                            "teaches_ability": "Frost Shield",
+                            "skill_bonus": {
+                                "magic": 2,
+                                "defence": 2
+                            },
+                            "attribute_bonus": {
+                                "intelligence": 1
+                            }
+                        },
+                        "4": {
+                            "levels_ability": "Frost Shield",
+                            "skill_bonus": {
+                                "magic": 3,
+                                "defence": 3
+                            },
+                            "attribute_bonus": {
+                                "intelligence": 1,
+                                "constitution": 1
+                            }
+                        },
+                        "5": {
+                            "teaches_ability": "Blizzard",
+                            "skill_bonus": {
+                                "magic": 4,
+                                "defence": 4
+                            },
+                            "attribute_bonus": {
+                                "intelligence": 2,
+                                "constitution": 2
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Arcane Mastery",
+                    "description": "Improves your mastery over arcane magic.",
+                    "levels": {
+                        "1": {
+                            "teaches_ability": "Magic Missiles",
+                            "skill_bonus": {
+                                "magic": 2
+                            },
+                            "attribute_bonus": {
+                                "intelligence": 1
+                            }
+                        },
+                        "2": {
+                            "teaches_ability": "Town Portal",
+                            "skill_bonus": {
+                                "magic": 2
+                            },
+                            "attribute_bonus": {
+                                "intelligence": 1
+                            }
+                        },
+                        "3": {
+                            "teaches_ability": "Magic Mapping",
+                            "skill_bonus": {
+                                "magic": 3,
+                                "defence": 1
+                            },
+                            "attribute_bonus": {
+                                "intelligence": 2,
+                                "dexterity": 1
+                            }
+                        },
+                        "4": {
+                            "levels_ability": "Magic Missiles",
+                            "skill_bonus": {
+                                "magic": 3,
+                                "defence": 1
+                            },
+                            "attribute_bonus": {
+                                "intelligence": 3,
+                                "constitution": 1,
+                                "dexterity": 1
+                            }
+                        },
+                        "5": {
+                            "teaches_ability": "Force Wave",
+                            "skill_bonus": {
+                                "magic": 4,
+                                "defence": 1
+                            },
+                            "attribute_bonus": {
+                                "intelligence": 4,
+                                "dexterity": 2,
+                                "constitution": 2
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Ranger",
+            "description": "Dexterity, Versatility, Bows, Dual-wielding",
+            "passives": [
+                {
+                    "name": "Hunter",
+                    "description": "Improve your effectiveness when wielding a bow.",
+                    "levels": {
+                        "1": {
+                            "teaches_ability": "Crippling Shot",
+                            "attribute_bonus": {
+                                "dexterity": 1
+                            },
+                            "skill_bonus": {
+                                "ranged": 1
+                            }
+                        },
+                        "2": {
+                            "levels_ability": "Crippling Shot",
+                            "attribute_bonus": {
+                                "dexterity": 1
+                            },
+                            "skill_bonus": {
+                                "ranged": 1
+                            }
+                        },
+                        "3": {
+                            "teaches_ability": "Barrage",
+                            "attribute_bonus": {
+                                "dexterity": 1
+                            },
+                            "skill_bonus": {
+                                "ranged": 2
+                            }
+                        },
+                        "4": {
+                            "levels_ability": "Barrage",
+                            "attribute_bonus": {
+                                "dexterity": 2
+                            },
+                            "skill_bonus": {
+                                "ranged": 2
+                            }
+                        },
+                        "5": {
+                            "teaches_ability": "Explosive Shot",
+                            "attribute_bonus": {
+                                "dexterity": 3
+                            },
+                            "skill_bonus": {
+                                "ranged": 3
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Assassin",
+                    "description": "Improve your effectiveness when dual-wielding one-handed weapons.",
+                    "levels": {
+                        "1": {
+                            "teaches_ability": "Ambush",
+                            "attribute_bonus": {
+                                "dexterity": 1
+                            },
+                            "skill_bonus": {
+                                "melee": 1
+                            }
+                        },
+                        "2": {
+                            "teaches_ability": "Evasion",
+                            "attribute_bonus": {
+                                "dexterity": 1
+                            },
+                            "skill_bonus": {
+                                "melee": 1
+                            }
+                        },
+                        "3": {
+                            "levels_ability": "Ambush",
+                            "attribute_bonus": {
+                                "dexterity": 1
+                            },
+                            "skill_bonus": {
+                                "melee": 1,
+                                "defence": 1
+                            }
+                        },
+                        "4": {
+                            "levels_ability": "Evasion",
+                            "attribute_bonus": {
+                                "dexterity": 2
+                            },
+                            "skill_bonus": {
+                                "melee": 2,
+                                "defence": 1
+                            }
+                        },
+                        "5": {
+                            "teaches_ability": "Execute",
+                            "attribute_bonus": {
+                                "dexterity": 2,
+                                "constitution": 1
+                            },
+                            "skill_bonus": {
+                                "melee": 2,
+                                "defence": 2
+                            }
+                        }
+                    }
+                },
+                {
+                    "name": "Athletics",
+                    "description": "Improves your coordination and agility.",
+                    "levels": {
+                        "1": {
+                            "attribute_bonus": {
+                                "dexterity": 2
+                            },
+                            "skill_bonus": {
+                                "defence": 1
+                            }
+                        },
+                        "2": {
+                            "attribute_bonus": {
+                                "dexterity": 3
+                            },
+                            "skill_bonus": {
+                                "defence": 2
+                            }
+                        },
+                        "3": {
+                            "attribute_bonus": {
+                                "constitution": 1,
+                                "dexterity": 4
+                            },
+                            "skill_bonus": {
+                                "defence": 2
+                            }
+                        },
+                        "4": {
+                            "attribute_bonus": {
+                                "constitution": 1,
+                                "intelligence": 1,
+                                "dexterity": 5
+                            },
+                            "skill_bonus": {
+                                "defence": 3
+                            }
+                        },
+                        "5": {
+                            "attribute_bonus": {
+                                "constitution": 2,
+                                "intelligence": 2,
+                                "dexterity": 6
+                            },
+                            "skill_bonus": {
+                                "defence": 4
+                            }
+                        }
+                    }
+                }
+            ]
         }
     ]
 }

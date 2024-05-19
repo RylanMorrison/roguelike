@@ -30,7 +30,6 @@ pub fn save_game(_ecs : &mut World) {
 pub fn save_game(ecs : &mut World) {
     // Create helper
 
-    use crate::gamelog;
     let mapcopy = ecs.get_mut::<crate::map::Map>().unwrap().clone();
     let dungeon_master = ecs.get_mut::<crate::map::MasterDungeonMap>().unwrap().clone();
     let savehelper = ecs
@@ -64,9 +63,9 @@ pub fn save_game(ecs : &mut World) {
             LightSource, Initiative, MyTurn, Faction, WantsToApproach, WantsToFlee, MoveMode, Chasing,
             EquipmentChanged, Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport,
             Food, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, Duration, StatusEffect,
-            KnownSpells, Spell, WantsToCastSpell, RestoresMana, TeachesSpell, Slow, DamageOverTime,
+            KnownAbilities, AttributeBonus, WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime,
             SpecialAbilities, TileSize, PendingLevelUp, SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot,
-            Stun, StatusEffectChanged, Boss, Chest
+            Stun, StatusEffectChanged, Boss, Chest, CharacterClass
         );
     }
 
@@ -121,9 +120,9 @@ pub fn load_game(ecs: &mut World) {
             LightSource, Initiative, MyTurn, Faction, WantsToApproach, WantsToFlee, MoveMode, Chasing,
             EquipmentChanged, Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport,
             Food, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, Duration, StatusEffect,
-            KnownSpells, Spell, WantsToCastSpell, RestoresMana, TeachesSpell, Slow, DamageOverTime,
+            KnownAbilities, Ability, WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime,
             SpecialAbilities, TileSize, PendingLevelUp, SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot,
-            Stun, StatusEffectChanged, Boss, Chest
+            Stun, StatusEffectChanged, Boss, Chest, CharacterClass
         );
     }
 

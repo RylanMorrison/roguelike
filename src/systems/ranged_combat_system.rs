@@ -30,7 +30,7 @@ impl<'a> System<'a> for RangedCombatSystem {
     fn run(&mut self, data: Self::SystemData) {
         let (entities, mut wants_shoots, names, attributes, 
             skills, pools, positions, hunger_clock, 
-            equipped_items, melee_weapons, wearables, natural,
+            equipped_items, weapons, wearables, natural,
             area_of_effect, map) = data;
 
         for (entity, wants_shoot, name, attacker_attributes, attacker_skills, attacker_pools) in (&entities, &wants_shoots, &names, &attributes, &skills, &pools).join() {
@@ -90,10 +90,10 @@ impl<'a> System<'a> for RangedCombatSystem {
 
             // weapon attack ability of attacker
             let mut weapon_entity: Option<Entity> = None;
-            for (weapon, wielded, melee) in (&entities, &equipped_items, &melee_weapons).join() {
-                if wielded.owner == entity && (wielded.slot == EquipmentSlot::MainHand || wielded.slot == EquipmentSlot::TwoHanded) {
-                    weapon_info = melee.clone();
-                    weapon_entity = Some(weapon);
+            for (entity, wielded, weapon) in (&entities, &equipped_items, &weapons).join() {
+                if wielded.owner == entity && weapon.range.is_some() && (wielded.slot == EquipmentSlot::MainHand || wielded.slot == EquipmentSlot::TwoHanded) {
+                    weapon_info = weapon.clone();
+                    weapon_entity = Some(entity);
                 }
             }
 
@@ -105,7 +105,7 @@ impl<'a> System<'a> for RangedCombatSystem {
             } else {
                 attacker_attributes.dexterity.bonus
             };
-            let skill_hit_bonus = &attacker_skills.melee.bonus();
+            let skill_hit_bonus = &attacker_skills.ranged.bonus();
             let weapon_hit_bonus = weapon_info.hit_bonus;
             let mut status_hit_bonus = 0;
             if let Some(hc) = hunger_clock.get(entity) {
@@ -147,7 +147,7 @@ impl<'a> System<'a> for RangedCombatSystem {
                 } else {
                     attacker_attributes.dexterity.bonus
                 };
-                let skill_damage_bonus = &attacker_skills.melee.bonus();
+                let skill_damage_bonus = &attacker_skills.ranged.bonus();
                 let weapon_damage_bonus = weapon_info.damage_bonus;
                 
                 let damage = i32::max(0, base_damage + attr_damage_bonus + skill_damage_bonus

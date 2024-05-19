@@ -3,15 +3,15 @@ use specs::prelude::*;
 use std::cmp::{max, min};
 
 use crate::{spatial, gamelog, InBackpack, WantsToUseItem};
-use crate::raws::{faction_reaction, find_spell_entity, Reaction, RAWS};
+use crate::raws::{faction_reaction, find_ability_entity, Reaction, RAWS};
 use crate::effects::{add_effect, EffectType, Targets};
 use crate::rng;
 
 use crate::{Position, Player, Viewshed, State, Map, RunState, Item, 
     TileType, particle_system::ParticleBuilder, Pools, WantsToMelee, WantsToPickupItem,
     HungerState, HungerClock, Door, BlocksVisibility, BlocksTile, Renderable, EntityMoved,
-    Consumable, Ranged, Faction, Vendor, gui::VendorMode, KnownSpells, WantsToCastSpell,
-    Attributes, Skills, PendingLevelUp, Equipped, Weapon, Target, WantsToShoot, Name,
+    Consumable, Ranged, Faction, Vendor, gui::VendorMode, KnownAbilities, WantsToUseAbility,
+    CharacterClass, PendingLevelUp, Equipped, Weapon, Target, WantsToShoot, Name,
     Chest};
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
@@ -172,11 +172,11 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
             return use_consumable_hotkey(gs, key-1);
         }
     }
-    // spells
+    // abilities
     if ctx.control && ctx.key.is_some() {
         let key: Option<i32> = get_hotkey(ctx.key.unwrap());
         if let Some(key) = key {
-            return use_spell_hotkey(gs, key-1);
+            return use_ability_hotkey(gs, key-1);
         }
     }
 
@@ -235,30 +235,30 @@ fn use_consumable_hotkey(gs: &mut State, key: i32) -> RunState {
     RunState::Ticking
 }
 
-fn use_spell_hotkey(gs: &mut State, key: i32) -> RunState {
+fn use_ability_hotkey(gs: &mut State, key: i32) -> RunState {
     let player_entity = gs.ecs.fetch::<Entity>();
-    let known_spells = gs.ecs.read_storage::<KnownSpells>();
-    let player_spells = &known_spells.get(*player_entity).unwrap().spells;
+    let known_abilities = gs.ecs.read_storage::<KnownAbilities>();
+    let player_abilities = &known_abilities.get(*player_entity).unwrap().abilities;
 
-    if (key as usize) < player_spells.len() {
+    if (key as usize) < player_abilities.len() {
         let pools = gs.ecs.read_storage::<Pools>();
         let player_pools = pools.get(*player_entity).unwrap();
-        if player_pools.mana.current >= player_spells[key as usize].mana_cost {
-            if let Some(spell_entity) = find_spell_entity(&gs.ecs, &player_spells[key as usize].name) {
-                if let Some(ranged) = gs.ecs.read_storage::<Ranged>().get(spell_entity) {
-                    return RunState::ShowTargeting { range: ranged.range, source: spell_entity };
+        if player_pools.mana.current >= player_abilities[key as usize].mana_cost {
+            if let Some(ability_entity) = find_ability_entity(&gs.ecs, &player_abilities[key as usize].name) {
+                if let Some(ranged) = gs.ecs.read_storage::<Ranged>().get(ability_entity) {
+                    return RunState::ShowTargeting { range: ranged.range, source: ability_entity };
                 }
-                let mut intent = gs.ecs.write_storage::<WantsToCastSpell>();
+                let mut intent = gs.ecs.write_storage::<WantsToUseAbility>();
                 intent.insert(
                     *player_entity,
-                    WantsToCastSpell{ spell: spell_entity, target: None }
+                    WantsToUseAbility{ ability: ability_entity, target: None }
                 ).expect("Unable to insert intent");
                 return RunState::Ticking;
             }
         } else {
             gamelog::Logger::new()
                 .append("You don't have enough mana to cast")
-                .spell_name(&player_spells[key as usize].name)
+                .ability_name(&player_abilities[key as usize].name)
                 .append("!")
                 .log();
         }
@@ -345,6 +345,7 @@ pub fn skip_turn(ecs: &mut World) -> RunState {
 }
 
 pub fn level_up(ecs: &World, source: Entity, pools: &mut Pools) {
+    gamelog::clear_log();
     gamelog::Logger::new()
         .append("You are now level")
         .colour(RGB::named(rltk::GOLD))
@@ -369,12 +370,10 @@ pub fn level_up(ecs: &World, source: Entity, pools: &mut Pools) {
         }
     }
 
-    let attributes = ecs.read_storage::<Attributes>();
-    let player_attributes = attributes.get(source).unwrap();
-    let skills = ecs.read_storage::<Skills>();
-    let player_skills = skills.get(source).unwrap();
     let mut pending_level_ups = ecs.write_storage::<PendingLevelUp>();
-    pending_level_ups.insert(source, PendingLevelUp{ attributes: player_attributes.clone(), skills: player_skills.clone() }).expect("Unable to insert");
+    let character_classes = ecs.read_storage::<CharacterClass>();
+    let source_class = character_classes.get(source).unwrap();
+    pending_level_ups.insert(source, PendingLevelUp{ passives: source_class.passives.clone() }).expect("Unable to insert");
 }
 
 fn get_target_list(ecs: &mut World) -> Vec<(f32, Entity)> {

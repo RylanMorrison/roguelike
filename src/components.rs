@@ -478,7 +478,8 @@ impl Skill {
 pub struct Skills {
     pub melee: Skill,
     pub defence: Skill,
-    pub magic: Skill
+    pub ranged: Skill,
+    pub magic: Skill,
 }
 
 impl Skills {
@@ -486,6 +487,7 @@ impl Skills {
         Skills{
             melee: Skill{ base: 1, modifiers: 0 },
             defence: Skill{ base: 1, modifiers: 0 },
+            ranged: Skill{ base: 1, modifiers: 0 },
             magic: Skill{ base: 1, modifiers: 0 }
         }
     }
@@ -683,6 +685,7 @@ impl AttributeBonus {
 pub struct SkillBonus {
     pub melee: Option<i32>,
     pub defence: Option<i32>,
+    pub ranged: Option<i32>,
     pub magic: Option<i32>
 }
 
@@ -726,65 +729,14 @@ where
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct KnownSpell {
-    pub name: String,
-    pub mana_cost: i32
-}
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct KnownSpells {
-    pub spells: Vec<KnownSpell>
-}
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct Spell {
-    pub mana_cost: i32
-}
-
-#[derive(Component, Debug, Clone)]
-pub struct WantsToCastSpell {
-    pub spell: Entity,
-    pub target: Option<Point>
-}
-
-// WantsToCastSpell wrapper
-#[derive(Serialize, Deserialize, Clone)]
-pub struct WantsToCastSpellData<M>(M, Option<Point>);
-
-impl<M: Marker + Serialize> ConvertSaveload<M> for WantsToCastSpell
-where
-    for<'de> M: Deserialize<'de>,
-{
-    type Data = WantsToCastSpellData<M>;
-    type Error = NoError;
-
-    fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
-    where
-        F: FnMut(Entity) -> Option<M>,
-    {
-        let marker = ids(self.spell).unwrap();
-        Ok(WantsToCastSpellData(marker, self.target))
-    }
-
-    fn convert_from<F>(data: Self::Data, mut ids: F) -> Result<Self, Self::Error>
-    where
-        F: FnMut(M) -> Option<Entity>,
-    {
-        let spell = ids(data.0).unwrap();
-        let target = data.1;
-        Ok(WantsToCastSpell{spell, target})
-    }
-}
-
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct RestoresMana {
     pub mana_amount: i32
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct TeachesSpell {
-    pub spell: String
+pub struct TeachesAbility {
+    pub ability: String
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
@@ -799,7 +751,7 @@ pub struct DamageOverTime {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SpecialAbility {
-    pub spell: String,
+    pub name: String,
     pub chance: f32,
     pub range: f32,
     pub min_range: f32
@@ -818,8 +770,7 @@ pub struct TileSize {
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct PendingLevelUp {
-    pub attributes: Attributes,
-    pub skills: Skills
+    pub passives: HashMap<String, Passive>
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -895,4 +846,87 @@ pub struct Boss {}
 pub struct Chest {
     pub gold: Option<String>,
     pub capacity: i32
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct CharacterClass {
+    pub name: String,
+    pub passives: HashMap<String, Passive>
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Passive {
+    pub name: String,
+    pub description: String,
+    pub current_level: i32,
+    pub levels: HashMap<i32, PassiveLevel>
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PassiveLevel {
+    pub attribute_bonus: Option<AttributeBonus>,
+    pub skill_bonus: Option<SkillBonus>,
+    pub learn_ability: Option<String>,
+    pub level_ability: Option<String>
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Ability {
+    pub name: String,
+    pub description: String,
+    pub current_level: i32,
+    pub levels: HashMap<i32, AbilityLevel>
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct AbilityLevel {
+    pub mana_cost: Option<i32>,
+    pub effects: HashMap<String, String>
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct KnownAbility {
+    pub name: String,
+    pub level: i32,
+    pub mana_cost: i32
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct KnownAbilities {
+    pub abilities: Vec<KnownAbility>
+}
+
+#[derive(Component, Clone, Debug)]
+pub struct WantsToUseAbility {
+    pub ability: Entity,
+    pub target: Option<Point>
+}
+
+// WantsToUseAbility wrapper
+#[derive(Serialize, Deserialize, Clone)]
+pub struct WantsToUseAbilityData<M>(M, Option<Point>);
+
+impl<M: Marker + Serialize> ConvertSaveload<M> for WantsToUseAbility
+where
+    for<'de> M: Deserialize<'de>,
+{
+    type Data = WantsToUseAbilityData<M>;
+    type Error = NoError;
+
+    fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
+    where
+        F: FnMut(Entity) -> Option<M>,
+    {
+        let marker = ids(self.ability).unwrap();
+        Ok(WantsToUseAbilityData(marker, self.target))
+    }
+
+    fn convert_from<F>(data: Self::Data, mut ids: F) -> Result<Self, Self::Error>
+    where
+        F: FnMut(M) -> Option<Entity>,
+    {
+        let ability = ids(data.0).unwrap();
+        let target = data.1;
+        Ok(WantsToUseAbility{ability, target})
+    }
 }
