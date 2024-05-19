@@ -1,6 +1,7 @@
 use rltk::RGB;
 
 mod main_menu;
+mod character_class_menu;
 mod hud;
 mod tooltips;
 mod ranged_target;
@@ -13,6 +14,7 @@ mod levelup_menu;
 mod game_over_menu;
 mod cheat_menu;
 pub use main_menu::*;
+pub use character_class_menu::*;
 pub use hud::*;
 pub use tooltips::*;
 pub use ranged_target::*;

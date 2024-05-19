@@ -1,113 +1,67 @@
 use specs::prelude::*;
 use rltk::prelude::*;
-use super::{green, white, black, yellow};
-use crate::{State, Attributes, Skills, PendingLevelUp};
+use super::{green, white, black, yellow, gold};
+use crate::{CharacterClass, Passive, PassiveLevel, PendingLevelUp, State, AttributeBonus, SkillBonus};
+use std::collections::HashMap;
 
 pub enum LevelUpMenuResult {
     NoResponse,
-    AssignedAttribute,
-    AssignedSkill,
+    SelectedPassive,
+    DeselectedPassive,
     Done
 }
 
-fn draw_level_choice(draw_batch: &mut DrawBatch, y: i32, name: &str, value: &i32, selection: &str, selected: bool) {
-    let colour = if selected { green() } else { white() };
-    let mod_value = if selected { value + 1 } else { *value };
-
-    draw_batch.print_color(Point::new(22, y), name, ColorPair::new(colour, black()));
-    draw_batch.print_color(Point::new(39, y), mod_value, ColorPair::new(colour, black()));
-    draw_batch.print_color(Point::new(47, y), selection, ColorPair::new(yellow(), black()));
-}
-
-pub fn show_levelup_menu(gs: &mut State, ctx: &mut Rltk, attribute_points: i32, skill_points: i32) -> LevelUpMenuResult {
+pub fn show_levelup_menu(gs: &mut State, ctx: &mut Rltk) -> LevelUpMenuResult {
     let player = gs.ecs.fetch::<Entity>();
-    let attributes = gs.ecs.read_storage::<Attributes>();
-    let player_attributes = attributes.get(*player).unwrap();
-    let skills = gs.ecs.read_storage::<Skills>();
-    let player_skills = skills.get(*player).unwrap();
     let mut pending_level_ups = gs.ecs.write_storage::<PendingLevelUp>();
+    let character_classes = gs.ecs.read_storage::<CharacterClass>();
+    let player_class = character_classes.get(*player).unwrap();
     let level_up = pending_level_ups.get_mut(*player).unwrap();
     let mut draw_batch = DrawBatch::new();
     
-    draw_batch.draw_box(Rect::with_size(12, 25, 51, 20), ColorPair::new(white(), black()));
-    draw_batch.print_color(Point::new(15, 25), "Level Up", ColorPair::new(yellow(), black()));
-    draw_batch.print_color(Point::new(15, 27), "Pick one attribute and two skills to improve", ColorPair::new(yellow(), black()));
+    draw_batch.draw_box(Rect::with_size(0, 0, 99, 79), ColorPair::new(white(), black()));
+    draw_batch.print_color(Point::new(2, 2), "Level Up", ColorPair::new(yellow(), black()));
+    draw_batch.print_color(Point::new(2, 4), "Pick a passive ability to learn/improve", ColorPair::new(yellow(), black()));
 
-    draw_level_choice(&mut draw_batch, 29, "Strength", &player_attributes.strength.base, "(a)", level_up.attributes.strength.base > player_attributes.strength.base);
-    draw_level_choice(&mut draw_batch, 31, "Dexterity", &player_attributes.dexterity.base, "(b)", level_up.attributes.dexterity.base > player_attributes.dexterity.base);
-    draw_level_choice(&mut draw_batch, 33, "Constitution", &player_attributes.constitution.base, "(c)", level_up.attributes.constitution.base > player_attributes.constitution.base);
-    draw_level_choice(&mut draw_batch, 35, "Intelligence", &player_attributes.intelligence.base, "(d)", level_up.attributes.intelligence.base > player_attributes.intelligence.base);
+    let mut y = 8;
+    let mut j = 0;
+    let mut passive_selections: HashMap<String, String> = HashMap::new();
+    for (name, passive) in player_class.passives.iter() {
+        let selection = rltk::to_char(97 + j);
+        passive_selections.insert(selection.to_string(), name.clone());
 
-    draw_level_choice(&mut draw_batch, 38, "Melee", &player_skills.melee.base, "(e)", level_up.skills.melee.base > player_skills.melee.base);
-    draw_level_choice(&mut draw_batch, 40, "Defence", &player_skills.defence.base, "(f)", level_up.skills.defence.base > player_skills.defence.base);
-    draw_level_choice(&mut draw_batch, 42, "Magic", &player_skills.magic.base, "(g)", level_up.skills.magic.base > player_skills.magic.base);
-    
-    draw_batch.print_color(Point::new(15, 45), "ENTER when done", ColorPair::new(yellow(), black()));
+        draw_passive_choice(&mut draw_batch, &mut y, passive, format!("({})", selection), passive_selected(level_up, passive));
+        j += 1;
+    }
+    draw_batch.print_color(Point::new(82, 77), "ENTER when done", ColorPair::new(yellow(), black()));
 
-    draw_batch.submit(1000).expect("Draw batch submission failed");
+    draw_batch.submit(5000).expect("Draw batch submission failed");
 
     match ctx.key {
         None => {},
         Some(key) => {
             match key {
                 VirtualKeyCode::A => {
-                    if attribute_points == 0 {
-                        return LevelUpMenuResult::NoResponse;
-                    } else {
-                        level_up.attributes.strength.base = player_attributes.strength.base + 1;
-                        return LevelUpMenuResult::AssignedAttribute;
-                    }
+                    return handle_selection("a", passive_selections, level_up, player_class);
                 },
                 VirtualKeyCode::B => {
-                    if attribute_points == 0 {
-                        return LevelUpMenuResult::NoResponse;
-                    } else {
-                        level_up.attributes.dexterity.base = player_attributes.dexterity.base + 1;
-                        return LevelUpMenuResult::AssignedAttribute;
-                    }
+                    return handle_selection("b", passive_selections, level_up, player_class);
                 },
                 VirtualKeyCode::C => {
-                    if attribute_points == 0 {
-                        return LevelUpMenuResult::NoResponse;
-                    } else {
-                        level_up.attributes.constitution.base = player_attributes.constitution.base + 1;
-                        return LevelUpMenuResult::AssignedAttribute;
-                    }
+                    return handle_selection("c", passive_selections, level_up, player_class);
                 }
                 VirtualKeyCode::D => {
-                    if attribute_points == 0 {
-                        return LevelUpMenuResult::NoResponse;
-                    } else {
-                        level_up.attributes.intelligence.base = player_attributes.intelligence.base + 1;
-                        return LevelUpMenuResult::AssignedAttribute;
+                    if passive_selections.len() >= 4 {
+                        return handle_selection("d", passive_selections, level_up, player_class);
                     }
-                },
-                VirtualKeyCode::E => {
-                    if level_up.skills.melee.base > player_skills.melee.base || skill_points == 0 {
-                        return LevelUpMenuResult::NoResponse;
-                    } else {
-                        level_up.skills.melee.base = player_skills.melee.base + 1;
-                        return LevelUpMenuResult::AssignedSkill;
-                    }
-                },
-                VirtualKeyCode::F => {
-                    if level_up.skills.defence.base > player_skills.defence.base || skill_points == 0 {
-                        return LevelUpMenuResult::NoResponse;
-                    } else {
-                        level_up.skills.defence.base = player_skills.defence.base + 1;
-                        return LevelUpMenuResult::AssignedSkill;
-                    }
-                },
-                VirtualKeyCode::G => {
-                    if level_up.skills.magic.base > player_skills.magic.base || skill_points == 0 {
-                        return LevelUpMenuResult::NoResponse;
-                    } else {
-                        level_up.skills.magic.base = player_skills.magic.base + 1;
-                        return LevelUpMenuResult::AssignedSkill;
-                    }
-                },
+                }
                 VirtualKeyCode::Return => {
-                    if attribute_points == 0 && skill_points == 0 {
+                    let mut selection_made = false;
+                    for (_name, passive) in player_class.passives.iter() {
+                        if passive_selected(level_up, passive) { selection_made = true; }
+                    }
+
+                    if selection_made {
                         return LevelUpMenuResult::Done;
                     } else {
                         return LevelUpMenuResult::NoResponse;
@@ -119,4 +73,131 @@ pub fn show_levelup_menu(gs: &mut State, ctx: &mut Rltk, attribute_points: i32, 
     }
 
     LevelUpMenuResult::NoResponse
+}
+
+fn draw_passive_choice(draw_batch: &mut DrawBatch, y: &mut i32, passive: &Passive, selection: String, selected: bool) {
+    let colour = if selected { green() } else { white() };
+    let display_level_int = if selected { passive.current_level + 1 } else { passive.current_level };
+
+    draw_batch.print_color(Point::new(4, *y), selection, ColorPair::new(yellow(), black()));
+    draw_batch.print_color(Point::new(8, *y), passive.name.clone(), ColorPair::new(gold(), black()));
+    *y += 2;
+    draw_batch.print_color(Point::new(4, *y), passive.description.clone(), ColorPair::new(yellow(), black()));
+    *y += 2;
+    draw_batch.print_color(Point::new(4, *y), format!("Level: {}", display_level_int), ColorPair::new(colour, black()));
+    *y += 2;
+
+    // TODO: max level passives
+    let level_to_show: Option<PassiveLevel> = cumulative_level(passive, display_level_int);
+    if let Some(display_level) = level_to_show {
+        if let Some(attribute_bonus) = &display_level.attribute_bonus {
+            draw_batch.print_color(Point::new(4, *y), "Attribute bonuses:", ColorPair::new(colour, black()));
+            *y += 1;
+            if let Some(strength_bonus) = &attribute_bonus.strength {
+                draw_batch.print_color(Point::new(4, *y), format!("Strength ({})", strength_bonus), ColorPair::new(colour, black()));
+                *y += 1;
+            }
+            if let Some(dexterity_bonus) = &attribute_bonus.dexterity {
+                draw_batch.print_color(Point::new(4, *y), format!("Dexterity ({})", dexterity_bonus), ColorPair::new(colour, black()));
+                *y += 1;
+            }
+            if let Some(constitution_bonus) = &attribute_bonus.constitution {
+                draw_batch.print_color(Point::new(4, *y), format!("Constitution ({})", constitution_bonus), ColorPair::new(colour, black()));
+                *y += 1;
+            }
+            if let Some(intelligence_bonus) = &attribute_bonus.intelligence {
+                draw_batch.print_color(Point::new(4, *y), format!("Intelligence ({})", intelligence_bonus), ColorPair::new(colour, black()));
+                *y += 1;
+            }
+            *y += 1;
+        }
+        if let Some(skill_bonus) = &display_level.skill_bonus {
+            draw_batch.print_color(Point::new(4, *y), "Skill bonuses:", ColorPair::new(colour, black()));
+            *y += 1;
+            if let Some(melee_bonus) = &skill_bonus.melee {
+                draw_batch.print_color(Point::new(4, *y), format!("Melee ({})", melee_bonus), ColorPair::new(colour, black()));
+                *y += 1;
+            }
+            if let Some(defence_bonus) = &skill_bonus.defence {
+                draw_batch.print_color(Point::new(4, *y), format!("Defence ({})", defence_bonus), ColorPair::new(colour, black()));
+                *y += 1;
+            }
+            if let Some(ranged_bonus) = &skill_bonus.ranged {
+                draw_batch.print_color(Point::new(4, *y), format!("Ranged ({})", ranged_bonus), ColorPair::new(colour, black()));
+                *y += 1;
+            }
+            if let Some(magic_bonus) = &skill_bonus.magic {
+                draw_batch.print_color(Point::new(4, *y), format!("Magic ({})", magic_bonus), ColorPair::new(colour, black()));
+                *y += 1;
+            }
+            *y += 1;
+        }
+        if let Some(learn_ability) = &display_level.learn_ability {
+            draw_batch.print_color(Point::new(4, *y), format!("Learn ability: {}", learn_ability), ColorPair::new(colour, black()));
+            *y += 1;
+        }
+        if let Some(level_ability) = &display_level.level_ability {
+            draw_batch.print_color(Point::new(4, *y), format!("Improve ability: {}", level_ability), ColorPair::new(colour, black()));
+            *y += 1;
+        }
+    }
+    *y += 2;
+}
+
+fn cumulative_level(passive: &Passive, display_level: i32) -> Option<PassiveLevel> {
+    if display_level == 0 { return None }
+    if display_level == 1 { return Some(passive.levels[&1].clone()); }
+
+    let mut attribute_bonus: Option<AttributeBonus> = passive.levels[&1].attribute_bonus.clone();
+    let mut skill_bonus: Option<SkillBonus> = passive.levels[&1].skill_bonus.clone();
+    // TODO: combine learn/level abilities
+    let learn_ability: Option<String> = passive.levels[&display_level].learn_ability.clone();
+    let level_ability: Option<String> = passive.levels[&display_level].level_ability.clone();
+
+    for i in 2..=display_level {
+        if attribute_bonus.is_some() {
+            attribute_bonus.as_mut().unwrap().combine(passive.levels[&i].attribute_bonus.as_ref());
+        }
+        if skill_bonus.is_some() {
+            skill_bonus.as_mut().unwrap().combine(passive.levels[&i].skill_bonus.as_ref());
+        }
+    }
+
+    Some(PassiveLevel { attribute_bonus, skill_bonus, learn_ability, level_ability })
+}
+
+fn passive_selected(level_up: &mut PendingLevelUp, passive: &Passive) -> bool {
+    for (name, pass) in level_up.passives.iter() {
+        if name.as_str() == passive.name.as_str() {
+            return pass.current_level != passive.current_level
+        }
+    }
+    false
+}
+
+fn get_selected_passive<'a>(level_up: &'a mut PendingLevelUp, current_passives: &HashMap<String, Passive>) -> Option<&'a mut Passive> {
+    for (name, passive) in level_up.passives.iter_mut() {
+        if current_passives[name].current_level != passive.current_level { return Some(passive); }
+    }
+    None
+}
+
+fn handle_selection(selection: &str, passive_selections: HashMap<String, String>, level_up: &mut PendingLevelUp, player_class: &CharacterClass) -> LevelUpMenuResult {
+    let passive_name = &passive_selections[selection];
+    let passive = &player_class.passives[passive_name];
+
+    if passive_selected(level_up, &passive) {
+        let level_up_passive = level_up.passives.get_mut(passive_name).unwrap();
+        level_up_passive.current_level -= 1;
+
+        return LevelUpMenuResult::DeselectedPassive;
+    } else {
+        if let Some(currently_selected) = get_selected_passive(level_up, &player_class.passives) {
+            currently_selected.current_level -= 1;
+        }
+        let level_up_passive = level_up.passives.get_mut(passive_name).unwrap();
+        level_up_passive.current_level += 1;
+
+        return LevelUpMenuResult::SelectedPassive;
+    }
 }

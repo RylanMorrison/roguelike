@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use super::{WantsToDropItem, Name, Position, InBackpack, EquipmentChanged, Item};
+use super::{WantsToDropItem, Position, InBackpack, EquipmentChanged, Item};
 use crate::gamelog;
 
 pub struct ItemDropSystem {}
@@ -9,7 +9,6 @@ impl<'a> System<'a> for ItemDropSystem {
         ReadExpect<'a, Entity>,
         Entities<'a>,
         WriteStorage<'a, WantsToDropItem>,
-        ReadStorage<'a, Name>,
         WriteStorage<'a, Position>,
         WriteStorage<'a, InBackpack>,
         WriteStorage<'a, EquipmentChanged>,
@@ -18,7 +17,7 @@ impl<'a> System<'a> for ItemDropSystem {
 
     fn run(&mut self, data: Self::SystemData) {
         let (player_entity, entities, mut wants_drop, 
-            names, mut positions, mut backpack, mut dirty, items) = data;
+            mut positions, mut backpack, mut dirty, items) = data;
 
         for (entity, to_drop) in (&entities, &wants_drop).join() {
             let mut dropped_pos: Position = Position{x:0, y:0};

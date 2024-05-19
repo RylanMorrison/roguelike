@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use super::{WantsToPickupItem, Position, Name, InBackpack, EquipmentChanged, Item};
+use super::{WantsToPickupItem, Position, InBackpack, EquipmentChanged, Item};
 use crate::gamelog;
 
 pub struct ItemCollectionSystem {}
@@ -9,15 +9,14 @@ impl<'a> System<'a> for ItemCollectionSystem {
         ReadExpect<'a, Entity>,
         WriteStorage<'a, WantsToPickupItem>,
         WriteStorage<'a, Position>,
-        ReadStorage<'a, Name>,
         WriteStorage<'a, InBackpack>,
         WriteStorage<'a, EquipmentChanged>,
         ReadStorage<'a, Item>
     );
 
     fn run(&mut self, data : Self::SystemData) {
-        let (player_entity, mut wants_pickup, mut positions, 
-            names, mut backpack, mut dirty, items) = data;
+        let (player_entity, mut wants_pickup, mut positions,
+            mut backpack, mut dirty, items) = data;
 
         for pickup in wants_pickup.join() {
             // consecutive letters of the alphabet are used for inventory entries so need to limit inventory size

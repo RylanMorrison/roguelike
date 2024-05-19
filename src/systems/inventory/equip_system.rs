@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use super::{Name, InBackpack, WantsToUseItem, Equippable, Equipped, EquipmentChanged, EquipmentSlot, Item};
+use super::{InBackpack, WantsToUseItem, Equippable, Equipped, EquipmentChanged, EquipmentSlot, Item};
 use crate::gamelog;
 
 pub struct ItemEquipSystem {}
@@ -9,7 +9,6 @@ impl<'a> System<'a> for ItemEquipSystem {
         ReadExpect<'a, Entity>,
         Entities<'a>,
         WriteStorage<'a, WantsToUseItem>,
-        ReadStorage<'a, Name>,
         ReadStorage<'a, Equippable>,
         WriteStorage<'a, Equipped>,
         WriteStorage<'a, InBackpack>,
@@ -18,7 +17,7 @@ impl<'a> System<'a> for ItemEquipSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player_entity, entities, mut wants_use, names, equippable, 
+        let (player_entity, entities, mut wants_use, equippable,
             mut equipped, mut backpack, mut dirty, items) = data;
 
         let mut remove_use: Vec<Entity> = Vec::new();

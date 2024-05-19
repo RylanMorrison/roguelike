@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use super::{Name, WantsToUnequipItem, Equipped, InBackpack, EquipmentChanged, Item};
+use super::{WantsToUnequipItem, Equipped, InBackpack, EquipmentChanged, Item};
 use crate::gamelog;
 
 pub struct ItemUnequipSystem {}
@@ -8,7 +8,6 @@ impl<'a> System<'a> for ItemUnequipSystem {
     type SystemData = (
         ReadExpect<'a, Entity>,
         Entities<'a>,
-        ReadStorage<'a, Name>,
         WriteStorage<'a, WantsToUnequipItem>,
         WriteStorage<'a, Equipped>,
         WriteStorage<'a, InBackpack>,
@@ -17,7 +16,7 @@ impl<'a> System<'a> for ItemUnequipSystem {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player_entity, entities, names, mut wants_unequip, 
+        let (player_entity, entities, mut wants_unequip,
             mut equipped, mut backpack, mut dirty, items) = data;
 
         for (entity, to_unequip) in (&entities, &wants_unequip).join() {

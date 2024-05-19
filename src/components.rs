@@ -679,6 +679,26 @@ impl AttributeBonus {
             + self.constitution.unwrap_or(0) + self.intelligence.unwrap_or(0);
         total_bonus < 0
     }
+
+    pub fn combine(&mut self, other: Option<&AttributeBonus>) {
+        if other.is_none() { return; }
+
+        self.strength = self.combine_attribute(self.strength, other.unwrap().strength);
+        self.dexterity = self.combine_attribute(self.dexterity, other.unwrap().dexterity);
+        self.constitution = self.combine_attribute(self.constitution, other.unwrap().constitution);
+        self.intelligence = self.combine_attribute(self.intelligence, other.unwrap().intelligence);
+    }
+
+    fn combine_attribute(&self, my_attribute: Option<i32>, other_attribute: Option<i32>) -> Option<i32> {
+        if my_attribute.is_some() {
+            if other_attribute.is_some() {
+                return Some(my_attribute.unwrap() + other_attribute.unwrap());
+            }
+        } else if other_attribute.is_some() {
+            return other_attribute;
+        }
+        None
+    }
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
@@ -687,6 +707,28 @@ pub struct SkillBonus {
     pub defence: Option<i32>,
     pub ranged: Option<i32>,
     pub magic: Option<i32>
+}
+
+impl SkillBonus {
+    pub fn combine(&mut self, other: Option<&SkillBonus>) {
+        if other.is_none() { return; }
+
+        self.melee = self.combine_skill(self.melee, other.unwrap().melee);
+        self.defence = self.combine_skill(self.defence, other.unwrap().defence);
+        self.ranged = self.combine_skill(self.ranged, other.unwrap().ranged);
+        self.magic = self.combine_skill(self.magic, other.unwrap().magic);
+    }
+
+    fn combine_skill(&self, my_skill: Option<i32>, other_skill: Option<i32>) -> Option<i32> {
+        if my_skill.is_some() {
+            if other_skill.is_some() {
+                return Some(my_skill.unwrap() + other_skill.unwrap());
+            }
+        } else if other_skill.is_some() {
+            return other_skill;
+        }
+        None
+    }
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]

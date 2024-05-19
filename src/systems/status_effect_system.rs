@@ -18,7 +18,7 @@ pub struct StatusEffectSystem {}
 impl<'a> System<'a> for StatusEffectSystem {
     type SystemData = (
         WriteStorage<'a, StatusEffectChanged>,
-        Entities<'a,>,
+        Entities<'a>,
         WriteStorage<'a, Pools>,
         WriteStorage<'a, Attributes>,
         ReadExpect<'a, Entity>,
