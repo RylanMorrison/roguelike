@@ -1,8 +1,8 @@
 use specs::prelude::*;
 use rltk::prelude::*;
-use super::{green, white, black, yellow, gold};
+use super::{green, white, black, magenta, yellow, gold};
 use crate::{CharacterClass, Passive, PassiveLevel, PendingLevelUp, State, AttributeBonus, SkillBonus};
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 pub enum LevelUpMenuResult {
     NoResponse,
@@ -76,7 +76,7 @@ pub fn show_levelup_menu(gs: &mut State, ctx: &mut Rltk) -> LevelUpMenuResult {
 }
 
 fn draw_passive_choice(draw_batch: &mut DrawBatch, y: &mut i32, passive: &Passive, selection: String, selected: bool) {
-    let colour = if selected { green() } else { white() };
+    let colour = if selected { green() } else if passive.is_max_level() { magenta() } else { white() };
     let display_level_int = if selected { passive.current_level + 1 } else { passive.current_level };
 
     draw_batch.print_color(Point::new(4, *y), selection, ColorPair::new(yellow(), black()));
@@ -84,10 +84,12 @@ fn draw_passive_choice(draw_batch: &mut DrawBatch, y: &mut i32, passive: &Passiv
     *y += 2;
     draw_batch.print_color(Point::new(4, *y), passive.description.clone(), ColorPair::new(yellow(), black()));
     *y += 2;
-    draw_batch.print_color(Point::new(4, *y), format!("Level: {}", display_level_int), ColorPair::new(colour, black()));
+    draw_batch.print_color(Point::new(4, *y), format!("Level: {}",
+        if passive.is_max_level() { "Max".to_string() } else { display_level_int.to_string() }),
+        ColorPair::new(colour, black())
+    );
     *y += 2;
 
-    // TODO: max level passives
     let level_to_show: Option<PassiveLevel> = cumulative_level(passive, display_level_int);
     if let Some(display_level) = level_to_show {
         if let Some(attribute_bonus) = &display_level.attribute_bonus {
@@ -175,7 +177,7 @@ fn passive_selected(level_up: &mut PendingLevelUp, passive: &Passive) -> bool {
     false
 }
 
-fn get_selected_passive<'a>(level_up: &'a mut PendingLevelUp, current_passives: &HashMap<String, Passive>) -> Option<&'a mut Passive> {
+fn get_selected_passive<'a>(level_up: &'a mut PendingLevelUp, current_passives: &BTreeMap<String, Passive>) -> Option<&'a mut Passive> {
     for (name, passive) in level_up.passives.iter_mut() {
         if current_passives[name].current_level != passive.current_level { return Some(passive); }
     }
@@ -192,6 +194,9 @@ fn handle_selection(selection: &str, passive_selections: HashMap<String, String>
 
         return LevelUpMenuResult::DeselectedPassive;
     } else {
+        if passive.is_max_level() {
+            return LevelUpMenuResult::NoResponse;
+        }
         if let Some(currently_selected) = get_selected_passive(level_up, &player_class.passives) {
             currently_selected.current_level -= 1;
         }

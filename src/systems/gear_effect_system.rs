@@ -131,7 +131,6 @@ impl<'a> System<'a> for GearEffectSystem {
         }
 
         // item set bonuses
-        // TODO lags a bit when equipping, find more efficient way of doing this
         // determine equipped set piece count for each item set
         let mut set_counts: HashMap<String, i32> = HashMap::new();
         for (equipped, set_piece) in (&wielded, &set_pieces).join() {

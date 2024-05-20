@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{HashMap, HashSet, BTreeMap};
 use specs::prelude::*;
 use rltk::RGB;
 use crate::components::*;
@@ -652,7 +652,7 @@ pub fn spawn_named_character_class(raws: &RawMaster, ecs: &mut World, key: &str)
         let mut character_classes = ecs.write_storage::<CharacterClass>();
         character_classes.clear();
 
-        let mut passives: HashMap<String, Passive> = HashMap::new();
+        let mut passives: BTreeMap<String, Passive> = BTreeMap::new();
         for passive_data in character_class_template.passives.iter() {
             let mut levels: HashMap<i32, PassiveLevel> = HashMap::new();
             for level in passive_data.levels.iter() {
@@ -864,7 +864,6 @@ fn roll_item_quality(item_class: &str) -> Option<ItemQuality> {
     }
 }
 
-// TODO remove exceptional from drop chance and make only attainable from NPCs / quests / events / giga enemies ?
 fn quality_weapon_stats(quality: &Option<ItemQuality>, base_damage: &str, base_hit_bonus: i32) -> (i32, i32, i32, i32) {
     let (n_dice, mut die_type, mut die_bonus) = parse_dice_string(base_damage);
     let mut hit_bonus = base_hit_bonus;

@@ -6,7 +6,7 @@ use rltk::{RGB, Point, FontCharType};
 use crate::gamelog::LogFragment;
 
 use super::attr_bonus;
-use std::collections::HashMap;
+use std::collections::{HashMap, BTreeMap};
 
 #[derive(Component, ConvertSaveload, Clone)]
 pub struct Position {
@@ -812,7 +812,7 @@ pub struct TileSize {
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct PendingLevelUp {
-    pub passives: HashMap<String, Passive>
+    pub passives: BTreeMap<String, Passive>
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -893,7 +893,7 @@ pub struct Chest {
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct CharacterClass {
     pub name: String,
-    pub passives: HashMap<String, Passive>
+    pub passives: BTreeMap<String, Passive>
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -902,6 +902,12 @@ pub struct Passive {
     pub description: String,
     pub current_level: i32,
     pub levels: HashMap<i32, PassiveLevel>
+}
+
+impl Passive {
+    pub fn is_max_level(&self) -> bool {
+        self.current_level >= self.levels.len() as i32
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

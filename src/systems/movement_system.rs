@@ -24,7 +24,6 @@ impl<'a> System<'a> for MovementSystem {
             mut viewsheds, player_entity, mut runstate) = data;
         
         // apply teleporting
-        // TODO town npcs sometimes use the portal
         for (entity, teleport) in (&entities, &apply_teleport).join() {
             if teleport.dest_depth == map.depth {
                 apply_move.insert(entity, ApplyMove{ dest_idx: map.xy_idx(teleport.dest_x, teleport.dest_y) }).expect("Unable to insert");
