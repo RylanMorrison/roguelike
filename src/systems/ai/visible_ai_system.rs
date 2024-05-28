@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::{raws, spatial, Chasing, Confusion, Equipped, Faction, Map, MyTurn, Name, Position, SpecialAbilities, Ability, Viewshed, WantsToApproach, WantsToUseAbility, WantsToFlee, WantsToShoot, Weapon};
+use crate::{raws, spatial, Chasing, Confusion, Equipped, Faction, Map, MyTurn, Position, SpecialAbilities, Ability, Viewshed, WantsToApproach, WantsToUseAbility, WantsToFlee, WantsToShoot, Weapon};
 use crate::raws::{Reaction, faction_reaction, RAWS};
 use crate::rng;
 
@@ -19,7 +19,6 @@ impl<'a> System<'a> for VisibleAI {
         WriteStorage<'a, Chasing>,
         ReadStorage<'a, SpecialAbilities>,
         WriteStorage<'a, WantsToUseAbility>,
-        ReadStorage<'a, Name>,
         ReadStorage<'a, Ability>,
         ReadStorage<'a, Confusion>,
         ReadStorage<'a, Equipped>,
@@ -31,7 +30,7 @@ impl<'a> System<'a> for VisibleAI {
     fn run(&mut self, data: Self::SystemData) {
         let (turns, factions, positions, map, mut want_approach, mut want_flee,
             entities, player, viewsheds, mut chasing, special_abilities,
-            mut wants_cast, names, abilities, confused, equipped,
+            mut wants_cast, abilities, confused, equipped,
             weapons, mut wants_shoot) = data;
 
         for (entity, _turn, my_faction, pos, viewshed) in (&entities, &turns, &factions, &positions, &viewsheds).join() {
@@ -65,7 +64,7 @@ impl<'a> System<'a> for VisibleAI {
                                         wants_cast.insert(
                                             entity,
                                             WantsToUseAbility{
-                                                ability: raws::find_ability_entity_by_name(&ability.name, &names, &abilities, &entities).unwrap(),
+                                                ability: raws::find_ability_entity_by_name(&ability.name, &abilities, &entities).unwrap(),
                                                 target: Some(rltk::Point::new(reaction.0 as i32 % map.width, reaction.0 as i32 / map.width))
                                             }
                                         ).expect("Unable to insert");

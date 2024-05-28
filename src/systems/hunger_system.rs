@@ -52,8 +52,8 @@ impl<'a> System<'a> for HungerSystem {
                             gamelog::Logger::new().colour(RGB::named(rltk::CRIMSON)).append("Tummy hurts! You suffer 1 hp damage.").log();
                         }
                         add_effect(
-                            None,
-                            EffectType::Damage{ amount: 1 },
+                            Some(entity),
+                            EffectType::Damage{ amount: 1, hits_self: true },
                             Targets::Single{ target: entity }
                         )
                     }

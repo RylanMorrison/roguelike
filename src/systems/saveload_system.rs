@@ -63,9 +63,10 @@ pub fn save_game(ecs : &mut World) {
             LightSource, Initiative, MyTurn, Faction, WantsToApproach, WantsToFlee, MoveMode, Chasing,
             EquipmentChanged, Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport,
             Food, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, Duration, StatusEffect,
-            KnownAbilities, AttributeBonus, WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime,
-            SpecialAbilities, TileSize, PendingLevelUp, SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot,
-            Stun, StatusEffectChanged, Boss, Chest, CharacterClass
+            KnownAbilities, KnownAbility, AttributeBonus, WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime,
+            SpecialAbilities, TileSize, PendingCharacterLevelUp, SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot,
+            Stun, StatusEffectChanged, Boss, Chest, CharacterClass, ExtraDamage, SelfDamage, Rage, Block, Fortress,
+            FrostShield, Dodge, WantsToLearnAbility, WantsToLevelAbility
         );
     }
 
@@ -120,9 +121,10 @@ pub fn load_game(ecs: &mut World) {
             LightSource, Initiative, MyTurn, Faction, WantsToApproach, WantsToFlee, MoveMode, Chasing,
             EquipmentChanged, Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport,
             Food, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, Duration, StatusEffect,
-            KnownAbilities, Ability, WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime,
-            SpecialAbilities, TileSize, PendingLevelUp, SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot,
-            Stun, StatusEffectChanged, Boss, Chest, CharacterClass
+            KnownAbilities, KnownAbility, Ability, WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime,
+            SpecialAbilities, TileSize, PendingCharacterLevelUp, SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot,
+            Stun, StatusEffectChanged, Boss, Chest, CharacterClass, ExtraDamage, SelfDamage, Rage, Block, Fortress,
+            FrostShield, Dodge, WantsToLearnAbility, WantsToLevelAbility
         );
     }
 

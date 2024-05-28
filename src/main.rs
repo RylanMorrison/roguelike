@@ -232,7 +232,7 @@ impl GameState for State {
                     gui::ItemMenuResult::Cancel => newrunstate = RunState::AwaitingInput,
                     gui::ItemMenuResult::NoResponse => {}
                     gui::ItemMenuResult::Selected => {
-                        if self.ecs.read_storage::<Ability>().get(source).is_some() {
+                        if self.ecs.read_storage::<KnownAbility>().get(source).is_some() {
                             let mut intent = self.ecs.write_storage::<WantsToUseAbility>();
                             intent.insert(*self.ecs.fetch::<Entity>(), WantsToUseAbility{ ability: source, target: result.1 }).expect("Unable to insert intent");
                             newrunstate = RunState::Ticking;
@@ -527,7 +527,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<DamageOverTime>();
     gs.ecs.register::<SpecialAbilities>();
     gs.ecs.register::<TileSize>();
-    gs.ecs.register::<PendingLevelUp>();
+    gs.ecs.register::<PendingCharacterLevelUp>();
     gs.ecs.register::<ItemSets>();
     gs.ecs.register::<PartOfSet>();
     gs.ecs.register::<Target>();
@@ -538,8 +538,18 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Chest>();
     gs.ecs.register::<CharacterClass>();
     gs.ecs.register::<Ability>();
+    gs.ecs.register::<KnownAbility>();
     gs.ecs.register::<KnownAbilities>();
     gs.ecs.register::<WantsToUseAbility>();
+    gs.ecs.register::<ExtraDamage>();
+    gs.ecs.register::<SelfDamage>();
+    gs.ecs.register::<Rage>();
+    gs.ecs.register::<Block>();
+    gs.ecs.register::<Fortress>();
+    gs.ecs.register::<FrostShield>();
+    gs.ecs.register::<Dodge>();
+    gs.ecs.register::<WantsToLearnAbility>();
+    gs.ecs.register::<WantsToLevelAbility>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     raws::load_raws();

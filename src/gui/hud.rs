@@ -2,7 +2,7 @@ use specs::prelude::*;
 use rltk::prelude::*;
 use super::{box_gray, light_gray, cyan, green, red, black, white, yellow, orange, gold, blue, draw_tooltips};
 use crate::{Map, Entity, Pools, Attributes, Attribute, Skills, Skill, Equipped, Item, Name, Consumable, InBackpack,
-    KnownAbilities, HungerClock, StatusEffect, Duration, HungerState, player_xp_for_level, carry_capacity_lbs};
+    KnownAbilities, KnownAbility, HungerClock, StatusEffect, Duration, HungerState, player_xp_for_level, carry_capacity_lbs};
 use crate::raws;
 use crate::gamelog;
 
@@ -75,14 +75,14 @@ fn draw_attributes(ecs: &World, draw_batch: &mut DrawBatch, player_pools: &Pools
 fn draw_attribute(name: &str, attribute: &Attribute, y: i32, draw_batch: &mut DrawBatch) {
     draw_batch.print_color(Point::new(70, y), name, ColorPair::new(light_gray(), black()));
     
-    let modified_colour: RGB = if attribute.modifiers < 0 {
+    let modified_colour: RGB = if attribute.total_modifiers() < 0 {
         red()
-    } else if attribute.modifiers == 0 {
+    } else if attribute.total_modifiers() == 0 {
         white()
     } else {
         green()
     };
-    draw_batch.print_color(Point::new(87, y), &format!("{}", attribute.base + attribute.modifiers), ColorPair::new(modified_colour, black()));
+    draw_batch.print_color(Point::new(87, y), &format!("{}", attribute.base + attribute.total_modifiers()), ColorPair::new(modified_colour, black()));
     
     let bonus_colour: RGB = if attribute.bonus < 0 {
         red()
@@ -107,9 +107,9 @@ fn draw_skills(ecs: &World, draw_batch: &mut DrawBatch, player: &Entity) {
 
 fn draw_skill(name: &str, skill: &Skill, y: i32, draw_batch: &mut DrawBatch) {
     draw_batch.print_color(Point::new(70, y), name, ColorPair::new(light_gray(), black()));
-    let colour = if skill.modifiers > 0 {
+    let colour = if skill.total_modifiers() > 0 {
         green()
-    } else if skill.modifiers == 0 {
+    } else if skill.total_modifiers() == 0 {
         white()
     } else {
         red()
@@ -154,12 +154,14 @@ fn draw_consumables(ecs: &World, draw_batch: &mut DrawBatch, player: &Entity, y:
 
 fn draw_abilities(ecs: &World, draw_batch: &mut DrawBatch, player: &Entity, y: &mut i32) {
     *y += 1;
-    let known_abilities = ecs.read_storage::<KnownAbilities>();
-    let player_abilities = &known_abilities.get(*player).unwrap().abilities;
+    let known_ability_lists = ecs.read_storage::<KnownAbilities>();
+    let player_abilities = &known_ability_lists.get(*player).unwrap().abilities;
+    let all_known_abilities = ecs.read_storage::<KnownAbility>();
     let mut index = 1;
-    for ability in player_abilities.iter() {
+    for ability_entity in player_abilities.iter() {
+        let known_ability = all_known_abilities.get(*ability_entity).unwrap();
         draw_batch.print_color(Point::new(70, *y), &format!("^{}", index), ColorPair::new(cyan(), black()));
-        draw_batch.print_color(Point::new(73, *y), &format!("{} ({})", ability.name, ability.mana_cost), ColorPair::new(cyan(), black()));
+        draw_batch.print_color(Point::new(73, *y), &format!("{} ({})", known_ability.name, known_ability.mana_cost), ColorPair::new(cyan(), black()));
         index += 1;
         *y += 1;
     }

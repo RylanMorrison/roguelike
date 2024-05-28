@@ -1,9 +1,7 @@
 use rltk::RGB;
 use specs::prelude::*;
 use super::*;
-use crate::{determine_roll, gamelog, raws, Attributes, Chest, Confusion, Consumable, Damage, DamageOverTime, Duration, Food, Healing,
-    Item, KnownAbilities, KnownAbility, LootTable, MagicMapping, Map, Name, Pools, RestoresMana, RunState, SingleActivation,
-    Skills, Slow, SpawnParticleBurst, SpawnParticleLine, Ability, Stun, TeachesAbility, TeleportTo, TownPortal};
+use crate::{determine_roll, gamelog, raws::{self, find_ability_entity}, Ability, Attributes, Chest, Confusion, Consumable, Damage, DamageOverTime, Duration, Food, Fortress, FrostShield, Healing, Item, KnownAbilities, KnownAbility, LootTable, MagicMapping, Map, Name, Pools, Rage, RestoresMana, RunState, SelfDamage, SingleActivation, Skills, Slow, SpawnParticleBurst, SpawnParticleLine, Stun, TeachesAbility, TeleportTo, TownPortal};
 
 pub fn item_trigger(ecs: &mut World, creator: Option<Entity>, item_entity: Entity, targets: &Targets) {
     // check charges
@@ -40,26 +38,24 @@ pub fn environment_trigger(ecs: &mut World, creator: Option<Entity>, trigger: En
     }
 }
 
-pub fn ability_trigger(ecs: &mut World, creator: Option<Entity>, ability_entity: Entity, targets: &Targets) {
+pub fn ability_trigger(ecs: &mut World, creator: Option<Entity>, known_ability_entity: Entity, targets: &Targets) {
     let mut did_something = false;
-    if let Some(ability) = ecs.read_storage::<Ability>().get(ability_entity) {
-        let mut pools = ecs.write_storage::<Pools>();
-        if let Some(caster) = creator {
+    if let Some(caster) = creator {
+        let all_known_abilities = ecs.read_storage::<KnownAbility>();
+        if let Some(known_ability) = all_known_abilities.get(known_ability_entity) {
+            let mut pools = ecs.write_storage::<Pools>();
             if let Some(pool) = pools.get_mut(caster) {
-                if let Some(level) = ability.levels.get(&ability.current_level) {
-                    let mana_cost = level.mana_cost.unwrap_or(0);
-                    if mana_cost <= pool.mana.current {
-                        if !pool.god_mode {
-                            pool.mana.current -= mana_cost;
-                        }
-                        did_something = true;
+                if known_ability.mana_cost <= pool.mana.current {
+                    if !pool.god_mode {
+                        pool.mana.current -= known_ability.mana_cost;
                     }
+                    did_something = true;
                 }
             }
         }
     }
     if did_something {
-        event_trigger(ecs, creator, ability_entity, targets);
+        event_trigger(ecs, creator, known_ability_entity, targets);
     }
 }
 
@@ -149,10 +145,10 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
 
     // damage
     if let Some(damage) = ecs.read_storage::<Damage>().get(entity) {
-        let abilities = ecs.read_storage::<Ability>();
+        let known_abilities = ecs.read_storage::<KnownAbility>();
 
         let mut amount = determine_roll(&damage.damage);
-        if abilities.get(entity).is_some() {
+        if known_abilities.get(entity).is_some() {
             // add attribute and skill bonuses for abilities
             // TODO put this in its own system
             if let Some(source) = creator {
@@ -166,7 +162,7 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
                 }
             }
         }
-        add_effect(creator, EffectType::Damage{ amount }, targets.clone());
+        add_effect(creator, EffectType::Damage{ amount, hits_self: false }, targets.clone());
         let names = ecs.read_storage::<Name>();
         let items = ecs.read_storage::<Item>();
 
@@ -179,13 +175,13 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
                 .append("damage with")
                 .item_name(item)
                 .log();
-        } else if abilities.get(entity).is_some() {
+        } else if let Some(known_ability) = known_abilities.get(entity) {
             gamelog::Logger::new()
                 .character_name(&names.get(creator.unwrap()).unwrap().name)
                 .append("deals")
                 .damage(amount)
                 .append("damage with")
-                .ability_name(&names.get(entity).unwrap().name)
+                .ability_name(&known_ability.name)
                 .log();
         } else {
             gamelog::Logger::new()
@@ -196,6 +192,23 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
                 .append(&names.get(entity).unwrap().name)
                 .log();
         }
+        did_something = true;
+    }
+
+    // self damage
+    if let Some(damage) = ecs.read_storage::<SelfDamage>().get(entity) {
+        let amount = determine_roll(&damage.damage);
+        add_effect(creator, EffectType::Damage { amount, hits_self: true }, targets.clone());
+
+        let names = ecs.read_storage::<Name>();
+        gamelog::Logger::new()
+            .character_name(&names.get(creator.unwrap()).unwrap().name)
+            .append("deals")
+            .damage(amount)
+            .append("to themself from")
+            .ability_name(&names.get(entity).unwrap().name)
+            .log();
+
         did_something = true;
     }
 
@@ -231,6 +244,30 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
     if let Some(slow) = ecs.read_storage::<Slow>().get(entity) {
         if let Some(duration) = ecs.read_storage::<Duration>().get(entity) {
             add_effect(creator, EffectType::Slow{ initiative_penalty: slow.initiative_penalty, duration: duration.turns }, targets.clone());
+            did_something = true;
+        }
+    }
+
+    // rage
+    if ecs.read_storage::<Rage>().get(entity).is_some() {
+        if let Some(duration) = ecs.read_storage::<Duration>().get(entity) {
+            add_effect(creator, EffectType::Rage{ duration: duration.turns }, targets.clone());
+            did_something = true;
+        }
+    }
+
+    // fortress
+    if ecs.read_storage::<Fortress>().get(entity).is_some() {
+        if let Some(duration) = ecs.read_storage::<Duration>().get(entity) {
+            add_effect(creator, EffectType::Fortress{ duration: duration.turns }, targets.clone());
+            did_something = true;
+        }
+    }
+
+    // frost shield
+    if ecs.read_storage::<FrostShield>().get(entity).is_some() {
+        if let Some(duration) = ecs.read_storage::<Duration>().get(entity) {
+            add_effect(creator, EffectType::FrostShield{ duration: duration.turns }, targets.clone());
             did_something = true;
         }
     }
@@ -280,35 +317,6 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
             targets.clone()
         );
         did_something = true;
-    }
-
-    // learn abilities
-    if let Some(teacher) = ecs.read_storage::<TeachesAbility>().get(entity) {
-        if let Some(known) = ecs.write_storage::<KnownAbilities>().get_mut(creator.unwrap()) {
-            if let Some(ability_entity) = raws::find_ability_entity(ecs, &teacher.ability) {
-                if let Some(ability) = ecs.read_storage::<Ability>().get(ability_entity) {
-                    let mut already_known = false;
-                    known.abilities.iter().for_each(|s| if s.name == teacher.ability { already_known = true });
-                    if !already_known {
-                        known.abilities.push(KnownAbility{ 
-                            name: teacher.ability.clone(), 
-                            mana_cost: ability.levels.get(&ability.current_level).unwrap().mana_cost.unwrap_or(0),
-                            level: ability.current_level // need each character to keep track of their abilities?
-                        });
-                        gamelog::Logger::new()
-                            .append("You now know how ")
-                            .ability_name(&teacher.ability)
-                            .log();
-                        did_something = true;
-                    } else {
-                        gamelog::Logger::new()
-                            .append("You already know how to cast")
-                            .ability_name(&teacher.ability)
-                            .log();
-                    }
-                }
-            }
-        }
     }
 
     // open chests

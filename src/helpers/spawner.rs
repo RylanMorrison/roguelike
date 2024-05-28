@@ -9,7 +9,7 @@ use crate::{Pools, Player, Renderable, Name, Position, Viewshed,
     Map, TileType, Attributes, Skills, Pool, LightSource, Faction,
     Initiative, EquipmentChanged, Point, EntryTrigger, TeleportTo, 
     SingleActivation, mana_at_level, player_hp_at_level, StatusEffect,
-    Duration, AttributeBonus, KnownAbilities
+    Duration, AttributeBonus, KnownAbilities, EntityVec
 };
 use crate::rng;
 
@@ -54,8 +54,8 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(LightSource{ colour: RGB::from_f32(1.0, 1.0, 0.5), range: 8 })
         .with(Faction{ name: "Player".to_string() })
         .with(EquipmentChanged{})
-        .with(StatusEffectChanged{ expired: false })
-        .with(KnownAbilities{ abilities: Vec::new() })
+        .with(StatusEffectChanged{})
+        .with(KnownAbilities{ abilities: EntityVec::new() })
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
 

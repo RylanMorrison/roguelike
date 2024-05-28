@@ -154,7 +154,7 @@ impl<'a> System<'a> for RangedCombatSystem {
                     + weapon_damage_bonus);
                 add_effect(
                     Some(entity),
-                    EffectType::Damage{ amount: damage },
+                    EffectType::Damage{ amount: damage, hits_self: false },
                     Targets::Single{ target: wants_shoot.target }
                 );
                 

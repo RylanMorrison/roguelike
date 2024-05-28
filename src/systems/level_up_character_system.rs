@@ -1,12 +1,12 @@
 use specs::prelude::*;
-use crate::{Attributes, CharacterClass, EquipmentChanged, PendingLevelUp, Pools, RunState, Skills,
-    player_hp_at_level, mana_at_level, carry_capacity_lbs};
+use crate::{carry_capacity_lbs, mana_at_level, player_hp_at_level, Attributes, CharacterClass, EquipmentChanged, PendingCharacterLevelUp,
+    Pools, RunState, Skills, WantsToLearnAbility, WantsToLevelAbility};
 use crate::gamelog;
 use rltk::RGB;
 
-pub struct LevelUpSystem {}
+pub struct LevelUpCharacterSystem {}
 
-impl<'a> System<'a> for LevelUpSystem {
+impl<'a> System<'a> for LevelUpCharacterSystem {
     type SystemData = (
         ReadExpect<'a, Entity>,
         WriteStorage<'a, Pools>,
@@ -14,20 +14,23 @@ impl<'a> System<'a> for LevelUpSystem {
         WriteStorage<'a, Skills>,
         WriteStorage<'a, CharacterClass>,
         WriteStorage<'a, EquipmentChanged>,
-        WriteStorage<'a, PendingLevelUp>,
-        ReadExpect<'a, RunState>
+        WriteStorage<'a, PendingCharacterLevelUp>,
+        ReadExpect<'a, RunState>,
+        WriteStorage<'a, WantsToLearnAbility>,
+        WriteStorage<'a, WantsToLevelAbility>
     );
     
     fn run(&mut self, data: Self::SystemData) {
-        let (player_entity, mut pools, mut attributes, mut skills,
-            mut character_classes, mut equip_dirty,
-            mut pending_level_up, runstate) = data;
+        let (player_entity, mut pools, mut attributes, 
+            mut skills, mut character_classes, mut equip_dirty,
+            mut pending_character_level_ups, runstate, 
+            mut learn_abilities, mut level_abilities) = data;
 
         // TODO make this more generic when other entities can level up
-        if pending_level_up.count() < 1 { return; }
+        if pending_character_level_ups.count() < 1 { return; }
         if *runstate != RunState::Ticking { return; }
 
-        let level_up = pending_level_up.get(*player_entity).unwrap();
+        let level_up = pending_character_level_ups.get(*player_entity).unwrap();
         let player_pools = pools.get_mut(*player_entity).unwrap();
 
         player_pools.level += 1;
@@ -60,12 +63,12 @@ impl<'a> System<'a> for LevelUpSystem {
                 }
 
                 player_pools.hit_points.max = player_hp_at_level(
-                    player_attributes.constitution.base + player_attributes.constitution.modifiers,
+                    player_attributes.constitution.base + player_attributes.constitution.total_modifiers(),
                     player_pools.level
                 );
                 player_pools.hit_points.current = player_pools.hit_points.max;
                 player_pools.mana.max = mana_at_level(
-                    player_attributes.intelligence.base + player_attributes.intelligence.modifiers,
+                    player_attributes.intelligence.base + player_attributes.intelligence.total_modifiers(),
                     player_pools.level
                 );
                 player_pools.mana.current = player_pools.mana.max;
@@ -76,7 +79,7 @@ impl<'a> System<'a> for LevelUpSystem {
                     gamelog::Logger::new().colour(RGB::named(rltk::ORANGE)).append("You are overburdened!").log();
                 }
 
-                if let Some(skill_bonus) = &current_passive.levels[&current_passive.current_level].skill_bonus {
+                if let Some(skill_bonus) = &current_passive.active_level().skill_bonus {
                     if let Some(melee) = skill_bonus.melee {
                         player_skills.melee.base += melee;
                     }
@@ -90,10 +93,18 @@ impl<'a> System<'a> for LevelUpSystem {
                         player_skills.magic.base += magic;
                     }
                 }
+
+                if let Some(learn_ability) = &current_passive.active_level().learn_ability {
+                    learn_abilities.insert(*player_entity, WantsToLearnAbility{ ability_name: learn_ability.clone() }).expect("Unable to insert");
+                }
+
+                if let Some(level_ability) = &current_passive.active_level().level_ability {
+                    level_abilities.insert(*player_entity, WantsToLevelAbility{ ability_name: level_ability.clone() }).expect("Unable to insert");
+                }
             }
         }
 
         equip_dirty.insert(*player_entity, EquipmentChanged{}).expect("Unable to insert");
-        pending_level_up.clear();
+        pending_character_level_ups.clear();
     }
 }

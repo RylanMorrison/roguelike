@@ -223,6 +223,7 @@ pub fn spawn_named_entity(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spa
     None
 }
 
+#[macro_export]
 macro_rules! apply_effects {
     ( $effects:expr, $eb:expr ) => {
         for effect in $effects.iter() {
@@ -232,6 +233,8 @@ macro_rules! apply_effects {
                 "mana" => $eb = $eb.with(RestoresMana{ mana_amount: effect.1.parse::<i32>().unwrap() }),
                 "ranged" => $eb = $eb.with(Ranged{ range: effect.1.parse::<i32>().unwrap() }),
                 "damage" => $eb = $eb.with(Damage{ damage: effect.1.to_string() }),
+                "extra_damage" => $eb = $eb.with(ExtraDamage{ damage: effect.1.to_string() }),
+                "self_damage" => $eb = $eb.with(SelfDamage{ damage: effect.1.to_string() }),
                 "area_of_effect" => $eb = $eb.with(AreaOfEffect{ radius: effect.1.parse::<i32>().unwrap() }),
                 "confusion" => {
                     $eb = $eb.with(Confusion{});
@@ -251,6 +254,20 @@ macro_rules! apply_effects {
                 "teach_ability" => $eb = $eb.with(TeachesAbility{ ability: effect.1.to_string() }),
                 "slow" => $eb = $eb.with(Slow{ initiative_penalty: effect.1.parse::<f32>().unwrap() }),
                 "damage_over_time" => $eb = $eb.with(DamageOverTime{ damage: effect.1.parse::<i32>().unwrap() }),
+                "rage" => {
+                    $eb = $eb.with(Rage{});
+                    $eb = $eb.with(Duration{ turns: effect.1.parse::<i32>().unwrap() });
+                }
+                "block" => $eb = $eb.with(Block{ chance: effect.1.parse::<f32>().unwrap() }),
+                "fortress" => {
+                    $eb = $eb.with(Fortress{});
+                    $eb = $eb.with(Duration{ turns: effect.1.parse::<i32>().unwrap() });
+                }
+                "frost_shield" => {
+                    $eb = $eb.with(FrostShield{});
+                    $eb = $eb.with(Duration{ turns: effect.1.parse::<i32>().unwrap() });
+                }
+                "dodge" => $eb = $eb.with(Dodge{ chance: effect.1.parse::<f32>().unwrap() }),
                 _ => rltk::console::log(format!("WARNING - Effect not implemented: {}", effect_name))
             }
         }
@@ -413,17 +430,17 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
     let mut mob_constitution = attr.constitution.base;
     let mut mob_intelligence = attr.intelligence.base;
     if let Some(strength) = mob_template.attributes.strength {
-        attr.strength = Attribute{ base: strength, modifiers: 0, bonus: attr_bonus(strength) };
+        attr.strength = Attribute{ base: strength, item_modifiers: 0, status_effect_modifiers: 0, bonus: attr_bonus(strength) };
     }
     if let Some(dexterity) = mob_template.attributes.dexterity {
-        attr.dexterity = Attribute{ base: dexterity, modifiers: 0, bonus: attr_bonus(dexterity) };
+        attr.dexterity = Attribute{ base: dexterity, item_modifiers: 0, status_effect_modifiers: 0, bonus: attr_bonus(dexterity) };
     }
     if let Some(constitution) = mob_template.attributes.constitution {
-        attr.constitution = Attribute{ base: constitution, modifiers: 0, bonus: attr_bonus(constitution) };
+        attr.constitution = Attribute{ base: constitution, item_modifiers: 0, status_effect_modifiers: 0, bonus: attr_bonus(constitution) };
         mob_constitution = constitution;
     }
     if let Some(intelligence) = mob_template.attributes.intelligence {
-        attr.intelligence = Attribute{ base: intelligence, modifiers: 0, bonus: attr_bonus(intelligence) };
+        attr.intelligence = Attribute{ base: intelligence, item_modifiers: 0, status_effect_modifiers: 0, bonus: attr_bonus(intelligence) };
         mob_intelligence = intelligence;
     }
     eb = eb.with(attr);
@@ -622,11 +639,9 @@ pub fn spawn_named_ability(raws: &RawMaster, ecs: &mut World, key: &str) -> Opti
             });
         }
 
-        apply_effects!(&levels[&1].effects, eb);
         eb = eb.with(Ability{
             name: ability_template.name.clone(),
             description: ability_template.description.clone(),
-            current_level: 1,
             levels
         });
         eb = eb.with(Name{ name: ability_template.name.clone() });
@@ -742,9 +757,9 @@ pub fn spawn_all_abilities(ecs: &mut World) {
     }
 }
 
-pub fn find_ability_entity_by_name(name: &str, names: &ReadStorage::<Name>, abilities: &ReadStorage::<Ability>, entities: &Entities) -> Option<Entity> {
-    for (entity, sname, _ability) in (entities, names, abilities).join() {
-        if name == sname.name {
+pub fn find_ability_entity_by_name(name: &str, abilities: &ReadStorage::<Ability>, entities: &Entities) -> Option<Entity> {
+    for (entity, ability) in (entities, abilities).join() {
+        if name == ability.name {
             return Some(entity);
         }
     }
@@ -756,7 +771,7 @@ pub fn find_ability_entity(ecs: &World, name: &str) -> Option<Entity> {
     let abilities = ecs.read_storage::<Ability>();
     let entities = ecs.entities();
 
-    find_ability_entity_by_name(name, &names, &abilities, &entities)
+    find_ability_entity_by_name(name, &abilities, &entities)
 }
 
 pub fn get_spawn_table_for_depth(raws: &RawMaster, depth: i32) -> RandomTable {
@@ -834,7 +849,7 @@ fn get_item_class_colour(class_string: &str, raws: &RawMaster) -> RGB {
     RGB::from_hex(colour.unwrap()).expect("Invalid RGB")
 }
 
-fn parse_particle_line(token_string: &str) -> SpawnParticleLine {
+pub fn parse_particle_line(token_string: &str) -> SpawnParticleLine {
     let tokens: Vec<_> = token_string.split(';').collect();
     SpawnParticleLine{
         glyph: rltk::to_cp437(tokens[0].chars().next().unwrap()),
@@ -843,7 +858,7 @@ fn parse_particle_line(token_string: &str) -> SpawnParticleLine {
     }
 }
 
-fn parse_particle(token_string: &str) -> SpawnParticleBurst {
+pub fn parse_particle(token_string: &str) -> SpawnParticleBurst {
     let tokens: Vec<_> = token_string.split(';').collect();
     SpawnParticleBurst{
         glyph: rltk::to_cp437(tokens[0].chars().next().unwrap()),

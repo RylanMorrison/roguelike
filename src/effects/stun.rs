@@ -1,6 +1,6 @@
 use specs::{prelude::*, saveload::SimpleMarker, saveload::MarkedBuilder};
 use super::*;
-use crate::components::{Stun, StatusEffect, Duration, Name, SerializeMe};
+use crate::components::{Stun, StatusEffect, StatusEffectChanged, Duration, Name, SerializeMe};
 
 pub fn apply_stun(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     if let EffectType::Stun{duration} = &effect.effect_type {
@@ -11,5 +11,6 @@ pub fn apply_stun(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
             .with(Name{ name: "Stunned".to_string() })
             .marked::<SimpleMarker<SerializeMe>>()
             .build();
+        ecs.write_storage::<StatusEffectChanged>().insert(target, StatusEffectChanged{}).expect("Insert failed");
     }
 }

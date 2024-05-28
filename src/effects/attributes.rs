@@ -11,7 +11,6 @@ pub fn apply_effect(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
             .with(Name{ name: name.clone() })
             .marked::<SimpleMarker<SerializeMe>>()
             .build();
-        ecs.write_storage::<StatusEffectChanged>().insert(target, StatusEffectChanged{ expired: false }).expect("Insert failed");
+        ecs.write_storage::<StatusEffectChanged>().insert(target, StatusEffectChanged{}).expect("Insert failed");
     }
 }
-

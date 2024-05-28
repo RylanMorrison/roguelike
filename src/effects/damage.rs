@@ -1,6 +1,6 @@
 use specs::{prelude::*, saveload::SimpleMarker, saveload::MarkedBuilder};
 use super::*;
-use crate::components::{Pools, StatusEffect, DamageOverTime, Duration, Name};
+use crate::components::{Pools, StatusEffect, StatusEffectChanged, DamageOverTime, Duration, Name};
 use crate::{gamelog, player_xp_for_level, Map, Player};
 use crate::{spatial, SerializeMe, RunState};
 use crate::player;
@@ -10,9 +10,9 @@ pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
     let player_entity = ecs.fetch::<Entity>();
     if let Some(pool) = pools.get_mut(target) {
         if !pool.god_mode {
-            if let EffectType::Damage{amount} = damage.effect_type {
+            if let EffectType::Damage{amount, hits_self} = damage.effect_type {
                 if let Some(creator) = damage.creator {
-                    if creator == target { return; } // prevent self damage
+                    if creator == target && !hits_self { return; } // prevent self damage
                     if creator == *player_entity {
                         gamelog::record_event("Damage Dealt", amount);
                     }
@@ -57,7 +57,7 @@ pub fn heal_damage(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
             add_effect(
                 None,
                 EffectType::Particle {
-                    glyph: rltk::to_cp437('‼'),
+                    glyph: rltk::to_cp437('♥'),
                     fg: rltk::RGB::named(rltk::GREEN),
                     bg: rltk::RGB::named(rltk::BLACK),
                     lifespan: 200.0
@@ -115,5 +115,6 @@ pub fn damage_over_time(ecs: &mut World, effect: &EffectSpawner, target: Entity)
             .with(Name{ name: "Damage Over Time".to_string() })
             .marked::<SimpleMarker<SerializeMe>>()
             .build();
+        ecs.write_storage::<StatusEffectChanged>().insert(target, StatusEffectChanged{}).expect("Insert failed");
     }
 }

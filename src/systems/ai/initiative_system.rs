@@ -76,12 +76,12 @@ impl<'a> System<'a> for InitiativeSystem {
                     if let Some(dot) = dots.get(effect_entity) {
                         add_effect(
                             None,
-                            EffectType::Damage{ amount: dot.damage },
+                            EffectType::Damage{ amount: dot.damage, hits_self: false },
                             Targets::Single{ target: status.target }
                         );
                     }
                     if duration.turns < 1 {
-                        dirty.insert(status.target, StatusEffectChanged{ expired: true }).expect("Unable to insert");
+                        dirty.insert(status.target, StatusEffectChanged{}).expect("Unable to insert");
                         entities.delete(effect_entity).expect("Unable to delete");
                     }
                 }

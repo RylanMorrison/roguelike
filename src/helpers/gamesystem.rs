@@ -35,7 +35,7 @@ pub fn mana_at_level(intelligence: i32, level: i32) -> i32 {
 }
 
 pub fn carry_capacity_lbs(strength: &Attribute) -> f32 {
-    ((strength.base + strength.modifiers) * 15) as f32
+    ((strength.base + strength.total_modifiers()) * 15) as f32
 }
 
 /// Parse a dice string into its values

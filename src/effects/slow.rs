@@ -1,6 +1,6 @@
 use specs::{prelude::*, saveload::SimpleMarker, saveload::MarkedBuilder};
 use super::*;
-use crate::components::{StatusEffect, Slow, Duration, Name, SerializeMe};
+use crate::components::{StatusEffect, StatusEffectChanged, Slow, Duration, Name, SerializeMe};
 
 pub fn apply_slow(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     if let EffectType::Slow{initiative_penalty, duration} = &effect.effect_type {
@@ -17,5 +17,6 @@ pub fn apply_slow(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
             )
             .marked::<SimpleMarker<SerializeMe>>()
             .build();
+        ecs.write_storage::<StatusEffectChanged>().insert(target, StatusEffectChanged{}).expect("Insert failed");
     }
 }

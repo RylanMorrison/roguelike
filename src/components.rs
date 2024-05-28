@@ -442,6 +442,8 @@ pub struct Attribute {
     pub bonus: i32
 }
 
+
+
 // See: https://roll20.net/compendium/dnd5e/Ability%20Scores#content
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Attributes {
@@ -811,7 +813,7 @@ pub struct TileSize {
 }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
-pub struct PendingLevelUp {
+pub struct PendingCharacterLevelUp {
     pub passives: BTreeMap<String, Passive>
 }
 
@@ -876,10 +878,8 @@ where
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Stun {}
 
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct StatusEffectChanged {
-    pub expired: bool
-}
+#[derive(Component, Serialize, Deserialize, Debug, Clone)]
+pub struct StatusEffectChanged {}
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Boss {}
@@ -908,6 +908,10 @@ impl Passive {
     pub fn is_max_level(&self) -> bool {
         self.current_level >= self.levels.len() as i32
     }
+
+    pub fn active_level(&self) -> &PassiveLevel {
+        &self.levels[&self.current_level]
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -922,7 +926,6 @@ pub struct PassiveLevel {
 pub struct Ability {
     pub name: String,
     pub description: String,
-    pub current_level: i32,
     pub levels: HashMap<i32, AbilityLevel>
 }
 
@@ -932,16 +935,82 @@ pub struct AbilityLevel {
     pub effects: HashMap<String, String>
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct KnownAbility {
     pub name: String,
     pub level: i32,
     pub mana_cost: i32
 }
 
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+// Need a wrapper to be able to (de)serialize collections of Entities. See https://github.com/amethyst/specs/issues/681
+#[derive(Clone, Debug)]
+pub struct EntityVec<T>(Vec<T>);
+
+impl<T> EntityVec<T> {
+    pub fn new() -> EntityVec<T> {
+        EntityVec { 0: Vec::new() }
+    }
+
+    pub fn with_capacity(capacity: usize) -> EntityVec<T> {
+        EntityVec { 0: Vec::with_capacity(capacity) }
+    }
+}
+
+impl<T> std::ops::Deref for EntityVec<T> {
+    type Target = Vec<T>;
+
+    fn deref(&self) -> &Vec<T> {
+        &self.0
+    }
+}
+
+impl<T> std::ops::DerefMut for EntityVec<T> {
+    fn deref_mut(&mut self) -> &mut Vec<T> {
+        &mut self.0
+    }
+}
+
+impl<C, M: Serialize + Marker> ConvertSaveload<M> for EntityVec<C>
+    where for<'de> M: Deserialize<'de>,
+    C: ConvertSaveload<M>
+{
+    type Data = Vec<<C as ConvertSaveload<M>>::Data>;
+    type Error = <C as ConvertSaveload<M>>::Error;
+
+    fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
+    where
+        F: FnMut(Entity) -> Option<M>
+    {
+        let mut output = Vec::with_capacity(self.len());
+
+        for item in self.iter() {
+            let converted_item = item.convert_into(|entity| ids(entity))?;
+
+            output.push(converted_item);
+        }
+
+        Ok(output)
+    }
+
+    fn convert_from<F>(data: Self::Data, mut ids: F) -> Result<Self, Self::Error>
+    where
+        F: FnMut(M) -> Option<Entity>
+    {
+        let mut output: EntityVec<C> = EntityVec::with_capacity(data.len());
+
+        for item in data.into_iter() {
+            let converted_item = ConvertSaveload::convert_from(item, |marker| ids(marker))?;
+
+            output.push(converted_item);
+        }
+
+        Ok(output)
+    }
+}
+
+#[derive(Component, Debug, ConvertSaveload, Clone)]
 pub struct KnownAbilities {
-    pub abilities: Vec<KnownAbility>
+    pub abilities: EntityVec<Entity>
 }
 
 #[derive(Component, Clone, Debug)]
@@ -977,4 +1046,43 @@ where
         let target = data.1;
         Ok(WantsToUseAbility{ability, target})
     }
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct ExtraDamage {
+    pub damage: String
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct SelfDamage {
+    pub damage: String
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Rage {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Block {
+    pub chance: f32
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Fortress {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct FrostShield {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Dodge {
+    pub chance: f32
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct WantsToLearnAbility {
+    pub ability_name: String
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct WantsToLevelAbility {
+    pub ability_name: String
 }

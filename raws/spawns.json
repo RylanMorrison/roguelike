@@ -177,8 +177,183 @@
 
     "abilities": [
         {
+            "name": "Heavy Strike",
+            "description": "Hit an enemy with all your strength dealing extra damage and stunning them.",
+            "levels": {
+                "1": {
+                    "mana_cost": 2,
+                    "effects": {
+                        "extra_damage": "1d8",
+                        "stun": "2",
+                        "particle": "#;#ff0000;200.0"
+                    }
+                },
+                "2": {
+                    "mana_cost": 4,
+                    "effects": {
+                        "extra_damage": "2d8",
+                        "stun": "4",
+                        "particle": "#;#ff0000;200.0"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Cleave",
+            "description": "Sweep your weapon dealing damage to all enemies around you.",
+            "levels": {
+                "1": {
+                    "mana_cost": 4,
+                    "effects": {
+                        "extra_damage": "1d4",
+                        "area_of_effect": "1",
+                        "particle": "‼;#ff0000;200.0"
+                    }
+                },
+                "2": {
+                    "mana_cost": 6,
+                    "effects": {
+                        "extra_damage": "2d6",
+                        "area_of_effect": "2",
+                        "particle": "‼;#ff0000;200.0"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Rage",
+            "description": "A mighty battlecry dealing damage to yourself and around you. Your melee capabilities are boosted for a short duration ",
+            "levels": {
+                "1": {
+                    "mana_cost": 10,
+                    "effects": {
+                        "damage": "2d6",
+                        "area_of_effect": "4",
+                        "self_damage": "1d10",
+                        "rage": "10"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Shield Bash",
+            "description": "Hit an enemy with your shield dealing damage and stunning it.",
+            "levels": {
+                "1": {
+                    "mana_cost": 2,
+                    "effects": {
+                        "damage": "1d10+2",
+                        "stun": "3"
+                    }
+                },
+                "2": {
+                    "mana_cost": 4,
+                    "effects": {
+                        "damage": "2d8+2",
+                        "stun": "5"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Bulwark",
+            "description": "You have a chance to block all damage from enemy attacks while holding a shield.",
+            "levels": {
+                "1": {
+                    "effects": {
+                        "block": "0.2"
+                    }
+                },
+                "2": {
+                    "effects": {
+                        "block": "0.4"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Walking Fortress",
+            "description": "Steel yourself against enemy blows, reducing your initiative and damage but boosting your defences.",
+            "levels": {
+                "1": {
+                    "mana_cost": 8,
+                    "effects": {
+                        "fortress": "10"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Fireball",
+            "description": "Throw a ball of explosive flames dealing area damage and setting enemies that survive the blast on fire.",
+            "levels": {
+                "1": {
+                    "mana_cost": 4,
+                    "effects": {
+                        "ranged": "6",
+                        "damage": "2d10",
+                        "area_of_effect": "3",
+                        "damage_over_time": "2",
+                        "duration": "3",
+                        "particle": "*;#FFA500;200.0"
+                    }
+                },
+                "2": {
+                    "mana_cost": 8,
+                    "effects": {
+                        "ranged": "6",
+                        "damage": "2d14+2",
+                        "area_of_effect": "4",
+                        "damage_over_time": "4",
+                        "duration": "5",
+                        "particle": "*;#FFA500;200.0"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Flame Nova",
+            "description": "Engulf enemies around you in a burst of flames setting survivors on fire.",
+            "levels": {
+                "1": {
+                    "mana_cost": 10,
+                    "effects": {
+                        "damage": "2d12+2",
+                        "area_of_effect": "3",
+                        "damage_over_time": "6",
+                        "duration": "3",
+                        "particle": "*;#FFA500;400.0"
+                    }
+                },
+                "2": {
+                    "mana_cost": 16,
+                    "effects": {
+                        "damage": "2d16+4",
+                        "area_of_effect": "4",
+                        "damage_over_time": "10",
+                        "duration": "3",
+                        "particle": "*;#FFA500;400.0"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Incinerate",
+            "description": "Turn a single enemy into ash.",
+            "levels": {
+                "1": {
+                    "mana_cost": 20,
+                    "effects": {
+                        "ranged": "8",
+                        "damage": "6d12+30",
+                        "particle": "#;#ff6600;600.0"
+                    }
+                }
+            }
+        },
+        {
             "name": "Zap",
-            "description": "Zap an enemy with electricity",
+            "description": "Zap an enemy with electricity stunning them.",
             "levels": {
                 "1": {
                     "mana_cost": 2,
@@ -188,30 +363,64 @@
                         "stun": "2",
                         "particle_line": "▓;#f7ff02;400.0"
                     }
-                }
-            }
-        },
-        {
-            "name": "Lightning Bolt",
-            "description": "Blast an enemy with a bolt of lightning",
-            "levels": {
-                "1": {
-                    "mana_cost": 6,
+                },
+                "2": {
+                    "mana_cost": 4,
                     "effects": {
-                        "ranged": "6",
-                        "damage": "1d20",
-                        "stun": "4",
+                        "ranged": "8",
+                        "damage": "1d14",
+                        "stun": "3",
                         "particle_line": "▓;#f7ff02;400.0"
                     }
                 }
             }
         },
         {
-            "name": "Frost Bolt",
-            "description": "Throw a bolt of frost at an enemy",
+            "name": "Lightning Bolt",
+            "description": "Blast an enemy with a powerful bolt of lightning, dealing damage in a small area around them.",
             "levels": {
                 "1": {
-                    "mana_cost": 6,
+                    "mana_cost": 8,
+                    "effects": {
+                        "ranged": "8",
+                        "damage": "1d20",
+                        "area_of_effect": "2",
+                        "particle_line": "▓;#f7ff02;400.0"
+                    }
+                },
+                "2": {
+                    "mana_cost": 12,
+                    "effects": {
+                        "ranged": "8",
+                        "damage": "1d30",
+                        "area_of_effect": "2",
+                        "particle_line": "▓;#f7ff02;400.0"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Lightning Storm",
+            "description": "Strike a large area with lightning dealing heavy damage and stunning all foes.",
+            "levels": {
+                "1": {
+                    "mana_cost": 20,
+                    "effects": {
+                        "ranged": "8",
+                        "damage": "1d100",
+                        "area_of_effect": "5",
+                        "stun": "4",
+                        "particle": "▓;#f7ff02;400.0"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Frost Bolt",
+            "description": "Throw a bolt of frost at an enemy dealing damage and slowing them.",
+            "levels": {
+                "1": {
+                    "mana_cost": 4,
                     "effects": {
                         "ranged": "6",
                         "damage": "3d5",
@@ -219,80 +428,231 @@
                         "duration": "6",
                         "particle_line" : "*;#00FFFF;400.0"
                     }
+                },
+                "2": {
+                    "mana_cost": 8,
+                    "effects": {
+                        "ranged": "6",
+                        "damage": "3d10",
+                        "slow": "14",
+                        "duration": "8",
+                        "particle_line" : "*;#00FFFF;400.0"
+                    }
                 }
             }
         },
         {
-            "name": "Magic Missile",
-            "description": "Shoot three magical missiles at an enemy",
+            "name": "Frost Shield",
+            "description": "Coat yourself in ice, reducing your initiative but increasing your defences and mana regen.",
+            "levels": {
+                "1": {
+                    "mana_cost": 10,
+                    "effects": {
+                        "frost_shield": "6"
+                    }
+                },
+                "2": {
+                    "mana_cost": 15,
+                    "effects": {
+                        "frost_shield": "10"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Blizzard",
+            "description": "Pelt an area with ice dealing heavy damage, briefly stunning and then slowing enemies.",
+            "levels": {
+                "1": {
+                    "mana_cost": 20,
+                    "effects": {
+                        "ranged": "6",
+                        "damage": "10d8+10",
+                        "area_of_effect": "4",
+                        "stun": "2",
+                        "slow": "12",
+                        "particle" : "*;#00FFFF;400.0"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Magic Missiles",
+            "description": "Shoot three magical missiles at an enemy.",
             "levels": {
                 "1": {
                     "mana_cost": 2,
                     "effects": {
                         "ranged": "8",
                         "damage": "3d6",
-                        "particle_line": "*;#ff0623;200.0"
+                        "particle_line": "*;#062bff;200.0"
+                    }
+                },
+                "2": {
+                    "mana_cost": 4,
+                    "effects": {
+                        "ranged": "8",
+                        "damage": "3d10",
+                        "particle_line": "*;#062bff;200.0"
                     }
                 }
             }
         },
         {
             "name": "Confusion",
-            "description": "Confuse an enemy",
+            "description": "Curse an enemy confusing them and causing them to take damage over time.",
             "levels": {
                 "1": {
                     "mana_cost": 4,
                     "effects": {
                         "ranged": "6",
-                        "confusion": "4"
+                        "confusion": "10",
+                        "damage_over_time": "4",
+                        "duration": "10",
+                        "particle": "?;#fc1cfc;200.0"
                     }
-                }
-            }
-        },
-        {
-            "name": "Mass Confusion",
-            "description": "Confuse a group of enemies",
-            "levels": {
-                "1": {
+                },
+                "2": {
                     "mana_cost": 10,
                     "effects": {
                         "ranged": "6",
-                        "confusion": "4",
-                        "area_of_effect": "3",
+                        "confusion": "14",
+                        "damage_over_time": "6",
+                        "duration": "14",
                         "particle": "?;#fc1cfc;200.0"
                     }
                 }
             }
         },
         {
-            "name": "Ray of Sickness",
-            "description": "Shoot a sickening ray at and enemy",
+            "name": "Mayhem",
+            "description": "Curse a group of enemies confusing them and causing them to take damage over time.",
             "levels": {
                 "1": {
-                    "mana_cost": 6,
+                    "mana_cost": 20,
                     "effects": {
-                        "ranged": "6",
-                        "damage": "2d5",
-                        "damage_over_time": "8",
-                        "duration": "5",
-                        "particle_line": "▓;#00FF00;400.0"
+                        "ranged": "8",
+                        "confusion": "20",
+                        "area_of_effect": "5",
+                        "damage_over_time": "10",
+                        "duration": "20",
+                        "particle": "?;#fc1cfc;200.0"
                     }
                 }
             }
         },
         {
-            "name": "Fireball",
-            "description": "Throw a ball of fire at the target",
+            "name": "Crippling Shot",
+            "description": "Shoot an arrow at a foe confusing and slowing them.",
             "levels": {
                 "1": {
+                    "mana_cost": 4,
+                    "effects": {
+                        "ranged": "8",
+                        "extra_damage": "1d4",
+                        "confusion": "4",
+                        "slow": "8",
+                        "particle_line": "^;#fc1cfc;200.0"
+                    }
+                },
+                "2": {
+                    "mana_cost": 8,
+                    "effects": {
+                        "ranged": "8",
+                        "extra_damage": "1d6",
+                        "confusion": "6",
+                        "slow": "10",
+                        "particle_line": "^;#fc1cfc;200.0"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Barrage",
+            "description": "Shoot multiple arrows at an area damaging all enemies.",
+            "levels": {
+                "1": {
+                    "mana_cost": 8,
+                    "effects": {
+                        "ranged": "8",
+                        "extra_damage": "1d6",
+                        "area_of_effect": "3",
+                        "particle": "#;#c8c8c8;200.0"
+                    }
+                },
+                "2": {
+                    "mana_cost": 14,
+                    "effects": {
+                        "ranged": "8",
+                        "extra_damage": "1d10",
+                        "area_of_effect": "4",
+                        "particle": "#;#c8c8c8;200.0"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Explosive Shot",
+            "description": "Shoot an explosive arrow dealing heavy area damage and inflicting stun.",
+            "levels": {
+                "1": {
+                    "mana_cost": 16,
+                    "effects": {
+                        "ranged": "8",
+                        "damage": "5d10+5",
+                        "area_of_effect": "4",
+                        "stun": "4",
+                        "particle": "*;#de0808;300.0"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Death Mark",
+            "description": "Mark an enemy for death causing them to take damage over time.",
+            "levels": {
+                "1": {
+                    "mana_cost": 6,
+                    "effects": {
+                        "ranged": "2",
+                        "damage_over_time": "10",
+                        "duration": "10"
+                    }
+                },
+                "2": {
                     "mana_cost": 10,
                     "effects": {
-                        "ranged": "6",
-                        "damage": "2d10",
-                        "area_of_effect": "3",
-                        "damage_over_time": "2",
-                        "duration": "3",
-                        "particle": "*;#FFA500;200.0"
+                        "ranged": "2",
+                        "damage_over_time": "15",
+                        "duration": "10"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Evasion",
+            "description": "Your agility gives you a chance to avoid all damage from attacks.",
+            "levels": {
+                "1": {
+                    "effects": {
+                        "dodge": "0.3"
+                    }
+                },
+                "2": {
+                    "effects": {
+                        "dodge": "0.5"
+                    }
+                }
+            }
+        },
+        {
+            "name": "Execute",
+            "description": "Eviscerate a single foe.",
+            "levels": {
+                "1": {
+                    "mana_cost": 20,
+                    "effects": {
+                        "damage": "10d10+50"
                     }
                 }
             }
@@ -2983,7 +3343,7 @@
                             }
                         },
                         "2": {
-                            "levels_ability": "Fireball",
+                            "teaches_ability": "Flame Nova",
                             "skill_bonus": {
                                 "magic": 2
                             },
@@ -2992,7 +3352,7 @@
                             }
                         },
                         "3": {
-                            "teaches_ability": "Flame Nova",
+                            "levels_ability": "Fireball",
                             "skill_bonus": {
                                 "magic": 3
                             },
@@ -3036,7 +3396,7 @@
                             }
                         },
                         "2": {
-                            "levels_ability": "Zap",
+                            "teaches_ability": "Lightning Bolt",
                             "skill_bonus": {
                                 "magic": 2
                             },
@@ -3046,7 +3406,7 @@
                             }
                         },
                         "3": {
-                            "teaches_ability": "Lightning Bolt",
+                            "levels_ability": "Zap",
                             "skill_bonus": {
                                 "magic": 2
                             },
@@ -3082,14 +3442,14 @@
                     "description": "Improves your mastery over cold magic.",
                     "levels": {
                         "1": {
-                            "teaches_ability": "Frostbolt",
+                            "teaches_ability": "Frost Bolt",
                             "skill_bonus": {
                                 "magic": 1,
                                 "defence": 1
                             }
                         },
                         "2": {
-                            "levels_ability": "Frostbolt",
+                            "teaches_ability": "Frost Shield",
                             "skill_bonus": {
                                 "magic": 1,
                                 "defence": 1
@@ -3099,7 +3459,7 @@
                             }
                         },
                         "3": {
-                            "teaches_ability": "Frost Shield",
+                            "levels_ability": "Frostbolt",
                             "skill_bonus": {
                                 "magic": 2,
                                 "defence": 2
@@ -3133,8 +3493,8 @@
                     }
                 },
                 {
-                    "name": "Arcane Mastery",
-                    "description": "Improves your mastery over arcane magic.",
+                    "name": "Chaos Mastery",
+                    "description": "Improves your mastery over chaos magic.",
                     "levels": {
                         "1": {
                             "teaches_ability": "Magic Missiles",
@@ -3146,7 +3506,7 @@
                             }
                         },
                         "2": {
-                            "teaches_ability": "Town Portal",
+                            "teaches_ability": "Confusion",
                             "skill_bonus": {
                                 "magic": 2
                             },
@@ -3155,7 +3515,7 @@
                             }
                         },
                         "3": {
-                            "teaches_ability": "Magic Mapping",
+                            "levels_ability": "Magic Missiles",
                             "skill_bonus": {
                                 "magic": 3,
                                 "defence": 1
@@ -3166,7 +3526,7 @@
                             }
                         },
                         "4": {
-                            "levels_ability": "Magic Missiles",
+                            "levels_ability": "Confusion",
                             "skill_bonus": {
                                 "magic": 3,
                                 "defence": 1
@@ -3178,7 +3538,7 @@
                             }
                         },
                         "5": {
-                            "teaches_ability": "Force Wave",
+                            "teaches_ability": "Mayhem",
                             "skill_bonus": {
                                 "magic": 4,
                                 "defence": 1
@@ -3211,7 +3571,7 @@
                             }
                         },
                         "2": {
-                            "levels_ability": "Crippling Shot",
+                            "teaches_ability": "Barrage",
                             "attribute_bonus": {
                                 "dexterity": 1
                             },
@@ -3220,7 +3580,7 @@
                             }
                         },
                         "3": {
-                            "teaches_ability": "Barrage",
+                            "levels_ability": "Crippling Shot",
                             "attribute_bonus": {
                                 "dexterity": 1
                             },
@@ -3253,7 +3613,7 @@
                     "description": "Improve your effectiveness when dual-wielding one-handed weapons.",
                     "levels": {
                         "1": {
-                            "teaches_ability": "Ambush",
+                            "teaches_ability": "Death Mark",
                             "attribute_bonus": {
                                 "dexterity": 1
                             },
@@ -3271,7 +3631,7 @@
                             }
                         },
                         "3": {
-                            "levels_ability": "Ambush",
+                            "levels_ability": "Death Mark",
                             "attribute_bonus": {
                                 "dexterity": 1
                             },

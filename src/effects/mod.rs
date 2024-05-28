@@ -12,6 +12,9 @@ mod confusion;
 mod movement;
 mod attributes;
 mod slow;
+mod rage;
+mod fortress;
+mod frost_shield;
 pub use targeting::*;
 use rltk::{FontCharType, RGB, Point};
 use crate::spatial;
@@ -23,7 +26,7 @@ lazy_static! {
 
 #[derive(Debug)]
 pub enum EffectType {
-    Damage { amount: i32 },
+    Damage { amount: i32, hits_self: bool },
     Healing { amount: i32 },
     Mana { amount: i32 },
     Bloodstain,
@@ -39,7 +42,12 @@ pub enum EffectType {
     AbilityUse { ability: Entity },
     Slow { initiative_penalty: f32, duration: i32 },
     DamageOverTime { damage: i32, duration: i32 },
-    Stun { duration: i32 }
+    Stun { duration: i32 },
+    Rage { duration: i32 },
+    Block { chance: f32 },
+    Fortress { duration: i32 },
+    FrostShield { duration: i32 },
+    Dodge { chance: f32 }
 }
 
 #[derive(Clone, Debug)]
@@ -136,6 +144,9 @@ fn affect_entity(ecs: &mut World, effect: &mut EffectSpawner, target: Entity) {
         EffectType::AttributeEffect{..} => attributes::apply_effect(ecs, effect, target),
         EffectType::Slow{..} => slow::apply_slow(ecs, effect, target),
         EffectType::DamageOverTime{..} => damage::damage_over_time(ecs, effect, target),
+        EffectType::Rage{..} => rage::apply_rage(ecs, effect, target),
+        EffectType::Fortress{..} => fortress::apply_fortress(ecs, effect, target),
+        EffectType::FrostShield{..} => frost_shield::apply_frost_shield(ecs, effect, target),
         _ => {}
     }
 }

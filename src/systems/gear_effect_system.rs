@@ -71,7 +71,7 @@ impl<'a> System<'a> for GearEffectSystem {
                 total_armour_class: 10.0, // TODO use armour class from entity's pools
                 base_damage: "1 - 4".to_string()
             });
-            status_dirty.insert(entity, StatusEffectChanged{ expired: false }).expect("Failed to insert");
+            status_dirty.insert(entity, StatusEffectChanged{}).expect("Failed to insert");
         }
         equip_dirty.clear();
 
@@ -177,23 +177,23 @@ impl<'a> System<'a> for GearEffectSystem {
                 pool.base_damage = item.base_damage.clone();
 
                 if let Some(attr) = attributes.get_mut(*entity) {
-                    attr.strength.modifiers = item.strength;
-                    attr.dexterity.modifiers = item.dexterity;
-                    attr.constitution.modifiers = item.constitution;
-                    attr.intelligence.modifiers = item.intelligence;
+                    attr.strength.item_modifiers = item.strength;
+                    attr.dexterity.item_modifiers = item.dexterity;
+                    attr.constitution.item_modifiers = item.constitution;
+                    attr.intelligence.item_modifiers = item.intelligence;
 
-                    attr.strength.bonus = attr_bonus(attr.strength.base + attr.strength.modifiers);
-                    attr.dexterity.bonus = attr_bonus(attr.dexterity.base + attr.dexterity.modifiers);
-                    attr.constitution.bonus = attr_bonus(attr.constitution.base + attr.constitution.modifiers);
-                    attr.intelligence.bonus = attr_bonus(attr.intelligence.base + attr.intelligence.modifiers);
+                    attr.strength.bonus = attr_bonus(attr.strength.base + attr.strength.total_modifiers());
+                    attr.dexterity.bonus = attr_bonus(attr.dexterity.base + attr.dexterity.total_modifiers());
+                    attr.constitution.bonus = attr_bonus(attr.constitution.base + attr.constitution.total_modifiers());
+                    attr.intelligence.bonus = attr_bonus(attr.intelligence.base + attr.intelligence.total_modifiers());
 
                     // update health and mana
                     pool.hit_points.max = player_hp_at_level(
-                        attr.constitution.base + attr.constitution.modifiers,
+                        attr.constitution.base + attr.constitution.total_modifiers(),
                         pool.level
                     );
                     pool.mana.max = mana_at_level(
-                        attr.intelligence.base + attr.intelligence.modifiers,
+                        attr.intelligence.base + attr.intelligence.total_modifiers(),
                         pool.level
                     );
                     
@@ -207,10 +207,10 @@ impl<'a> System<'a> for GearEffectSystem {
                 }
 
                 if let Some(skill) = skills.get_mut(*entity) {
-                    skill.melee.modifiers = item.melee;
-                    skill.defence.modifiers = item.defence;
-                    skill.ranged.modifiers = item.ranged;
-                    skill.magic.modifiers = item.magic;
+                    skill.melee.item_modifiers = item.melee;
+                    skill.defence.item_modifiers = item.defence;
+                    skill.ranged.item_modifiers = item.ranged;
+                    skill.magic.item_modifiers = item.magic;
                 }
             }
         }

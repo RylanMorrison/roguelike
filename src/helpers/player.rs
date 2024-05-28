@@ -11,8 +11,8 @@ use crate::{Position, Player, Viewshed, State, Map, RunState, Item,
     TileType, particle_system::ParticleBuilder, Pools, WantsToMelee, WantsToPickupItem,
     HungerState, HungerClock, Door, BlocksVisibility, BlocksTile, Renderable, EntityMoved,
     Consumable, Ranged, Faction, Vendor, gui::VendorMode, KnownAbilities, WantsToUseAbility,
-    CharacterClass, PendingLevelUp, Equipped, Weapon, Target, WantsToShoot, Name,
-    Chest};
+    CharacterClass, PendingCharacterLevelUp, Equipped, Weapon, Target, WantsToShoot, Name,
+    Chest, KnownAbility};
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
     let mut result = RunState::AwaitingInput;
@@ -243,24 +243,27 @@ fn use_ability_hotkey(gs: &mut State, key: i32) -> RunState {
     if (key as usize) < player_abilities.len() {
         let pools = gs.ecs.read_storage::<Pools>();
         let player_pools = pools.get(*player_entity).unwrap();
-        if player_pools.mana.current >= player_abilities[key as usize].mana_cost {
-            if let Some(ability_entity) = find_ability_entity(&gs.ecs, &player_abilities[key as usize].name) {
-                if let Some(ranged) = gs.ecs.read_storage::<Ranged>().get(ability_entity) {
-                    return RunState::ShowTargeting { range: ranged.range, source: ability_entity };
+        let all_known_abilities = gs.ecs.read_storage::<KnownAbility>();
+        let known_ability_entity = player_abilities[key as usize];
+        if let Some(known_ability) = all_known_abilities.get(known_ability_entity) {
+            if player_pools.mana.current >= known_ability.mana_cost {
+                if let Some(ranged) = gs.ecs.read_storage::<Ranged>().get(known_ability_entity) {
+                    return RunState::ShowTargeting { range: ranged.range, source: known_ability_entity };
                 }
                 let mut intent = gs.ecs.write_storage::<WantsToUseAbility>();
                 intent.insert(
                     *player_entity,
-                    WantsToUseAbility{ ability: ability_entity, target: None }
+                    WantsToUseAbility{ ability: known_ability_entity, target: None }
                 ).expect("Unable to insert intent");
                 return RunState::Ticking;
+            } else {
+                gamelog::Logger::new()
+                    .append("You don't have enough mana to cast")
+                    .ability_name(known_ability.name.clone())
+                    .append("!")
+                    .log();
+                return RunState::AwaitingInput;
             }
-        } else {
-            gamelog::Logger::new()
-                .append("You don't have enough mana to cast")
-                .ability_name(&player_abilities[key as usize].name)
-                .append("!")
-                .log();
         }
     }
     RunState::Ticking
@@ -370,10 +373,10 @@ pub fn level_up(ecs: &World, source: Entity, pools: &mut Pools) {
         }
     }
 
-    let mut pending_level_ups = ecs.write_storage::<PendingLevelUp>();
+    let mut pending_level_ups = ecs.write_storage::<PendingCharacterLevelUp>();
     let character_classes = ecs.read_storage::<CharacterClass>();
     let source_class = character_classes.get(source).unwrap();
-    pending_level_ups.insert(source, PendingLevelUp{ passives: source_class.passives.clone() }).expect("Unable to insert");
+    pending_level_ups.insert(source, PendingCharacterLevelUp{ passives: source_class.passives.clone() }).expect("Unable to insert");
 }
 
 fn get_target_list(ecs: &mut World) -> Vec<(f32, Entity)> {

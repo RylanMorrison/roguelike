@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use rltk::prelude::*;
 use super::{green, white, black, magenta, yellow, gold};
-use crate::{CharacterClass, Passive, PassiveLevel, PendingLevelUp, State, AttributeBonus, SkillBonus};
+use crate::{CharacterClass, Passive, PassiveLevel, PendingCharacterLevelUp, State, AttributeBonus, SkillBonus};
 use std::collections::{BTreeMap, HashMap};
 
 pub enum LevelUpMenuResult {
@@ -13,7 +13,7 @@ pub enum LevelUpMenuResult {
 
 pub fn show_levelup_menu(gs: &mut State, ctx: &mut Rltk) -> LevelUpMenuResult {
     let player = gs.ecs.fetch::<Entity>();
-    let mut pending_level_ups = gs.ecs.write_storage::<PendingLevelUp>();
+    let mut pending_level_ups = gs.ecs.write_storage::<PendingCharacterLevelUp>();
     let character_classes = gs.ecs.read_storage::<CharacterClass>();
     let player_class = character_classes.get(*player).unwrap();
     let level_up = pending_level_ups.get_mut(*player).unwrap();
@@ -168,7 +168,7 @@ fn cumulative_level(passive: &Passive, display_level: i32) -> Option<PassiveLeve
     Some(PassiveLevel { attribute_bonus, skill_bonus, learn_ability, level_ability })
 }
 
-fn passive_selected(level_up: &mut PendingLevelUp, passive: &Passive) -> bool {
+fn passive_selected(level_up: &mut PendingCharacterLevelUp, passive: &Passive) -> bool {
     for (name, pass) in level_up.passives.iter() {
         if name.as_str() == passive.name.as_str() {
             return pass.current_level != passive.current_level
@@ -177,14 +177,14 @@ fn passive_selected(level_up: &mut PendingLevelUp, passive: &Passive) -> bool {
     false
 }
 
-fn get_selected_passive<'a>(level_up: &'a mut PendingLevelUp, current_passives: &BTreeMap<String, Passive>) -> Option<&'a mut Passive> {
+fn get_selected_passive<'a>(level_up: &'a mut PendingCharacterLevelUp, current_passives: &BTreeMap<String, Passive>) -> Option<&'a mut Passive> {
     for (name, passive) in level_up.passives.iter_mut() {
         if current_passives[name].current_level != passive.current_level { return Some(passive); }
     }
     None
 }
 
-fn handle_selection(selection: &str, passive_selections: HashMap<String, String>, level_up: &mut PendingLevelUp, player_class: &CharacterClass) -> LevelUpMenuResult {
+fn handle_selection(selection: &str, passive_selections: HashMap<String, String>, level_up: &mut PendingCharacterLevelUp, player_class: &CharacterClass) -> LevelUpMenuResult {
     let passive_name = &passive_selections[selection];
     let passive = &player_class.passives[passive_name];
 
