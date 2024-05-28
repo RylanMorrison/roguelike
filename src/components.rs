@@ -438,11 +438,16 @@ pub struct Quips {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Attribute {
     pub base: i32,
-    pub modifiers: i32,
+    pub item_modifiers: i32,
+    pub status_effect_modifiers: i32,
     pub bonus: i32
 }
 
-
+impl Attribute {
+    pub fn total_modifiers(&self) -> i32 {
+        self.item_modifiers + self.status_effect_modifiers
+    }
+}
 
 // See: https://roll20.net/compendium/dnd5e/Ability%20Scores#content
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
@@ -456,10 +461,10 @@ pub struct Attributes {
 impl Attributes {
     pub fn default() -> Attributes {
         Attributes { 
-            strength: Attribute{ base: 11, modifiers: 0, bonus: attr_bonus(11) },
-            dexterity: Attribute{ base: 11, modifiers: 0, bonus: attr_bonus(11) },
-            constitution: Attribute{ base: 11, modifiers: 0, bonus: attr_bonus(11) },
-            intelligence: Attribute{ base: 11, modifiers: 0, bonus: attr_bonus(11) }
+            strength: Attribute{ base: 11, item_modifiers: 0, status_effect_modifiers: 0, bonus: attr_bonus(11) },
+            dexterity: Attribute{ base: 11, item_modifiers: 0, status_effect_modifiers: 0, bonus: attr_bonus(11) },
+            constitution: Attribute{ base: 11, item_modifiers: 0, status_effect_modifiers: 0, bonus: attr_bonus(11) },
+            intelligence: Attribute{ base: 11, item_modifiers: 0, status_effect_modifiers: 0, bonus: attr_bonus(11) }
         }
     }
 }
@@ -467,12 +472,17 @@ impl Attributes {
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Skill {
     pub base: i32,
-    pub modifiers: i32
+    pub item_modifiers: i32,
+    pub status_effect_modifiers: i32
 }
 
 impl Skill {
     pub fn bonus(&self) -> i32 {
-        self.base + self.modifiers
+        self.base + self.total_modifiers()
+    }
+
+    pub fn total_modifiers(&self) -> i32 {
+        self.item_modifiers + self.status_effect_modifiers
     }
 }
 
@@ -487,10 +497,10 @@ pub struct Skills {
 impl Skills {
     pub fn default() -> Skills {
         Skills{
-            melee: Skill{ base: 1, modifiers: 0 },
-            defence: Skill{ base: 1, modifiers: 0 },
-            ranged: Skill{ base: 1, modifiers: 0 },
-            magic: Skill{ base: 1, modifiers: 0 }
+            melee: Skill{ base: 1, item_modifiers: 0, status_effect_modifiers: 0 },
+            defence: Skill{ base: 1, item_modifiers: 0, status_effect_modifiers: 0 },
+            ranged: Skill{ base: 1, item_modifiers: 0, status_effect_modifiers: 0 },
+            magic: Skill{ base: 1, item_modifiers: 0, status_effect_modifiers: 0 }
         }
     }
 }
