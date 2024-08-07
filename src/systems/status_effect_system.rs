@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use crate::{attr_bonus, gamelog, StatusEffectChanged, AttributeBonus, Attributes, Pools, StatusEffect,
-    player_hp_at_level, mana_at_level, carry_capacity_lbs, SkillBonus, Skills, Slow, Duration};
+    player_hp_at_level, mana_at_level, carry_capacity_lbs, SkillBonus, Skills, Slow, Duration, Block, Dodge};
 use std::collections::HashMap;
 use rltk::RGB;
 
@@ -14,7 +14,9 @@ struct StatusUpdate {
     defence: i32,
     ranged: i32,
     magic: i32,
-    initiative_penalty: f32
+    initiative_penalty: f32,
+    block_chance: Option<f32>,
+    dodge_chance: Option<f32>
 }
 
 pub struct StatusEffectSystem {}
@@ -31,13 +33,15 @@ impl<'a> System<'a> for StatusEffectSystem {
         ReadStorage<'a, SkillBonus>,
         ReadStorage<'a, StatusEffect>,
         ReadStorage<'a, Slow>,
+        WriteStorage<'a, Block>,
+        WriteStorage<'a, Dodge>,
         ReadStorage<'a, Duration>
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (mut status_dirty, entities, mut pools, mut attributes,
             mut skills, player, attribute_bonuses, skill_bonuses,
-            statuses, slows, durations) = data;
+            statuses, slows, mut blocks, mut dodges, durations) = data;
 
         if status_dirty.is_empty() { return; }
 
@@ -52,13 +56,14 @@ impl<'a> System<'a> for StatusEffectSystem {
                 defence: 0,
                 ranged: 0,
                 magic: 0,
-                initiative_penalty: 0.0
+                initiative_penalty: 0.0,
+                block_chance: None,
+                dodge_chance: None
             });
         }
         status_dirty.clear();
 
         // total up status effect modifiers
-        let mut to_delete: Vec<Entity> = Vec::new();
         for (entity, status) in (&entities, &statuses).join() {
             if to_update.contains_key(&status.target) {
                 let totals = to_update.get_mut(&status.target).unwrap();
@@ -79,6 +84,14 @@ impl<'a> System<'a> for StatusEffectSystem {
 
                 if let Some(slow) = slows.get(entity) {
                     totals.initiative_penalty += slow.initiative_penalty;
+                }
+
+                if let Some(block) = blocks.get(entity) {
+                    totals.block_chance = Some(block.chance);
+                }
+
+                if let Some(dodge) = dodges.get(entity) {
+                    totals.dodge_chance = Some(dodge.chance);
                 }
             }
         }
@@ -121,6 +134,22 @@ impl<'a> System<'a> for StatusEffectSystem {
                     skill.defence.status_effect_modifiers = update.defence;
                     skill.ranged.status_effect_modifiers = update.ranged;
                     skill.magic.status_effect_modifiers = update.magic;
+                }
+
+                if let Some(dodge_chance) = update.dodge_chance {
+                    if let Some(dodge) = dodges.get_mut(*entity) {
+                        dodge.chance = dodge_chance;
+                    } else {
+                        dodges.insert(*entity, Dodge{ chance: dodge_chance }).expect("Unable to insert");
+                    }
+                }
+
+                if let Some(block_chance) = update.block_chance {
+                    if let Some(block) = blocks.get_mut(*entity) {
+                        block.chance = block_chance;
+                    } else {
+                        blocks.insert(*entity, Block{ chance: block_chance }).expect("Unable to insert");
+                    }
                 }
 
                 // TODO: initiative penalty

@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use rltk::prelude::*;
 use super::{green, white, black, magenta, yellow, gold};
-use crate::{CharacterClass, Passive, PassiveLevel, PendingCharacterLevelUp, State, AttributeBonus, SkillBonus};
+use crate::{CharacterClass, ClassPassive, ClassPassiveLevel, PendingCharacterLevelUp, State, AttributeBonus, SkillBonus};
 use std::collections::{BTreeMap, HashMap};
 
 pub enum LevelUpMenuResult {
@@ -75,7 +75,7 @@ pub fn show_levelup_menu(gs: &mut State, ctx: &mut Rltk) -> LevelUpMenuResult {
     LevelUpMenuResult::NoResponse
 }
 
-fn draw_passive_choice(draw_batch: &mut DrawBatch, y: &mut i32, passive: &Passive, selection: String, selected: bool) {
+fn draw_passive_choice(draw_batch: &mut DrawBatch, y: &mut i32, passive: &ClassPassive, selection: String, selected: bool) {
     let colour = if selected { green() } else if passive.is_max_level() { magenta() } else { white() };
     let display_level_int = if selected { passive.current_level + 1 } else { passive.current_level };
 
@@ -90,7 +90,7 @@ fn draw_passive_choice(draw_batch: &mut DrawBatch, y: &mut i32, passive: &Passiv
     );
     *y += 2;
 
-    let level_to_show: Option<PassiveLevel> = cumulative_level(passive, display_level_int);
+    let level_to_show: Option<ClassPassiveLevel> = cumulative_level(passive, display_level_int);
     if let Some(display_level) = level_to_show {
         if let Some(attribute_bonus) = &display_level.attribute_bonus {
             draw_batch.print_color(Point::new(4, *y), "Attribute bonuses:", ColorPair::new(colour, black()));
@@ -146,7 +146,7 @@ fn draw_passive_choice(draw_batch: &mut DrawBatch, y: &mut i32, passive: &Passiv
     *y += 2;
 }
 
-fn cumulative_level(passive: &Passive, display_level: i32) -> Option<PassiveLevel> {
+fn cumulative_level(passive: &ClassPassive, display_level: i32) -> Option<ClassPassiveLevel> {
     if display_level == 0 { return None }
     if display_level == 1 { return Some(passive.levels[&1].clone()); }
 
@@ -165,10 +165,10 @@ fn cumulative_level(passive: &Passive, display_level: i32) -> Option<PassiveLeve
         }
     }
 
-    Some(PassiveLevel { attribute_bonus, skill_bonus, learn_ability, level_ability })
+    Some(ClassPassiveLevel { attribute_bonus, skill_bonus, learn_ability, level_ability })
 }
 
-fn passive_selected(level_up: &mut PendingCharacterLevelUp, passive: &Passive) -> bool {
+fn passive_selected(level_up: &mut PendingCharacterLevelUp, passive: &ClassPassive) -> bool {
     for (name, pass) in level_up.passives.iter() {
         if name.as_str() == passive.name.as_str() {
             return pass.current_level != passive.current_level
@@ -177,7 +177,7 @@ fn passive_selected(level_up: &mut PendingCharacterLevelUp, passive: &Passive) -
     false
 }
 
-fn get_selected_passive<'a>(level_up: &'a mut PendingCharacterLevelUp, current_passives: &BTreeMap<String, Passive>) -> Option<&'a mut Passive> {
+fn get_selected_passive<'a>(level_up: &'a mut PendingCharacterLevelUp, current_passives: &BTreeMap<String, ClassPassive>) -> Option<&'a mut ClassPassive> {
     for (name, passive) in level_up.passives.iter_mut() {
         if current_passives[name].current_level != passive.current_level { return Some(passive); }
     }

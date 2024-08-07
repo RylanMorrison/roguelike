@@ -44,10 +44,8 @@ pub enum EffectType {
     DamageOverTime { damage: i32, duration: i32 },
     Stun { duration: i32 },
     Rage { duration: i32 },
-    Block { chance: f32 },
     Fortress { duration: i32 },
-    FrostShield { duration: i32 },
-    Dodge { chance: f32 }
+    FrostShield { duration: i32 }
 }
 
 #[derive(Clone, Debug)]

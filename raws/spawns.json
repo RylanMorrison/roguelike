@@ -196,7 +196,8 @@
                         "particle": "#;#ff0000;200.0"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Cleave",
@@ -218,7 +219,8 @@
                         "particle": "‼;#ff0000;200.0"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Rage",
@@ -233,7 +235,8 @@
                         "rage": "10"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Shield Bash",
@@ -253,7 +256,8 @@
                         "stun": "5"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Bulwark",
@@ -269,7 +273,8 @@
                         "block": "0.4"
                     }
                 }
-            }
+            },
+            "ability_type": "passive"
         },
         {
             "name": "Walking Fortress",
@@ -281,7 +286,8 @@
                         "fortress": "10"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Fireball",
@@ -309,7 +315,8 @@
                         "particle": "*;#FFA500;200.0"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Flame Nova",
@@ -335,7 +342,8 @@
                         "particle": "*;#FFA500;400.0"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Incinerate",
@@ -349,7 +357,8 @@
                         "particle": "#;#ff6600;600.0"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Zap",
@@ -373,7 +382,8 @@
                         "particle_line": "▓;#f7ff02;400.0"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Lightning Bolt",
@@ -397,7 +407,8 @@
                         "particle_line": "▓;#f7ff02;400.0"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Lightning Storm",
@@ -413,7 +424,8 @@
                         "particle": "▓;#f7ff02;400.0"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Frost Bolt",
@@ -439,7 +451,8 @@
                         "particle_line" : "*;#00FFFF;400.0"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Frost Shield",
@@ -457,7 +470,8 @@
                         "frost_shield": "10"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Blizzard",
@@ -474,7 +488,8 @@
                         "particle" : "*;#00FFFF;400.0"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Magic Missiles",
@@ -496,7 +511,8 @@
                         "particle_line": "*;#062bff;200.0"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Confusion",
@@ -522,7 +538,8 @@
                         "particle": "?;#fc1cfc;200.0"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Mayhem",
@@ -539,7 +556,8 @@
                         "particle": "?;#fc1cfc;200.0"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Crippling Shot",
@@ -565,7 +583,8 @@
                         "particle_line": "^;#fc1cfc;200.0"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Barrage",
@@ -589,7 +608,8 @@
                         "particle": "#;#c8c8c8;200.0"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Explosive Shot",
@@ -605,7 +625,8 @@
                         "particle": "*;#de0808;300.0"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Death Mark",
@@ -627,7 +648,8 @@
                         "duration": "10"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Evasion",
@@ -643,7 +665,8 @@
                         "dodge": "0.5"
                     }
                 }
-            }
+            },
+            "ability_type": "passive"
         },
         {
             "name": "Execute",
@@ -655,7 +678,8 @@
                         "damage": "10d10+50"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Web",
@@ -671,7 +695,8 @@
                         "particle_line" : "☼;#FFFFFF;400.0"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Scorching Ray",
@@ -687,7 +712,8 @@
                         "damage": "2d6+2"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         },
         {
             "name": "Drain Soul",
@@ -704,7 +730,8 @@
                         "healing": "10"
                     }
                 }
-            }
+            },
+            "ability_type": "active"
         }
     ],
 

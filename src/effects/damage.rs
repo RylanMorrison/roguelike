@@ -1,13 +1,15 @@
 use specs::{prelude::*, saveload::SimpleMarker, saveload::MarkedBuilder};
 use super::*;
-use crate::components::{Pools, StatusEffect, StatusEffectChanged, DamageOverTime, Duration, Name};
-use crate::{gamelog, player_xp_for_level, Map, Player};
+use crate::components::{Pools, StatusEffect, StatusEffectChanged, DamageOverTime, Duration, Name, Item, Dodge, Block};
+use crate::{gamelog, player_xp_for_level, KnownAbility, Map, Player};
 use crate::{spatial, SerializeMe, RunState};
 use crate::player;
 
 pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
     let mut pools = ecs.write_storage::<Pools>();
+    let names = ecs.read_storage::<Name>();
     let player_entity = ecs.fetch::<Entity>();
+
     if let Some(pool) = pools.get_mut(target) {
         if !pool.god_mode {
             if let EffectType::Damage{amount, hits_self} = damage.effect_type {
@@ -43,6 +45,40 @@ pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
                         EffectType::EntityDeath,
                         Targets::Single{target}
                     );
+                }
+                if damage.creator.is_none() {
+                    rltk::console::log(format!("{:?}", damage));
+                    return;
+                }
+
+                let items = ecs.read_storage::<Item>();
+                let known_abilities = ecs.read_storage::<KnownAbility>();
+
+                // TODO clean this up
+                if let Some(item) = items.get(damage.creator.unwrap()) {
+                    gamelog::Logger::new()
+                        .item_name(item)
+                        .append("deals")
+                        .damage(amount)
+                        .append("damage to")
+                        .append(&names.get(target).unwrap().name)
+                        .log();
+                } else if let Some(known_ability) = known_abilities.get(damage.creator.unwrap()) {
+                    gamelog::Logger::new()
+                        .ability_name(&known_ability.name)
+                        .append("deals")
+                        .damage(amount)
+                        .append("damage to")
+                        .append(&names.get(target).unwrap().name)
+                        .log();
+                } else {
+                    gamelog::Logger::new()
+                        .character_name(&names.get(damage.creator.unwrap()).unwrap().name)
+                        .append("deals")
+                        .damage(amount)
+                        .append("damage to")
+                        .append(&names.get(target).unwrap().name)
+                        .log();
                 }
             }
         }

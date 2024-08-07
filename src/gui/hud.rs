@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use rltk::prelude::*;
 use super::{box_gray, light_gray, cyan, green, red, black, white, yellow, orange, gold, blue, draw_tooltips};
-use crate::{Map, Entity, Pools, Attributes, Attribute, Skills, Skill, Equipped, Item, Name, Consumable, InBackpack,
+use crate::{Map, Entity, Pools, Attributes, Attribute, Skills, Skill, Equipped, Item, Name, Consumable, InBackpack, AbilityType,
     KnownAbilities, KnownAbility, HungerClock, StatusEffect, Duration, HungerState, player_xp_for_level, carry_capacity_lbs};
 use crate::raws;
 use crate::gamelog;
@@ -160,10 +160,12 @@ fn draw_abilities(ecs: &World, draw_batch: &mut DrawBatch, player: &Entity, y: &
     let mut index = 1;
     for ability_entity in player_abilities.iter() {
         let known_ability = all_known_abilities.get(*ability_entity).unwrap();
-        draw_batch.print_color(Point::new(70, *y), &format!("^{}", index), ColorPair::new(cyan(), black()));
-        draw_batch.print_color(Point::new(73, *y), &format!("{} ({})", known_ability.name, known_ability.mana_cost), ColorPair::new(cyan(), black()));
-        index += 1;
-        *y += 1;
+        if known_ability.ability_type == AbilityType::Active {
+            draw_batch.print_color(Point::new(70, *y), &format!("^{}", index), ColorPair::new(cyan(), black()));
+            draw_batch.print_color(Point::new(73, *y), &format!("{} ({})", known_ability.name, known_ability.mana_cost), ColorPair::new(cyan(), black()));
+            index += 1;
+            *y += 1;
+        }
     }
 }
 

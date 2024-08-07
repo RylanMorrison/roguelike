@@ -1,7 +1,8 @@
 use specs::prelude::*;
 use crate::{Attributes, Skills, WantsToMelee, Name, Position,
     HungerClock, HungerState, Pools, Equipped, Weapon, AreaOfEffect,
-    EquipmentSlot, WeaponAttribute, Wearable, NaturalAttackDefence, Map};
+    EquipmentSlot, WeaponAttribute, Wearable, NaturalAttackDefence, Map,
+    Dodge, Block};
 use crate::effects::{add_effect, aoe_tiles, EffectType, Targets};
 use rltk::{RGB, Point};
 use crate::gamelog;
@@ -24,6 +25,8 @@ impl<'a> System<'a> for MeleeCombatSystem {
         ReadStorage<'a, Wearable>,
         ReadStorage<'a, NaturalAttackDefence>,
         ReadStorage<'a, AreaOfEffect>,
+        ReadStorage<'a, Dodge>,
+        ReadStorage<'a, Block>,
         WriteExpect<'a, Map>
     );
 
@@ -31,7 +34,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
         let (entities, mut wants_melees, names, attributes, 
             skills, pools, positions, hunger_clock, 
             equipped_items, melee_weapons, wearables, natural,
-            area_of_effect, map) = data;
+            area_of_effect, dodges, blocks, map) = data;
 
         for (entity, wants_melee, name, attacker_attributes, attacker_skills, attacker_pools) in (&entities, &wants_melees, &names, &attributes, &skills, &pools).join() {
             let target_pools = pools.get(wants_melee.target).unwrap();
@@ -121,6 +124,34 @@ impl<'a> System<'a> for MeleeCombatSystem {
             if natural_roll != 1 && (natural_roll == 20 || modified_hit_roll > armour_class) {
                 // TODO: critical hits
                 // hit
+
+                // check if target has the ability to avoid damage from the attack
+                if let Some(dodge) = dodges.get(wants_melee.target) {
+                    if rng::roll_dice(1, 100) <= (dodge.chance * 100.0) as i32 {
+                        gamelog::Logger::new()
+                            .character_name(&names.get(wants_melee.target).unwrap().name)
+                            .ability_name("dodges")
+                            .append("attack from")
+                            .character_name(&name.name)
+                            .append("!")
+                            .log();
+                        continue;
+                    }
+                }
+                if let Some(block) = blocks.get(wants_melee.target) {
+                    if rng::roll_dice(1, 100) <= (block.chance * 100.0) as i32 {
+                        gamelog::Logger::new()
+                            .character_name(&names.get(wants_melee.target).unwrap().name)
+                            .ability_name("blocks")
+                            .append("attack from")
+                            .character_name(&name.name)
+                            .append("!")
+                            .log();
+                        continue;
+                    }
+                }
+
+                // calculate damage
                 let base_damage = rng::roll_dice(weapon_info.damage_n_dice, weapon_info.damage_die_type);
                 let attr_damage_bonus = if weapon_info.attribute == WeaponAttribute::Strength {
                     attacker_attributes.strength.bonus
@@ -206,9 +237,9 @@ impl<'a> System<'a> for MeleeCombatSystem {
             } else {
                 // miss
                 gamelog::Logger::new()
-                    .character_name(&target_name.name)
-                    .append("evades attack from")
                     .character_name(&name.name)
+                    .append("misses")
+                    .character_name(&target_name.name)
                     .log();
                 if positions.get(wants_melee.target).is_some() {
                     add_effect(

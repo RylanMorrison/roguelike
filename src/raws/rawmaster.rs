@@ -642,7 +642,11 @@ pub fn spawn_named_ability(raws: &RawMaster, ecs: &mut World, key: &str) -> Opti
         eb = eb.with(Ability{
             name: ability_template.name.clone(),
             description: ability_template.description.clone(),
-            levels
+            levels,
+            ability_type: match ability_template.ability_type.as_str() {
+                "passive" => AbilityType::Passive,
+                _ => AbilityType::Active
+            }
         });
         eb = eb.with(Name{ name: ability_template.name.clone() });
 
@@ -667,11 +671,11 @@ pub fn spawn_named_character_class(raws: &RawMaster, ecs: &mut World, key: &str)
         let mut character_classes = ecs.write_storage::<CharacterClass>();
         character_classes.clear();
 
-        let mut passives: BTreeMap<String, Passive> = BTreeMap::new();
+        let mut passives: BTreeMap<String,ClassPassive> = BTreeMap::new();
         for passive_data in character_class_template.passives.iter() {
-            let mut levels: HashMap<i32, PassiveLevel> = HashMap::new();
+            let mut levels: HashMap<i32, ClassPassiveLevel> = HashMap::new();
             for level in passive_data.levels.iter() {
-                let passive_level = PassiveLevel{
+                let passive_level = ClassPassiveLevel{
                     attribute_bonus: if let Some(attribute_bonus) = &level.1.attribute_bonus {
                         Some(AttributeBonus {
                             strength: attribute_bonus.strength,
@@ -693,7 +697,7 @@ pub fn spawn_named_character_class(raws: &RawMaster, ecs: &mut World, key: &str)
                 };
                 levels.insert(level.0.parse::<i32>().unwrap(), passive_level);
             }
-            let passive = Passive{
+            let passive = ClassPassive{
                 name: passive_data.name.clone(),
                 description: passive_data.description.clone(),
                 current_level: 0,

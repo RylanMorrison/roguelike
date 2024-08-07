@@ -163,35 +163,6 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
             }
         }
         add_effect(creator, EffectType::Damage{ amount, hits_self: false }, targets.clone());
-        let names = ecs.read_storage::<Name>();
-        let items = ecs.read_storage::<Item>();
-
-        // TODO clean this up
-        if let Some(item) = items.get(entity) {
-            gamelog::Logger::new()
-                .character_name(&names.get(creator.unwrap()).unwrap().name)
-                .append("deals")
-                .damage(amount)
-                .append("damage with")
-                .item_name(item)
-                .log();
-        } else if let Some(known_ability) = known_abilities.get(entity) {
-            gamelog::Logger::new()
-                .character_name(&names.get(creator.unwrap()).unwrap().name)
-                .append("deals")
-                .damage(amount)
-                .append("damage with")
-                .ability_name(&known_ability.name)
-                .log();
-        } else {
-            gamelog::Logger::new()
-                .character_name(&names.get(creator.unwrap()).unwrap().name)
-                .append("deals")
-                .damage(amount)
-                .append("damage with")
-                .append(&names.get(entity).unwrap().name)
-                .log();
-        }
         did_something = true;
     }
 

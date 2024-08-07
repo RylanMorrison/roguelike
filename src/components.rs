@@ -824,7 +824,7 @@ pub struct TileSize {
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct PendingCharacterLevelUp {
-    pub passives: BTreeMap<String, Passive>
+    pub passives: BTreeMap<String, ClassPassive>
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -903,39 +903,46 @@ pub struct Chest {
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct CharacterClass {
     pub name: String,
-    pub passives: BTreeMap<String, Passive>
+    pub passives: BTreeMap<String, ClassPassive>
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Passive {
+pub struct ClassPassive {
     pub name: String,
     pub description: String,
     pub current_level: i32,
-    pub levels: HashMap<i32, PassiveLevel>
+    pub levels: HashMap<i32, ClassPassiveLevel>
 }
 
-impl Passive {
+impl ClassPassive {
     pub fn is_max_level(&self) -> bool {
         self.current_level >= self.levels.len() as i32
     }
 
-    pub fn active_level(&self) -> &PassiveLevel {
+    pub fn active_level(&self) -> &ClassPassiveLevel {
         &self.levels[&self.current_level]
     }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct PassiveLevel {
+pub struct ClassPassiveLevel {
     pub attribute_bonus: Option<AttributeBonus>,
     pub skill_bonus: Option<SkillBonus>,
     pub learn_ability: Option<String>,
     pub level_ability: Option<String>
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub enum AbilityType {
+    Active,
+    Passive
+}
+
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Ability {
     pub name: String,
     pub description: String,
+    pub ability_type: AbilityType,
     pub levels: HashMap<i32, AbilityLevel>
 }
 
@@ -949,7 +956,8 @@ pub struct AbilityLevel {
 pub struct KnownAbility {
     pub name: String,
     pub level: i32,
-    pub mana_cost: i32
+    pub mana_cost: i32,
+    pub ability_type: AbilityType
 }
 
 // Need a wrapper to be able to (de)serialize collections of Entities. See https://github.com/amethyst/specs/issues/681

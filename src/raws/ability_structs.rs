@@ -5,7 +5,8 @@ use std::collections::HashMap;
 pub struct AbilityData {
     pub name: String,
     pub description: String,
-    pub levels: HashMap<String, AbilityLevelData>
+    pub levels: HashMap<String, AbilityLevelData>,
+    pub ability_type: String
 }
 
 #[derive(Deserialize, Debug)]
