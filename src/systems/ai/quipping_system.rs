@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::{gamelog, Quips, Name, MyTurn, Viewshed};
+use crate::{gamelog, Quips, Name, MyTurn, Viewshed, RunState};
 use crate::rng;
 use rltk::Point;
 
@@ -11,11 +11,16 @@ impl<'a> System<'a> for QuipSystem {
         ReadStorage<'a, Name>,
         ReadStorage<'a, MyTurn>,
         ReadExpect<'a, Point>,
-        ReadStorage<'a, Viewshed>
+        ReadStorage<'a, Viewshed>,
+        ReadExpect<'a, RunState>
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut quips, names, turns, player_pos, viewsheds) = data;
+        let (mut quips, names, turns, player_pos, viewsheds, runstate) = data;
+
+        if *runstate != RunState::Ticking {
+            return;
+        }
 
         for (quip, name, viewshed, _turn) in (&mut quips, &names, &viewsheds, &turns).join() {
             if !quip.available.is_empty() && viewshed.visible_tiles.contains(&player_pos) && rng::roll_dice(1, 6) == 1 {

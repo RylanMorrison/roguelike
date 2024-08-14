@@ -19,7 +19,7 @@ impl<'a> System<'a> for HungerSystem {
         let (entities, mut hunger_clock, player_entity,
             turns, runstate) = data;
 
-        if *runstate != RunState::AwaitingInput { return; }
+        if *runstate != RunState::Ticking { return; }
 
         for (entity, clock, _myturn) in (&entities, &mut hunger_clock, &turns).join() {
             // only processes if it is the entities turn

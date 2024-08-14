@@ -24,7 +24,7 @@ construct_dispatcher!(
     (StatusEffectSystem, "status_effect", &["gear_effect"]),
     (InitiativeSystem, "initiative", &["status_effect"]),
     (TurnStatusSystem, "turn_status", &["initiative"]),
-    (QuipSystem, "quips", &[]),
+    (QuipSystem, "quips", &["initiative"]),
     (HungerSystem, "hunger", &[]),
     (LevelUpCharacterSystem, "level_up", &[]),
     (LearnAbilitySystem, "learn_ability", &["level_up"]),
