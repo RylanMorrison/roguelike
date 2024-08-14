@@ -12,7 +12,7 @@ use crate::{Position, Player, Viewshed, State, Map, RunState, Item,
     HungerState, HungerClock, Door, BlocksVisibility, BlocksTile, Renderable, EntityMoved,
     Consumable, Ranged, Faction, Vendor, gui::VendorMode, KnownAbilities, WantsToUseAbility,
     CharacterClass, PendingCharacterLevelUp, Equipped, Weapon, Target, WantsToShoot, Name,
-    Chest, KnownAbility};
+    Chest, KnownAbility, AbilityType, EntityVec};
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
     let mut result = RunState::AwaitingInput;
@@ -239,31 +239,37 @@ fn use_ability_hotkey(gs: &mut State, key: i32) -> RunState {
     let player_entity = gs.ecs.fetch::<Entity>();
     let known_abilities = gs.ecs.read_storage::<KnownAbilities>();
     let player_abilities = &known_abilities.get(*player_entity).unwrap().abilities;
+    let all_known_abilities = gs.ecs.read_storage::<KnownAbility>();
+    let mut active_abilities: Vec<(Entity, &KnownAbility)> = Vec::new();
+    for entity in player_abilities.iter() {
+        let known_ability = all_known_abilities.get(*entity).unwrap();
+        if known_ability.ability_type == AbilityType::Active {
+            active_abilities.push((*entity, &known_ability));
+        }
+    }
 
-    if (key as usize) < player_abilities.len() {
+    if (key as usize) < active_abilities.len() {
         let pools = gs.ecs.read_storage::<Pools>();
         let player_pools = pools.get(*player_entity).unwrap();
-        let all_known_abilities = gs.ecs.read_storage::<KnownAbility>();
-        let known_ability_entity = player_abilities[key as usize];
-        if let Some(known_ability) = all_known_abilities.get(known_ability_entity) {
-            if player_pools.mana.current >= known_ability.mana_cost {
-                if let Some(ranged) = gs.ecs.read_storage::<Ranged>().get(known_ability_entity) {
-                    return RunState::ShowTargeting { range: ranged.range, source: known_ability_entity };
-                }
-                let mut intent = gs.ecs.write_storage::<WantsToUseAbility>();
-                intent.insert(
-                    *player_entity,
-                    WantsToUseAbility{ ability: known_ability_entity, target: None }
-                ).expect("Unable to insert intent");
-                return RunState::Ticking;
-            } else {
-                gamelog::Logger::new()
-                    .append("You don't have enough mana to cast")
-                    .ability_name(known_ability.name.clone())
-                    .append("!")
-                    .log();
-                return RunState::AwaitingInput;
+        let known_ability_entity = active_abilities[key as usize].0;
+        let known_ability = active_abilities[key as usize].1;
+        if player_pools.mana.current >= known_ability.mana_cost {
+            if let Some(ranged) = gs.ecs.read_storage::<Ranged>().get(known_ability_entity) {
+                return RunState::ShowTargeting { range: ranged.range, source: known_ability_entity };
             }
+            let mut intent = gs.ecs.write_storage::<WantsToUseAbility>();
+            intent.insert(
+                *player_entity,
+                WantsToUseAbility{ ability: known_ability_entity, target: None }
+            ).expect("Unable to insert intent");
+            return RunState::Ticking;
+        } else {
+            gamelog::Logger::new()
+                .append("You don't have enough mana to cast")
+                .ability_name(known_ability.name.clone())
+                .append("!")
+                .log();
+            return RunState::AwaitingInput;
         }
     }
     RunState::Ticking
