@@ -2,8 +2,7 @@ use specs::prelude::*;
 use crate::raws::{self, find_ability_entity_by_name, parse_particle, parse_particle_line};
 use crate::{apply_effects, Ability, AreaOfEffect, Block, Confusion, Damage, DamageOverTime, Dodge, Duration, ExtraDamage, Food, Fortress, 
     FrostShield, Healing, KnownAbilities, KnownAbility, MagicMapping, Rage, Ranged, RestoresMana, RunState, SelfDamage, SingleActivation, 
-    Slow, SpawnParticleBurst, SpawnParticleLine, StatusEffectChanged, Stun, TeachesAbility, TownPortal, WantsToLearnAbility, WantsToLevelAbility,
-    StatusEffect};
+    Slow, SpawnParticleBurst, SpawnParticleLine, Stun, TeachesAbility, TownPortal, WantsToLearnAbility, WantsToLevelAbility};
 
 pub struct LearnAbilitySystem {}
 
@@ -84,8 +83,6 @@ impl<'a> System<'a> for LevelAbilitySystem {
         WriteStorage<'a, Slow>,
         WriteStorage<'a, SpawnParticleLine>,
         WriteStorage<'a, SpawnParticleBurst>,
-        WriteStorage<'a, StatusEffect>,
-        WriteStorage<'a, StatusEffectChanged>,
         ReadExpect<'a, RunState>
     );
 
@@ -93,8 +90,7 @@ impl<'a> System<'a> for LevelAbilitySystem {
         let (entities, abilities, mut known_ability_lists, mut known_abilities, mut wants_level,
             mut ranged, mut damage, mut extra_damage, mut self_damage, mut aoe, mut confusion,
             mut duration, mut stun, mut dot, mut rage, mut blocks, mut fortress, mut frost_shield,
-            mut dodges, mut healing, mut slow, mut particle_line, mut particle_burst,
-            mut status_effects, mut dirty_statuses, runstate) = data;
+            mut dodges, mut healing, mut slow, mut particle_line, mut particle_burst, runstate) = data;
 
         if wants_level.count() < 1 { return; }
         if *runstate != RunState::Ticking { return; }
