@@ -1067,11 +1067,6 @@ where
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct ExtraDamage {
-    pub damage: String
-}
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct SelfDamage {
     pub damage: String
 }

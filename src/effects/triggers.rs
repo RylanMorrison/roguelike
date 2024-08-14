@@ -1,7 +1,9 @@
 use rltk::RGB;
 use specs::prelude::*;
 use super::*;
-use crate::{determine_roll, gamelog, raws::{self, find_ability_entity}, Ability, Attributes, Chest, Confusion, Consumable, Damage, DamageOverTime, Duration, Food, Fortress, FrostShield, Healing, Item, KnownAbilities, KnownAbility, LootTable, MagicMapping, Map, Name, Pools, Rage, RestoresMana, RunState, SelfDamage, SingleActivation, Skills, Slow, SpawnParticleBurst, SpawnParticleLine, Stun, TeachesAbility, TeleportTo, TownPortal};
+use crate::{determine_roll, gamelog, raws, Attributes, Chest, Confusion, Consumable, Damage, DamageOverTime, Duration, Food, Fortress, 
+    FrostShield, Healing, Item, KnownAbility, LootTable, MagicMapping, Map, Name, Pools, Rage, RestoresMana, RunState, SelfDamage, 
+    SingleActivation, Skills, Slow, SpawnParticleBurst, SpawnParticleLine, Stun, TeleportTo, TownPortal};
 
 pub fn item_trigger(ecs: &mut World, creator: Option<Entity>, item_entity: Entity, targets: &Targets) {
     // check charges
@@ -45,6 +47,23 @@ pub fn ability_trigger(ecs: &mut World, creator: Option<Entity>, known_ability_e
         if let Some(known_ability) = all_known_abilities.get(known_ability_entity) {
             let mut pools = ecs.write_storage::<Pools>();
             if let Some(pool) = pools.get_mut(caster) {
+                let self_damages = ecs.read_storage::<SelfDamage>();
+                if let Some(damage) = self_damages.get(known_ability_entity) {
+                    if !pool.god_mode {
+                        let amount = determine_roll(&damage.damage);
+                        pool.hit_points.current -= amount;
+
+                        let names = ecs.read_storage::<Name>();
+                        gamelog::Logger::new()
+                            .character_name(&names.get(creator.unwrap()).unwrap().name)
+                            .append("deals")
+                            .damage(amount)
+                            .append("damage to themself from using")
+                            .ability_name(&known_ability.name)
+                            .log();
+                    }
+                    did_something = true;
+                }
                 if known_ability.mana_cost <= pool.mana.current {
                     if !pool.god_mode {
                         pool.mana.current -= known_ability.mana_cost;
@@ -163,23 +182,6 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
             }
         }
         add_effect(creator, EffectType::Damage{ amount, hits_self: false }, targets.clone());
-        did_something = true;
-    }
-
-    // self damage
-    if let Some(damage) = ecs.read_storage::<SelfDamage>().get(entity) {
-        let amount = determine_roll(&damage.damage);
-        add_effect(creator, EffectType::Damage { amount, hits_self: true }, targets.clone());
-
-        let names = ecs.read_storage::<Name>();
-        gamelog::Logger::new()
-            .character_name(&names.get(creator.unwrap()).unwrap().name)
-            .append("deals")
-            .damage(amount)
-            .append("to themself from")
-            .ability_name(&names.get(entity).unwrap().name)
-            .log();
-
         did_something = true;
     }
 

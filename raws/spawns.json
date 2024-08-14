@@ -178,13 +178,13 @@
     "abilities": [
         {
             "name": "Heavy Strike",
-            "description": "Hit an enemy with all your strength dealing extra damage and stunning them.",
+            "description": "Hit an enemy with all your strength dealing heavy damage and stunning them.",
             "levels": {
                 "1": {
                     "mana_cost": 2,
                     "effects": {
                         "ranged": "1",
-                        "extra_damage": "1d8",
+                        "damage": "2d10+2",
                         "stun": "2",
                         "particle": "#;#ff0000;200.0"
                     }
@@ -193,7 +193,7 @@
                     "mana_cost": 4,
                     "effects": {
                         "ranged": "1",
-                        "extra_damage": "2d8",
+                        "damage": "2d12+4",
                         "stun": "4",
                         "particle": "#;#ff0000;200.0"
                     }
@@ -203,13 +203,13 @@
         },
         {
             "name": "Cleave",
-            "description": "Sweep your weapon dealing damage to all enemies around you.",
+            "description": "Sweep your weapon dealing damage to all enemies in a small area.",
             "levels": {
                 "1": {
                     "mana_cost": 4,
                     "effects": {
                         "ranged": "1",
-                        "extra_damage": "1d4",
+                        "damage": "2d6+2",
                         "area_of_effect": "1",
                         "particle": "‼;#ff0000;200.0"
                     }
@@ -218,7 +218,7 @@
                     "mana_cost": 6,
                     "effects": {
                         "ranged": "1",
-                        "extra_damage": "2d6",
+                        "damage": "2d8+4",
                         "area_of_effect": "2",
                         "particle": "‼;#ff0000;200.0"
                     }
@@ -228,13 +228,11 @@
         },
         {
             "name": "Rage",
-            "description": "A mighty battlecry dealing damage to yourself and around you. Your melee capabilities are boosted for a short duration ",
+            "description": "A mighty battlecry dealing damage to yourself. Your melee capabilities are boosted for a short duration ",
             "levels": {
                 "1": {
                     "mana_cost": 10,
                     "effects": {
-                        "damage": "2d6",
-                        "area_of_effect": "4",
                         "self_damage": "1d10",
                         "rage": "10"
                     }
@@ -573,7 +571,7 @@
                     "mana_cost": 4,
                     "effects": {
                         "ranged": "8",
-                        "extra_damage": "1d4",
+                        "damage": "1d6",
                         "confusion": "4",
                         "slow": "8",
                         "particle_line": "^;#fc1cfc;200.0"
@@ -583,7 +581,7 @@
                     "mana_cost": 8,
                     "effects": {
                         "ranged": "8",
-                        "extra_damage": "1d6",
+                        "damage": "1d8",
                         "confusion": "6",
                         "slow": "10",
                         "particle_line": "^;#fc1cfc;200.0"
@@ -600,7 +598,7 @@
                     "mana_cost": 8,
                     "effects": {
                         "ranged": "8",
-                        "extra_damage": "1d6",
+                        "damage": "2d8",
                         "area_of_effect": "3",
                         "particle": "#;#c8c8c8;200.0"
                     }
@@ -609,7 +607,7 @@
                     "mana_cost": 14,
                     "effects": {
                         "ranged": "8",
-                        "extra_damage": "1d10",
+                        "damage": "2d10+2",
                         "area_of_effect": "4",
                         "particle": "#;#c8c8c8;200.0"
                     }

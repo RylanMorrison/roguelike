@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use crate::raws::{self, find_ability_entity_by_name, parse_particle, parse_particle_line};
-use crate::{apply_effects, Ability, AreaOfEffect, Block, Confusion, Damage, DamageOverTime, Dodge, Duration, ExtraDamage, Food, Fortress, 
-    FrostShield, Healing, KnownAbilities, KnownAbility, MagicMapping, Rage, Ranged, RestoresMana, RunState, SelfDamage, SingleActivation, 
+use crate::{apply_effects, Ability, AreaOfEffect, Block, Confusion, Damage, DamageOverTime, Dodge, Duration, Food, Fortress,
+    FrostShield, Healing, KnownAbilities, KnownAbility, MagicMapping, Rage, Ranged, RestoresMana, RunState, SelfDamage, SingleActivation,
     Slow, SpawnParticleBurst, SpawnParticleLine, Stun, TeachesAbility, TownPortal, WantsToLearnAbility, WantsToLevelAbility};
 
 pub struct LearnAbilitySystem {}
@@ -67,7 +67,6 @@ impl<'a> System<'a> for LevelAbilitySystem {
         WriteStorage<'a, WantsToLevelAbility>,
         WriteStorage<'a, Ranged>,
         WriteStorage<'a, Damage>,
-        WriteStorage<'a, ExtraDamage>,
         WriteStorage<'a, SelfDamage>,
         WriteStorage<'a, AreaOfEffect>,
         WriteStorage<'a, Confusion>,
@@ -88,9 +87,9 @@ impl<'a> System<'a> for LevelAbilitySystem {
 
     fn run(&mut self, data: Self::SystemData) {
         let (entities, abilities, mut known_ability_lists, mut known_abilities, mut wants_level,
-            mut ranged, mut damage, mut extra_damage, mut self_damage, mut aoe, mut confusion,
-            mut duration, mut stun, mut dot, mut rage, mut blocks, mut fortress, mut frost_shield,
-            mut dodges, mut healing, mut slow, mut particle_line, mut particle_burst, runstate) = data;
+            mut ranged, mut damage, mut self_damage, mut aoe, mut confusion, mut duration,
+            mut stun, mut dot, mut rage, mut blocks, mut fortress, mut frost_shield, mut dodges,
+            mut healing, mut slow, mut particle_line, mut particle_burst, runstate) = data;
 
         if wants_level.count() < 1 { return; }
         if *runstate != RunState::Ticking { return; }
@@ -126,15 +125,6 @@ impl<'a> System<'a> for LevelAbilitySystem {
                         current_damage.damage = new_damage_string.clone();
                     } else {
                         damage.insert(*ability_entity, Damage{ damage: new_damage_string.clone() }).expect("Unable to insert");
-                    }
-                }
-
-                // Extra Damage
-                if let Some(new_extra_damage_string) = new_effects.get("extra_damage") {
-                    if let Some(current_extra_damage) = extra_damage.get_mut(*ability_entity) {
-                        current_extra_damage.damage = new_extra_damage_string.clone();
-                    } else {
-                        extra_damage.insert(*ability_entity, ExtraDamage{ damage: new_extra_damage_string.clone() }).expect("Unable to insert");
                     }
                 }
 

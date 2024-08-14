@@ -233,7 +233,6 @@ macro_rules! apply_effects {
                 "mana" => $eb = $eb.with(RestoresMana{ mana_amount: effect.1.parse::<i32>().unwrap() }),
                 "ranged" => $eb = $eb.with(Ranged{ range: effect.1.parse::<i32>().unwrap() }),
                 "damage" => $eb = $eb.with(Damage{ damage: effect.1.to_string() }),
-                "extra_damage" => $eb = $eb.with(ExtraDamage{ damage: effect.1.to_string() }),
                 "self_damage" => $eb = $eb.with(SelfDamage{ damage: effect.1.to_string() }),
                 "area_of_effect" => $eb = $eb.with(AreaOfEffect{ radius: effect.1.parse::<i32>().unwrap() }),
                 "confusion" => {

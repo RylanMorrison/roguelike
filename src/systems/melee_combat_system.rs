@@ -40,9 +40,8 @@ impl<'a> System<'a> for MeleeCombatSystem {
             let target_pools = pools.get(wants_melee.target).unwrap();
             let target_attributes = attributes.get(wants_melee.target).unwrap();
             let target_skills = skills.get(wants_melee.target).unwrap();
-            if attacker_pools.hit_points.current <= 0 || target_pools.hit_points.current <= 0 {
-                continue; // skip if attacker or defender are dead
-            }
+            // skip if attacker or defender are dead
+            if attacker_pools.hit_points.current <= 0 || target_pools.hit_points.current <= 0 { continue; }
 
             // default to unarmed
             let mut weapon_info = Weapon {

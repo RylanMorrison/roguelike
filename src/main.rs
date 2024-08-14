@@ -541,7 +541,6 @@ fn main() -> rltk::BError {
     gs.ecs.register::<KnownAbility>();
     gs.ecs.register::<KnownAbilities>();
     gs.ecs.register::<WantsToUseAbility>();
-    gs.ecs.register::<ExtraDamage>();
     gs.ecs.register::<SelfDamage>();
     gs.ecs.register::<Rage>();
     gs.ecs.register::<Block>();
