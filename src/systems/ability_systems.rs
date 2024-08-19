@@ -1,7 +1,8 @@
 use specs::prelude::*;
-use crate::raws::{self, find_ability_entity_by_name, parse_particle, parse_particle_line};
-use crate::{apply_effects, Ability, AreaOfEffect, Block, Confusion, Damage, DamageOverTime, Dodge, Duration, Food, Fortress,
-    FrostShield, Healing, KnownAbilities, KnownAbility, MagicMapping, Rage, Ranged, RestoresMana, RunState, SelfDamage, SingleActivation,
+use crate::raws;
+use crate::raws::{find_ability_entity_by_name, parse_particle, parse_particle_line, parse_ranged_string};
+use crate::{apply_effects, Ability, AbilityType, AreaOfEffect, Block, Confusion, Damage, DamageOverTime, Dodge, Duration, Food, Fortress, 
+    FrostShield, Healing, KnownAbilities, KnownAbility, MagicMapping, Rage, Ranged, RestoresMana, RunState, SelfDamage, SingleActivation, 
     Slow, SpawnParticleBurst, SpawnParticleLine, Stun, TeachesAbility, TownPortal, WantsToLearnAbility, WantsToLevelAbility};
 
 pub struct LearnAbilitySystem {}
@@ -28,26 +29,28 @@ impl<'a> System<'a> for LearnAbilitySystem {
         for (entity, learn) in (&entities, &wants_learn).join() {
             let ability_entity = find_ability_entity_by_name(&learn.ability_name, &abilities, &entities).unwrap();
             let ability = abilities.get(ability_entity).unwrap();
-            let effects = &ability.levels[&1].effects;
+            let effects = &ability.levels[&learn.level].effects;
 
             let mut lb = lazy.create_entity(&entities);
-            apply_effects!(effects, lb);
+            apply_effects!(raws, effects, lb);
 
             let known_ability_list = &mut known_ability_lists.get_mut(entity).unwrap().abilities;
             let known_ability_entity = lb.with(KnownAbility{
                 name: ability.name.clone(),
-                level: 1,
-                mana_cost: ability.levels[&1].mana_cost.unwrap_or(0),
+                level: learn.level,
+                mana_cost: ability.levels[&learn.level].mana_cost.unwrap_or(0),
                 ability_type: ability.ability_type.clone()
             }).build();
             known_ability_list.push(known_ability_entity);
 
-            // apply passive effects of abilities to the user
-            if let Some(dodge_chance) = effects.get("dodge") {
-                dodges.insert(entity, Dodge{ chance: dodge_chance.parse::<f32>().unwrap() }).expect("Unable to insert");
-            }
-            if let Some(block_chance) = effects.get("block") {
-                blocks.insert(entity, Block{ chance: block_chance.parse::<f32>().unwrap() }).expect("Unable to insert");
+            if ability.ability_type == AbilityType::Passive {
+                // apply passive effects of abilities to the user
+                if let Some(dodge_chance) = effects.get("dodge") {
+                    dodges.insert(entity, Dodge{ chance: dodge_chance.parse::<f32>().unwrap() }).expect("Unable to insert");
+                }
+                if let Some(block_chance) = effects.get("block") {
+                    blocks.insert(entity, Block{ chance: block_chance.parse::<f32>().unwrap() }).expect("Unable to insert");
+                }
             }
         }
 
@@ -111,11 +114,12 @@ impl<'a> System<'a> for LevelAbilitySystem {
 
                 // Ranged
                 if let Some(new_range_string) = new_effects.get("ranged") {
-                    let new_range = new_range_string.parse::<i32>().unwrap();
+                    let (new_min, new_max) = parse_ranged_string(new_range_string.clone());
                     if let Some(current_ranged) = ranged.get_mut(*ability_entity) {
-                        current_ranged.range = new_range;
+                        current_ranged.min_range = new_min;
+                        current_ranged.max_range = new_max;
                     } else {
-                        ranged.insert(*ability_entity, Ranged{ range: new_range }).expect("Unable to insert");
+                        ranged.insert(*ability_entity, Ranged{ min_range: new_min, max_range: new_max }).expect("Unable to insert");
                     }
                 }
 

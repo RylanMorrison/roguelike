@@ -95,7 +95,7 @@ impl<'a> System<'a> for LevelUpCharacterSystem {
                 }
 
                 if let Some(learn_ability) = &current_passive.active_level().learn_ability {
-                    learn_abilities.insert(*player_entity, WantsToLearnAbility{ ability_name: learn_ability.clone() }).expect("Unable to insert");
+                    learn_abilities.insert(*player_entity, WantsToLearnAbility{ ability_name: learn_ability.clone(), level: 1 }).expect("Unable to insert");
                 }
 
                 if let Some(level_ability) = &current_passive.active_level().level_ability {

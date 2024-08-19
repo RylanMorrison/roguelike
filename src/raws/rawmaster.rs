@@ -223,15 +223,34 @@ pub fn spawn_named_entity(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spa
     None
 }
 
+pub fn parse_ranged_string(string: String) -> (f32, f32) {
+    let min_range: f32;
+    let max_range: f32;
+
+    if string.contains(':') {
+        let mut iter = string.splitn(2, ':');
+        min_range = iter.next().unwrap().parse::<f32>().unwrap();
+        max_range = iter.next().unwrap().parse::<f32>().unwrap();
+    } else {
+        min_range = 0.0;
+        max_range = string.parse::<f32>().unwrap();
+    }
+
+    (min_range, max_range)
+}
+
 #[macro_export]
 macro_rules! apply_effects {
-    ( $effects:expr, $eb:expr ) => {
+    ( $self:ident, $effects:expr, $eb:expr ) => {
         for effect in $effects.iter() {
             let effect_name = effect.0.as_str();
             match effect_name {
                 "healing" => $eb = $eb.with(Healing{ heal_amount: effect.1.parse::<i32>().unwrap() }),
                 "mana" => $eb = $eb.with(RestoresMana{ mana_amount: effect.1.parse::<i32>().unwrap() }),
-                "ranged" => $eb = $eb.with(Ranged{ range: effect.1.parse::<i32>().unwrap() }),
+                "ranged" => { // min_range:max_range
+                    let (min_range, max_range) = $self::parse_ranged_string(effect.1.to_string()); // ????
+                    $eb = $eb.with(Ranged{ min_range, max_range });
+                }
                 "damage" => $eb = $eb.with(Damage{ damage: effect.1.to_string() }),
                 "self_damage" => $eb = $eb.with(SelfDamage{ damage: effect.1.to_string() }),
                 "area_of_effect" => $eb = $eb.with(AreaOfEffect{ radius: effect.1.parse::<i32>().unwrap() }),
@@ -341,7 +360,7 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         };
         eb = eb.with(wpn);
         if let Some(proc_effects) = &weapon.proc_effects {
-            apply_effects!(proc_effects, eb);
+            apply_effects!(self, proc_effects, eb);
         }
     }
     if let Some(wearable) = &item_template.wearable {
@@ -354,7 +373,7 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
     if let Some(consumable) = &item_template.consumable {
         let max_charges = consumable.charges.unwrap_or(1);
         eb = eb.with(Consumable{ max_charges, charges: max_charges });
-        apply_effects!(consumable.effects, eb);
+        apply_effects!(self, consumable.effects, eb);
     }
 
     // attribute bonuses
@@ -387,6 +406,7 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
 
 pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnType) -> Option<Entity> {
     let mob_template = &raws.raws.mobs[raws.mob_index[key]];
+
     let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
 
     // spawn in the specified location
@@ -507,22 +527,6 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
         eb = eb.with(nature);
     }
 
-    // special abilities
-    if let Some(ability_list) = &mob_template.abilities {
-        let mut special_abilities = SpecialAbilities{ abilities: Vec::new() };
-        for ability in ability_list.iter() {
-            special_abilities.abilities.push(
-                SpecialAbility{
-                    name: ability.ability.clone(),
-                    chance: ability.chance,
-                    range: ability.range,
-                    min_range: ability.min_range
-                }
-            );
-        }
-        eb = eb.with(special_abilities);
-    }
-
     // visibility
     eb = eb.with(Viewshed{ 
         visible_tiles: Vec::new(),
@@ -558,6 +562,8 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
         eb = eb.with(Boss{})
     }
 
+    eb = eb.with(KnownAbilities{ abilities: EntityVec::new() });
+
     let new_mob = eb.build();
 
     // equipment
@@ -566,6 +572,18 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
             spawn_named_entity(raws, ecs, tag, SpawnType::Equipped{ by: new_mob });
         }
     }
+
+    // learn abilities
+    let mut wants_learn = ecs.write_storage::<WantsToLearnAbility>();
+    if let Some(ability_list) = &mob_template.abilities {
+        for ability in ability_list.iter() {
+            wants_learn.insert(
+                new_mob,
+                WantsToLearnAbility{ ability_name: ability.name.clone(), level: ability.level.unwrap_or(1) }
+            ).expect("Unable to insert");
+        }
+    }
+
     Some(new_mob)
 }
 
@@ -594,7 +612,7 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
     }
     if let Some(entry_trigger) = &prop_template.entry_trigger {
         eb = eb.with(EntryTrigger{});
-        apply_effects!(entry_trigger.effects, eb);
+        apply_effects!(self, entry_trigger.effects, eb);
     }
     if let Some(light) = &prop_template.light {
         eb = eb.with(LightSource{ range: light.range, colour: RGB::from_hex(&light.colour).expect("Bad colour") });

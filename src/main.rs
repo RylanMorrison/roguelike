@@ -39,7 +39,7 @@ pub enum RunState {
     ShowInventory,
     ShowUnequipItem,
     ShowDropItem,
-    ShowTargeting { range : i32, source : Entity},
+    ShowTargeting { min_range : f32, max_range: f32, source : Entity},
     MainMenu { menu_selection : gui::MainMenuSelection },
     CharacterClassSelectMenu { menu_selection: gui::CharacterClassSelection },
     SaveGame,
@@ -191,7 +191,7 @@ impl GameState for State {
                         let is_ranged = self.ecs.read_storage::<Ranged>();
                         let is_item_ranged = is_ranged.get(item_entity);
                         if let Some(is_item_ranged) = is_item_ranged {
-                            newrunstate = RunState::ShowTargeting{ range: is_item_ranged.range, source: item_entity };
+                            newrunstate = RunState::ShowTargeting{ min_range: is_item_ranged.min_range, max_range: is_item_ranged.max_range, source: item_entity };
                         } else {
                             let mut intent = self.ecs.write_storage::<WantsToUseItem>();
                             intent.insert(*self.ecs.fetch::<Entity>(), WantsToUseItem{ item: item_entity, target: None }).expect("Unable to insert intent");
@@ -226,8 +226,8 @@ impl GameState for State {
                     }
                 } 
             }
-            RunState::ShowTargeting{range, source} => {
-                let result = gui::ranged_target(self, ctx, range);
+            RunState::ShowTargeting{min_range, max_range, source} => {
+                let result = gui::ranged_target(self, ctx, min_range, max_range);
                 match result.0 {
                     gui::ItemMenuResult::Cancel => newrunstate = RunState::AwaitingInput,
                     gui::ItemMenuResult::NoResponse => {}
@@ -525,7 +525,6 @@ fn main() -> rltk::BError {
     gs.ecs.register::<TeachesAbility>();
     gs.ecs.register::<Slow>();
     gs.ecs.register::<DamageOverTime>();
-    gs.ecs.register::<SpecialAbilities>();
     gs.ecs.register::<TileSize>();
     gs.ecs.register::<PendingCharacterLevelUp>();
     gs.ecs.register::<ItemSets>();

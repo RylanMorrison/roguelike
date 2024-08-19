@@ -223,7 +223,7 @@ fn use_consumable_hotkey(gs: &mut State, key: i32) -> RunState {
 
     if (key as usize) < carried_consumables.len() {
         if let Some(ranged) = gs.ecs.read_storage::<Ranged>().get(carried_consumables[key as usize]) {
-            return RunState::ShowTargeting { range: ranged.range, source: carried_consumables[key as usize] };
+            return RunState::ShowTargeting { min_range: ranged.min_range, max_range: ranged.max_range, source: carried_consumables[key as usize] };
         }
         let mut intent = gs.ecs.write_storage::<WantsToUseItem>();
         intent.insert(
@@ -255,7 +255,7 @@ fn use_ability_hotkey(gs: &mut State, key: i32) -> RunState {
         let known_ability = active_abilities[key as usize].1;
         if player_pools.mana.current >= known_ability.mana_cost {
             if let Some(ranged) = gs.ecs.read_storage::<Ranged>().get(known_ability_entity) {
-                return RunState::ShowTargeting { range: ranged.range, source: known_ability_entity };
+                return RunState::ShowTargeting { min_range: ranged.min_range, max_range: ranged.max_range, source: known_ability_entity };
             }
             let mut intent = gs.ecs.write_storage::<WantsToUseAbility>();
             intent.insert(

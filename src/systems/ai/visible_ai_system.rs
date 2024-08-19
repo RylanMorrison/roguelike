@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::{raws, spatial, Chasing, Confusion, Equipped, Faction, Map, MyTurn, Position, SpecialAbilities, Ability, Viewshed, WantsToApproach, WantsToUseAbility, WantsToFlee, WantsToShoot, Weapon};
+use crate::{spatial, AbilityType, Chasing, Confusion, Equipped, Faction, KnownAbilities, KnownAbility, Map, MyTurn, Position, Ranged, Viewshed, WantsToApproach, WantsToFlee, WantsToShoot, WantsToUseAbility, Weapon};
 use crate::raws::{Reaction, faction_reaction, RAWS};
 use crate::rng;
 
@@ -17,9 +17,10 @@ impl<'a> System<'a> for VisibleAI {
         ReadExpect<'a, Entity>,
         ReadStorage<'a, Viewshed>,
         WriteStorage<'a, Chasing>,
-        ReadStorage<'a, SpecialAbilities>,
+        ReadStorage<'a, KnownAbility>,
+        ReadStorage<'a, KnownAbilities>,
         WriteStorage<'a, WantsToUseAbility>,
-        ReadStorage<'a, Ability>,
+        ReadStorage<'a, Ranged>,
         ReadStorage<'a, Confusion>,
         ReadStorage<'a, Equipped>,
         ReadStorage<'a, Weapon>,
@@ -29,9 +30,9 @@ impl<'a> System<'a> for VisibleAI {
 
     fn run(&mut self, data: Self::SystemData) {
         let (turns, factions, positions, map, mut want_approach, mut want_flee,
-            entities, player, viewsheds, mut chasing, special_abilities,
-            mut wants_cast, abilities, confused, equipped,
-            weapons, mut wants_shoot) = data;
+            entities, player, viewsheds, mut chasing, known_abilities,
+            known_ability_lists, mut wants_cast, ranged, confused,
+            equipped, weapons, mut wants_shoot) = data;
 
         for (entity, _turn, my_faction, pos, viewshed) in (&entities, &turns, &factions, &positions, &viewsheds).join() {
             if entity != *player {
@@ -49,7 +50,7 @@ impl<'a> System<'a> for VisibleAI {
                 for reaction in reactions.iter_mut() {
                     if confused.get(entity).is_some() {
                         // confused entities attack everything
-                        reaction.1 = Reaction::Attack;
+                        reaction.1 = Reaction::Attack; // TODO make sure this isn't permanent
                     }
                     match reaction.1 {
                         Reaction::Attack => {
@@ -57,17 +58,35 @@ impl<'a> System<'a> for VisibleAI {
                                 rltk::Point::new(pos.x, pos.y),
                                 rltk::Point::new(reaction.0 as i32 % map.width, reaction.0 as i32 / map.width)
                             );
-                            if let Some(special_ability) = special_abilities.get(entity) {
-                                for ability in special_ability.abilities.iter() {
-                                    if range >= ability.min_range && range <= ability.range
-                                    && rng::roll_dice(1, 100) >= (ability.chance * 100.0) as i32 {
+                            if let Some(ability_entities) = known_ability_lists.get(entity) {
+                                if rng::roll_dice(1, 100) >= 50 { // TODO ability chance per ability/entity
+                                    let mut potential_abilities: Vec<Entity> = Vec::new();
+
+                                    for ability_entity in ability_entities.abilities.iter() {
+                                        let known_ability = known_abilities.get(*ability_entity).unwrap();
+                                        if known_ability.ability_type == AbilityType::Passive { continue; }
+
+                                        if let Some(ranged) = ranged.get(*ability_entity) {
+                                            if range > ranged.max_range || range < ranged.min_range { continue; }
+                                        }
+
+                                        potential_abilities.push(*ability_entity);
+                                    }
+
+                                    if potential_abilities.len() >= 1 {
+                                        // pick a single random ability to use
+                                        let random_ability: Entity = *potential_abilities.get(
+                                            rng::roll_dice(0, potential_abilities.len() as i32 - 1) as usize
+                                        ).unwrap();
+
                                         wants_cast.insert(
                                             entity,
                                             WantsToUseAbility{
-                                                ability: raws::find_ability_entity_by_name(&ability.name, &abilities, &entities).unwrap(),
+                                                ability: random_ability,
                                                 target: Some(rltk::Point::new(reaction.0 as i32 % map.width, reaction.0 as i32 / map.width))
                                             }
                                         ).expect("Unable to insert");
+
                                         done = true;
                                     }
                                 }

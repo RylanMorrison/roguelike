@@ -54,17 +54,17 @@ pub fn save_game(ecs : &mut World) {
         let writer = File::create("./savegame.json").unwrap();
         let mut serializer = serde_json::Serializer::new(writer);
         serialize_individually!(ecs, serializer, data, Position, Renderable, Player, Viewshed, Name,
-            BlocksTile, Pools, WantsToMelee, Item, Consumable, Ranged, Damage, AreaOfEffect, 
+            BlocksTile, Pools, WantsToMelee, Item, Consumable, Ranged, Damage, AreaOfEffect,
             Confusion, Healing, InBackpack, WantsToPickupItem, WantsToUseItem, SingleActivation,
             WantsToDropItem, SerializationHelper, Equippable, Weapon, Wearable, WantsToUnequipItem,
-            ParticleLifetime, MagicMapping, HungerClock, BlocksVisibility, Door, EntityMoved, Quips, 
-            Attributes, Skills, NaturalAttackDefence, LootTable, OtherLevelPosition, DMSerializationHelper, 
+            ParticleLifetime, MagicMapping, HungerClock, BlocksVisibility, Door, EntityMoved, Quips,
+            Attributes, Skills, NaturalAttackDefence, LootTable, OtherLevelPosition, DMSerializationHelper,
             LightSource, Initiative, MyTurn, Faction, WantsToApproach, WantsToFlee, MoveMode, Chasing,
             EquipmentChanged, Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport,
             Food, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, Duration, StatusEffect,
-            KnownAbilities, KnownAbility, AttributeBonus, WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime,
-            SpecialAbilities, TileSize, PendingCharacterLevelUp, SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot,
-            Stun, StatusEffectChanged, Boss, Chest, CharacterClass, SelfDamage, Rage, Block, Fortress,
+            KnownAbilities, KnownAbility, AttributeBonus, WantsToUseAbility, RestoresMana, TeachesAbility,
+            Slow, DamageOverTime, TileSize, PendingCharacterLevelUp, SkillBonus, ItemSets, PartOfSet, Target,
+            WantsToShoot, Stun, StatusEffectChanged, Boss, Chest, CharacterClass, SelfDamage, Rage, Block, Fortress,
             FrostShield, Dodge, WantsToLearnAbility, WantsToLevelAbility
         );
     }
@@ -111,17 +111,17 @@ pub fn load_game(ecs: &mut World) {
     {
         let mut d = (&mut ecs.entities(), &mut ecs.write_storage::<SimpleMarker<SerializeMe>>(), &mut ecs.write_resource::<SimpleMarkerAllocator<SerializeMe>>());
         deserialize_individually!(ecs, de, d, Position, Renderable, Player, Viewshed, Name,
-            BlocksTile, Pools, WantsToMelee, Item, Consumable, Ranged, Damage, AreaOfEffect, 
+            BlocksTile, Pools, WantsToMelee, Item, Consumable, Ranged, Damage, AreaOfEffect,
             Confusion, Healing, InBackpack, WantsToPickupItem, WantsToUseItem, SingleActivation,
             WantsToDropItem, SerializationHelper, Equippable, Weapon, Wearable, WantsToUnequipItem,
-            ParticleLifetime, MagicMapping, HungerClock, BlocksVisibility, Door, EntityMoved, Quips, 
-            Attributes, Skills, NaturalAttackDefence, LootTable, OtherLevelPosition, DMSerializationHelper, 
+            ParticleLifetime, MagicMapping, HungerClock, BlocksVisibility, Door, EntityMoved, Quips,
+            Attributes, Skills, NaturalAttackDefence, LootTable, OtherLevelPosition, DMSerializationHelper,
             LightSource, Initiative, MyTurn, Faction, WantsToApproach, WantsToFlee, MoveMode, Chasing,
             EquipmentChanged, Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport,
             Food, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, Duration, StatusEffect,
-            KnownAbilities, KnownAbility, Ability, WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime,
-            SpecialAbilities, TileSize, PendingCharacterLevelUp, SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot,
-            Stun, StatusEffectChanged, Boss, Chest, CharacterClass, SelfDamage, Rage, Block, Fortress,
+            KnownAbilities, KnownAbility, Ability, WantsToUseAbility, RestoresMana, TeachesAbility,
+            Slow, DamageOverTime, TileSize, PendingCharacterLevelUp, SkillBonus, ItemSets, PartOfSet, Target,
+            WantsToShoot, Stun, StatusEffectChanged, Boss, Chest, CharacterClass, SelfDamage, Rage, Block, Fortress,
             FrostShield, Dodge, WantsToLearnAbility, WantsToLevelAbility
         );
     }

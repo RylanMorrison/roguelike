@@ -258,7 +258,8 @@ pub struct Consumable {
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Ranged {
-    pub range: i32
+    pub min_range: f32,
+    pub max_range: f32
 }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
@@ -806,19 +807,6 @@ pub struct DamageOverTime {
     pub damage: i32
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct SpecialAbility {
-    pub name: String,
-    pub chance: f32,
-    pub range: f32,
-    pub min_range: f32
-}
-
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct SpecialAbilities {
-    pub abilities: Vec<SpecialAbility>
-}
-
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct TileSize {
     pub x: i32,
@@ -1095,7 +1083,8 @@ pub struct Dodge {
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct WantsToLearnAbility {
-    pub ability_name: String
+    pub ability_name: String,
+    pub level: i32
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]

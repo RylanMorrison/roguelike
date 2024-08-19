@@ -55,8 +55,6 @@ pub struct MobLight {
 
 #[derive(Deserialize, Debug)]
 pub struct MobAbilityData {
-    pub ability: String,
-    pub chance: f32,
-    pub range: f32,
-    pub min_range: f32
+    pub name: String,
+    pub level: Option<i32>
 }

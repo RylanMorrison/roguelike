@@ -693,7 +693,7 @@
                 "1": {
                     "mana_cost": 4,
                     "effects": {
-                        "ranged": "6",
+                        "ranged": "3:6",
                         "slow": "10",
                         "area_of_effect": "3",
                         "duration": "5",
@@ -710,7 +710,7 @@
                 "1": {
                     "mana_cost": 6,
                     "effects": {
-                        "ranged": "6",
+                        "ranged": "2:6",
                         "particle_line" : "▓;#FFA500;400.0",
                         "damage_over_time": "4",
                         "duration": "5",
@@ -2392,7 +2392,10 @@
                     { "name" : "bite", "hit_bonus" : 1, "damage" : "1d6" }
                 ]   
             },
-            "loot_table": "Animal"
+            "loot_table": "Animal",
+            "abilities": [
+                { "name": "Web" }
+            ]
         },
         {
             "name": "Kobold",
@@ -2414,7 +2417,10 @@
                 "constitution": 4
             },
             "equipped": [],
-            "loot_table": "Lesser Monster"
+            "loot_table": "Lesser Monster",
+            "abilities": [
+                { "name": "Web" }
+            ]
         },
         {
             "name": "Bandit",
@@ -2575,7 +2581,7 @@
                 ]
             },
             "abilities": [
-                { "ability": "Web", "chance": 0.2, "range": 6.0, "min_range": 3.0 }
+                { "name": "Web" }
             ]
         },
         {
@@ -2725,7 +2731,7 @@
                 "magic": 4
             },
             "abilities": [
-                { "ability": "Scorching Ray", "chance": 0.4, "range": 6.0, "min_range": 2.0 }
+                { "name": "Scorching Ray" }
             ],
             "loot_table": "Lesser Monster"
         },
@@ -2764,7 +2770,7 @@
             },
             "equipped": ["Mithril Greataxe", "Mithril Plate", "Mithril Helmet"],
             "abilities": [
-                { "ability": "Drain Soul", "chance": 0.2, "range": 6.0, "min_range": 0.0 }
+                { "name": "Drain Soul" }
             ],
             "loot_table": "Greater Monster"
         },

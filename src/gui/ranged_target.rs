@@ -4,7 +4,7 @@ use super::{ItemMenuResult, yellow, black, blue, cyan, red};
 use crate::{State, Viewshed};
 use crate::camera;
 
-pub fn ranged_target(gs : &mut State, ctx : &mut Rltk, range : i32) -> (ItemMenuResult, Option<Point>) {
+pub fn ranged_target(gs : &mut State, ctx : &mut Rltk, min_range : f32, max_range: f32) -> (ItemMenuResult, Option<Point>) {
     let (min_x, max_x, min_y, max_y) = camera::get_screen_bounds(&gs.ecs, ctx);
     let player_entity = gs.ecs.fetch::<Entity>();
     let player_pos = gs.ecs.fetch::<Point>();
@@ -19,8 +19,8 @@ pub fn ranged_target(gs : &mut State, ctx : &mut Rltk, range : i32) -> (ItemMenu
     if let Some(visible) = visible {
         // We have a viewshed
         for idx in visible.visible_tiles.iter() {
-            let distance = rltk::DistanceAlg::Pythagoras.distance2d(*player_pos, *idx);
-            if distance.round() <= range as f32 {
+            let distance = rltk::DistanceAlg::Pythagoras.distance2d(*player_pos, *idx).round();
+            if distance >= min_range && distance <= max_range {
                 let screen_x = idx.x - min_x + 1;
                 let screen_y = idx.y - min_y + 1;
                 if screen_x > 1 && screen_x < (max_x - min_x)
