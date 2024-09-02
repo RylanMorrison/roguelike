@@ -1,6 +1,6 @@
+use std::convert::Infallible;
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator, SerializeComponents, DeserializeComponents, MarkedBuilder};
-use specs::error::NoError;
 use crate::components::*;
 use std::fs::File;
 use std::path::Path;
@@ -10,7 +10,7 @@ use crate::{gamelog, spatial};
 macro_rules! serialize_individually {
     ($ecs:expr, $ser:expr, $data:expr, $( $type:ty),*) => {
         $(
-        SerializeComponents::<NoError, SimpleMarker<SerializeMe>>::serialize(
+        SerializeComponents::<Infallible, SimpleMarker<SerializeMe>>::serialize(
             &( $ecs.read_storage::<$type>(), ),
             &$data.0,
             &$data.1,
@@ -53,7 +53,6 @@ pub fn save_game(ecs : &mut World) {
 
         let writer = File::create("./savegame.json").unwrap();
         let mut serializer = serde_json::Serializer::new(writer);
-        // TODO: specs::error::NoError used by serializer is deprecated
         serialize_individually!(ecs, serializer, data, Position, Renderable, Player, Viewshed, Name,
             BlocksTile, Pools, WantsToMelee, Item, Consumable, Ranged, Damage, AreaOfEffect, 
             Confusion, Healing, InBackpack, WantsToPickupItem, WantsToUseItem, SingleActivation,
@@ -82,7 +81,7 @@ pub fn does_save_exist() -> bool {
 macro_rules! deserialize_individually {
     ($ecs:expr, $de:expr, $data:expr, $( $type:ty),*) => {
         $(
-        DeserializeComponents::<NoError, _>::deserialize(
+        DeserializeComponents::<Infallible, _>::deserialize(
             &mut ( &mut $ecs.write_storage::<$type>(), ),
             &$data.0, // entities
             &mut $data.1, // marker
@@ -111,7 +110,6 @@ pub fn load_game(ecs: &mut World) {
 
     {
         let mut d = (&mut ecs.entities(), &mut ecs.write_storage::<SimpleMarker<SerializeMe>>(), &mut ecs.write_resource::<SimpleMarkerAllocator<SerializeMe>>());
-        // TODO: specs::error::NoError used by deserializer is deprecated
         deserialize_individually!(ecs, de, d, Position, Renderable, Player, Viewshed, Name,
             BlocksTile, Pools, WantsToMelee, Item, Consumable, Ranged, Damage, AreaOfEffect, 
             Confusion, Healing, InBackpack, WantsToPickupItem, WantsToUseItem, SingleActivation,

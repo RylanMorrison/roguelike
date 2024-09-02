@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use crate::{attr_bonus, gamelog, StatusEffectChanged, AttributeBonus, Attributes, Pools, StatusEffect,
-    player_hp_at_level, mana_at_level, carry_capacity_lbs, SkillBonus, Skills, Slow, Duration, Block, Dodge};
+    player_hp_at_level, mana_at_level, carry_capacity_lbs, SkillBonus, Skills, Slow, Block, Dodge};
 use std::collections::HashMap;
 use rltk::RGB;
 
@@ -34,14 +34,13 @@ impl<'a> System<'a> for StatusEffectSystem {
         ReadStorage<'a, StatusEffect>,
         ReadStorage<'a, Slow>,
         WriteStorage<'a, Block>,
-        WriteStorage<'a, Dodge>,
-        ReadStorage<'a, Duration>
+        WriteStorage<'a, Dodge>
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (mut status_dirty, entities, mut pools, mut attributes,
             mut skills, player, attribute_bonuses, skill_bonuses,
-            statuses, slows, mut blocks, mut dodges, durations) = data;
+            statuses, slows, mut blocks, mut dodges) = data;
 
         if status_dirty.is_empty() { return; }
 

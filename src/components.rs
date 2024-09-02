@@ -1,20 +1,23 @@
 use specs::prelude::*;
 use specs_derive::*;
+/*
+    Latest specs_derive package is using old code for ConvertSaveLoad (see bottom of lib.rs in specs_derive) 
+    so can't completely switch from error::NoError to std::convert::Infallible yet
+*/
 use specs::{Entity, saveload::{ConvertSaveload, Marker}, error::NoError};
 use serde::{Serialize, Deserialize};
 use rltk::{RGB, Point, FontCharType};
 use crate::gamelog::LogFragment;
-
 use super::attr_bonus;
-use std::collections::{HashMap, BTreeMap};
+use std::{collections::{BTreeMap, HashMap}, convert::Infallible};
 
-#[derive(Component, ConvertSaveload, Clone)]
+#[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Position {
     pub x: i32,
     pub y: i32,
 }
 
-#[derive(Component, ConvertSaveload, Clone)]
+#[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Renderable {
     pub glyph: FontCharType,
     pub fg: RGB,
@@ -25,14 +28,14 @@ pub struct Renderable {
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Player {}
 
-#[derive(Component, ConvertSaveload, Clone)]
+#[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Viewshed {
     pub visible_tiles: Vec<Point>,
     pub range: i32,
     pub dirty: bool
 }
 
-#[derive(Component, ConvertSaveload, Clone, Debug)]
+#[derive(Component, Serialize, Deserialize, Clone, Debug)]
 pub struct Name {
     pub name: String
 }
@@ -54,7 +57,7 @@ where
     for<'de> M: Deserialize<'de>,
 {
     type Data = WantsToMeleeData<M>;
-    type Error = NoError;
+    type Error = Infallible;
 
     fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
     where
@@ -105,7 +108,7 @@ pub enum ItemQuality { Damaged, Worn, Improved, Exceptional }
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct MagicItem {}
 
-#[derive(Component, ConvertSaveload, Clone)]
+#[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Healing {
     pub heal_amount: i32
 }
@@ -124,7 +127,7 @@ where
     for<'de> M: Deserialize<'de>,
 {
     type Data = InBackpackData<M>;
-    type Error = NoError;
+    type Error = Infallible;
 
     fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
     where
@@ -158,7 +161,7 @@ where
     for<'de> M: Deserialize<'de>,
 {
     type Data = WantsToPickupItemData<M>;
-    type Error = NoError;
+    type Error = Infallible;
 
     fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
     where
@@ -194,7 +197,7 @@ where
     for<'de> M: Deserialize<'de>,
 {
     type Data = WantsToUseItemData<M>;
-    type Error = NoError;
+    type Error = Infallible;
 
     fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
     where
@@ -228,7 +231,7 @@ where
     for<'de> M: Deserialize<'de>,
 {
     type Data = WantsToDropItemData<M>;
-    type Error = NoError;
+    type Error = Infallible;
 
     fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
     where
@@ -253,17 +256,17 @@ pub struct Consumable {
     pub charges: i32
 }
 
-#[derive(Component, ConvertSaveload, Clone)]
+#[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Ranged {
     pub range: i32
 }
 
-#[derive(Component, Deserialize, Serialize, Clone)]
+#[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Damage {
     pub damage: String
 }
 
-#[derive(Component, ConvertSaveload, Clone)]
+#[derive(Component, Serialize, Deserialize, Clone)]
 pub struct AreaOfEffect {
     pub radius: i32
 }
@@ -318,7 +321,7 @@ where
     for<'de> M: Deserialize<'de>,
 {
     type Data = EquippedData<M>;
-    type Error = NoError;
+    type Error = Infallible;
 
     fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
     where
@@ -371,7 +374,7 @@ where
     for<'de> M: Deserialize<'de>,
 {
     type Data = WantsToUnequipItemData<M>;
-    type Error = NoError;
+    type Error = Infallible;
 
     fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
     where
@@ -607,7 +610,7 @@ where
     for<'de> M: Deserialize<'de>,
 {
     type Data = ChasingData<M>;
-    type Error = NoError;
+    type Error = Infallible;
 
     fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
     where
@@ -764,7 +767,7 @@ where
     for<'de> M: Deserialize<'de>,
 {
     type Data = StatusEffectData<M>;
-    type Error = NoError;
+    type Error = Infallible;
 
     fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
     where
@@ -816,7 +819,7 @@ pub struct SpecialAbilities {
     pub abilities: Vec<SpecialAbility>
 }
 
-#[derive(Component, ConvertSaveload, Clone)]
+#[derive(Component, Serialize, Deserialize, Clone)]
 pub struct TileSize {
     pub x: i32,
     pub y: i32
@@ -866,7 +869,7 @@ where
     for<'de> M: Deserialize<'de>,
 {
     type Data = WantsToShootData<M>;
-    type Error = NoError;
+    type Error = Infallible;
 
     fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
     where
@@ -1046,7 +1049,7 @@ where
     for<'de> M: Deserialize<'de>,
 {
     type Data = WantsToUseAbilityData<M>;
-    type Error = NoError;
+    type Error = Infallible;
 
     fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
     where

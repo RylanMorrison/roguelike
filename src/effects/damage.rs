@@ -1,6 +1,6 @@
 use specs::{prelude::*, saveload::SimpleMarker, saveload::MarkedBuilder};
 use super::*;
-use crate::components::{Pools, StatusEffect, StatusEffectChanged, DamageOverTime, Duration, Name, Item, Dodge, Block};
+use crate::components::{Pools, StatusEffect, StatusEffectChanged, DamageOverTime, Duration, Name, Item};
 use crate::{gamelog, player_xp_for_level, KnownAbility, Map, Player};
 use crate::{spatial, SerializeMe, RunState};
 use crate::player;

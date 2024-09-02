@@ -3,7 +3,7 @@ use specs::prelude::*;
 use std::cmp::{max, min};
 
 use crate::{spatial, gamelog, InBackpack, WantsToUseItem};
-use crate::raws::{faction_reaction, find_ability_entity, Reaction, RAWS};
+use crate::raws::{faction_reaction, Reaction, RAWS};
 use crate::effects::{add_effect, EffectType, Targets};
 use crate::rng;
 
@@ -12,7 +12,7 @@ use crate::{Position, Player, Viewshed, State, Map, RunState, Item,
     HungerState, HungerClock, Door, BlocksVisibility, BlocksTile, Renderable, EntityMoved,
     Consumable, Ranged, Faction, Vendor, gui::VendorMode, KnownAbilities, WantsToUseAbility,
     CharacterClass, PendingCharacterLevelUp, Equipped, Weapon, Target, WantsToShoot, Name,
-    Chest, KnownAbility, AbilityType, EntityVec};
+    Chest, KnownAbility, AbilityType};
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
     let mut result = RunState::AwaitingInput;

@@ -770,7 +770,6 @@ pub fn find_ability_entity_by_name(name: &str, abilities: &ReadStorage::<Ability
 }
 
 pub fn find_ability_entity(ecs: &World, name: &str) -> Option<Entity> {
-    let names = ecs.read_storage::<Name>();
     let abilities = ecs.read_storage::<Ability>();
     let entities = ecs.entities();
 

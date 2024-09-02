@@ -52,7 +52,6 @@ impl<'a> System<'a> for RangedCombatSystem {
                     glyph: rltk::to_cp437('*'),
                     fg: RGB::named(rltk::CYAN), 
                     bg: RGB::named(rltk::BLACK), 
-                    lifespan: 300.0, 
                     speed: 50.0, 
                     path: rltk::line2d(
                         rltk::LineAlg::Bresenham, 

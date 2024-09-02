@@ -31,7 +31,7 @@ pub enum EffectType {
     Mana { amount: i32 },
     Bloodstain,
     Particle { glyph: FontCharType, fg: RGB, bg: RGB, lifespan: f32 },
-    ParticleProjectile { glyph: FontCharType, fg: RGB, bg: RGB, lifespan: f32, speed: f32, path: Vec<Point> },
+    ParticleProjectile { glyph: FontCharType, fg: RGB, bg: RGB, speed: f32, path: Vec<Point> },
     EntityDeath,
     ItemUse { item: Entity },
     WellFed,
