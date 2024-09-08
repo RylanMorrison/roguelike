@@ -2392,10 +2392,7 @@
                     { "name" : "bite", "hit_bonus" : 1, "damage" : "1d6" }
                 ]   
             },
-            "loot_table": "Animal",
-            "abilities": [
-                { "name": "Web" }
-            ]
+            "loot_table": "Animal"
         },
         {
             "name": "Kobold",
@@ -2417,10 +2414,7 @@
                 "constitution": 4
             },
             "equipped": [],
-            "loot_table": "Lesser Monster",
-            "abilities": [
-                { "name": "Web" }
-            ]
+            "loot_table": "Lesser Monster"
         },
         {
             "name": "Bandit",

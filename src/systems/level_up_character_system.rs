@@ -73,12 +73,6 @@ impl<'a> System<'a> for LevelUpCharacterSystem {
                 );
                 player_pools.mana.current = player_pools.mana.max;
 
-                if player_pools.total_weight > carry_capacity_lbs(&player_attributes.strength) {
-                    // overburdened
-                    player_pools.total_initiative_penalty += 4.0;
-                    gamelog::Logger::new().colour(RGB::named(rltk::ORANGE)).append("You are overburdened!").log();
-                }
-
                 if let Some(skill_bonus) = &current_passive.active_level().skill_bonus {
                     if let Some(melee) = skill_bonus.melee {
                         player_skills.melee.base += melee;

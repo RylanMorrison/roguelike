@@ -51,7 +51,7 @@ fn draw_stats(draw_batch: &mut DrawBatch, player_pools: &Pools) {
     draw_batch.print_color(Point::new(70, 16), "Base Damage:", ColorPair::new(light_gray(), black()));
     draw_batch.print_color(Point::new(87, 16), player_pools.base_damage.clone(), ColorPair::new(white(), black()));
 
-    draw_batch.print_color(Point::new(70, 19), &format!("Initiative Penalty: {:.0}", player_pools.total_initiative_penalty), ColorPair::new(white(), black()));
+    draw_batch.print_color(Point::new(70, 19), &format!("Initiative Penalty: {:.0}", player_pools.initiative_penalty.total()), ColorPair::new(white(), black()));
     
     draw_batch.print_color(Point::new(70, 20), &format!("Gold: {}", player_pools.gold), ColorPair::new(gold(), black()));
 }

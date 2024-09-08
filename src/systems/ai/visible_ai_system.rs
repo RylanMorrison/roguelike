@@ -1,5 +1,6 @@
 use specs::prelude::*;
-use crate::{spatial, AbilityType, Chasing, Confusion, Equipped, Faction, KnownAbilities, KnownAbility, Map, MyTurn, Position, Ranged, Viewshed, WantsToApproach, WantsToFlee, WantsToShoot, WantsToUseAbility, Weapon};
+use crate::{spatial, AbilityType, Chasing, Confusion, Equipped, Faction, KnownAbilities, KnownAbility, Map, MyTurn, Position,
+    Ranged, Viewshed, WantsToApproach, WantsToFlee, WantsToShoot, WantsToUseAbility, Weapon, RunState};
 use crate::raws::{Reaction, faction_reaction, RAWS};
 use crate::rng;
 
@@ -24,15 +25,17 @@ impl<'a> System<'a> for VisibleAI {
         ReadStorage<'a, Confusion>,
         ReadStorage<'a, Equipped>,
         ReadStorage<'a, Weapon>,
-        WriteStorage<'a, WantsToShoot>
-        
+        WriteStorage<'a, WantsToShoot>,
+        ReadExpect<'a, RunState>
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (turns, factions, positions, map, mut want_approach, mut want_flee,
             entities, player, viewsheds, mut chasing, known_abilities,
             known_ability_lists, mut wants_cast, ranged, confused,
-            equipped, weapons, mut wants_shoot) = data;
+            equipped, weapons, mut wants_shoot, runstate) = data;
+
+        if RunState::Ticking != *runstate { return; }
 
         for (entity, _turn, my_faction, pos, viewshed) in (&entities, &turns, &factions, &positions, &viewsheds).join() {
             if entity != *player {
@@ -75,18 +78,17 @@ impl<'a> System<'a> for VisibleAI {
 
                                     if potential_abilities.len() >= 1 {
                                         // pick a single random ability to use
-                                        let random_ability: Entity = *potential_abilities.get(
-                                            rng::roll_dice(0, potential_abilities.len() as i32 - 1) as usize
+                                        let random_ability = potential_abilities.get(
+                                            rng::roll_dice(1, potential_abilities.len() as i32) as usize -1
                                         ).unwrap();
 
                                         wants_cast.insert(
                                             entity,
                                             WantsToUseAbility{
-                                                ability: random_ability,
+                                                ability: *random_ability,
                                                 target: Some(rltk::Point::new(reaction.0 as i32 % map.width, reaction.0 as i32 / map.width))
                                             }
                                         ).expect("Unable to insert");
-
                                         done = true;
                                     }
                                 }

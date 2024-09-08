@@ -522,11 +522,27 @@ pub struct Pools {
     pub xp: i32,
     pub level: i32,
     pub total_weight: f32,
-    pub total_initiative_penalty: f32,
+    pub initiative_penalty: InitiativePenalty,
     pub gold: i32,
     pub total_armour_class: i32,
     pub base_damage: String,
     pub god_mode: bool
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct InitiativePenalty {
+    pub gear_effect_penalty: f32,
+    pub status_effect_penalty: f32
+}
+
+impl InitiativePenalty {
+    pub fn initiale() -> InitiativePenalty {
+        InitiativePenalty { gear_effect_penalty: 0.0, status_effect_penalty: 0.0 }
+    }
+
+    pub fn total(&self) -> f32 {
+        self.gear_effect_penalty + self.status_effect_penalty
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone)]

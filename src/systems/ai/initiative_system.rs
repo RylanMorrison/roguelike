@@ -46,7 +46,7 @@ impl<'a> System<'a> for InitiativeSystem {
 
                 // apply penalties from equipment
                 if let Some(pools) = pools.get(entity) {
-                    initiative.current += f32::floor(pools.total_initiative_penalty) as i32;
+                    initiative.current += f32::floor(pools.initiative_penalty.total()) as i32;
                 }
 
                 if entity == *player {

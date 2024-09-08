@@ -98,6 +98,8 @@ impl<'a> System<'a> for StatusEffectSystem {
         // apply to pools
         for (entity, update) in to_update.iter() {
             if let Some(pool) = pools.get_mut(*entity) {
+                pool.initiative_penalty.status_effect_penalty = update.initiative_penalty;
+
                 if let Some(attr) = attributes.get_mut(*entity) {
                     attr.strength.status_effect_modifiers = update.strength;
                     attr.dexterity.status_effect_modifiers = update.dexterity;
@@ -121,7 +123,7 @@ impl<'a> System<'a> for StatusEffectSystem {
                     
                     if pool.total_weight > carry_capacity_lbs(&attr.strength) {
                         // overburdened
-                        pool.total_initiative_penalty += 4.0;
+                        pool.initiative_penalty.status_effect_penalty += 4.0;
                         if *entity == *player {
                             gamelog::Logger::new().colour(RGB::named(rltk::ORANGE)).append("You are overburdened!").log();
                         }
@@ -150,8 +152,6 @@ impl<'a> System<'a> for StatusEffectSystem {
                         blocks.insert(*entity, Block{ chance: block_chance }).expect("Unable to insert");
                     }
                 }
-
-                // TODO: initiative penalty
             }
         }
     }

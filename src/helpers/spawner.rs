@@ -9,7 +9,7 @@ use crate::{Pools, Player, Renderable, Name, Position, Viewshed,
     Map, TileType, Attributes, Skills, Pool, LightSource, Faction,
     Initiative, EquipmentChanged, Point, EntryTrigger, TeleportTo, 
     SingleActivation, mana_at_level, player_hp_at_level, StatusEffect,
-    Duration, AttributeBonus, KnownAbilities, EntityVec
+    Duration, AttributeBonus, KnownAbilities, EntityVec, InitiativePenalty
 };
 use crate::rng;
 
@@ -45,7 +45,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
             xp: 0,
             level: 1,
             total_weight: 0.0,
-            total_initiative_penalty: 0.0,
+            initiative_penalty: InitiativePenalty::initiale(),
             gold: 0,
             total_armour_class: 10,
             base_damage: "1d4".to_string(),

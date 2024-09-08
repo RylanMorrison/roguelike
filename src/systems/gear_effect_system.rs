@@ -172,7 +172,7 @@ impl<'a> System<'a> for GearEffectSystem {
         for (entity, item) in to_update.iter() {
             if let Some(pool) = pools.get_mut(*entity) {
                 pool.total_weight = item.weight;
-                pool.total_initiative_penalty = item.initiative;
+                pool.initiative_penalty.gear_effect_penalty = item.initiative;
                 pool.total_armour_class = item.total_armour_class as i32;
                 pool.base_damage = item.base_damage.clone();
 
@@ -199,7 +199,7 @@ impl<'a> System<'a> for GearEffectSystem {
                     
                     if pool.total_weight > carry_capacity_lbs(&attr.strength) {
                         // overburdened
-                        pool.total_initiative_penalty += 4.0;
+                        pool.initiative_penalty.gear_effect_penalty += 4.0;
                         if *entity == *player {
                             gamelog::Logger::new().colour(RGB::named(rltk::ORANGE)).append("You are overburdened!").log();
                         }
