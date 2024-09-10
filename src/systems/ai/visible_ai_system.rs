@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use crate::{spatial, AbilityType, Chasing, Confusion, Equipped, Faction, KnownAbilities, KnownAbility, Map, MyTurn, Position,
-    Ranged, Viewshed, WantsToApproach, WantsToFlee, WantsToShoot, WantsToUseAbility, Weapon, RunState};
+    Ranged, Viewshed, WantsToApproach, WantsToShoot, WantsToUseAbility, Weapon, RunState};
 use crate::raws::{Reaction, faction_reaction, RAWS};
 use crate::rng;
 
@@ -13,7 +13,6 @@ impl<'a> System<'a> for VisibleAI {
         ReadStorage<'a, Position>,
         ReadExpect<'a, Map>,
         WriteStorage<'a, WantsToApproach>,
-        WriteStorage<'a, WantsToFlee>,
         Entities<'a>,
         ReadExpect<'a, Entity>,
         ReadStorage<'a, Viewshed>,
@@ -30,7 +29,7 @@ impl<'a> System<'a> for VisibleAI {
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (turns, factions, positions, map, mut want_approach, mut want_flee,
+        let (turns, factions, positions, map, mut want_approach,
             entities, player, viewsheds, mut chasing, known_abilities,
             known_ability_lists, mut wants_cast, ranged, confused,
             equipped, weapons, mut wants_shoot, runstate) = data;
@@ -49,7 +48,6 @@ impl<'a> System<'a> for VisibleAI {
                 }
 
                 let mut done = false;
-                let mut flee: Vec<usize> = Vec::new();
                 for reaction in reactions.iter_mut() {
                     if confused.get(entity).is_some() {
                         // confused entities attack everything
@@ -111,14 +109,7 @@ impl<'a> System<'a> for VisibleAI {
                                 done = true;
                             }
                         }
-                        Reaction::Flee => {
-                            flee.push(reaction.0);
-                        }
                         _ => {}
-                    }
-
-                    if !done && !flee.is_empty() {
-                        want_flee.insert(entity, WantsToFlee{ indices: flee.clone() }).expect("Unable to insert");
                     }
                 }
             }

@@ -117,7 +117,6 @@ impl RawMaster {
                     response.0.clone(),
                     match response.1.as_str() {
                         "ignore" => Reaction::Ignore,
-                        "flee" => Reaction::Flee,
                         _ => Reaction::Attack
                     }
                 );

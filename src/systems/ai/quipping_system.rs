@@ -18,7 +18,7 @@ impl<'a> System<'a> for QuipSystem {
     fn run(&mut self, data: Self::SystemData) {
         let (mut quips, names, turns, player_pos, viewsheds, runstate) = data;
 
-        if *runstate != RunState::Ticking { return; }
+        if RunState::Ticking != *runstate { return; }
 
         for (quip, name, viewshed, _turn) in (&mut quips, &names, &viewsheds, &turns).join() {
             if !quip.available.is_empty() && viewshed.visible_tiles.contains(&player_pos) && rng::roll_dice(1, 6) == 1 {

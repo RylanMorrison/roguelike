@@ -28,7 +28,7 @@ impl<'a> System<'a> for InitiativeSystem {
             attributes, mut runstate, player, player_pos, pools,
             mut durations, mut dirty, statuses, dots) = data;
 
-        if *runstate != RunState::Ticking { return; }
+        if RunState::Ticking != *runstate { return; }
         turns.clear();
 
         for (entity, initiative, pos) in (&entities, &mut initiatives, &positions).join() {

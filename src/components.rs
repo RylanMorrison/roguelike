@@ -596,11 +596,6 @@ pub struct WantsToApproach {
     pub idx: i32
 }
 
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
-pub struct WantsToFlee {
-    pub indices: Vec<usize>
-}
-
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
 pub enum Movement { 
     Static, 

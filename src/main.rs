@@ -504,7 +504,6 @@ fn main() -> rltk::BError {
     gs.ecs.register::<MyTurn>();
     gs.ecs.register::<Faction>();
     gs.ecs.register::<WantsToApproach>();
-    gs.ecs.register::<WantsToFlee>();
     gs.ecs.register::<MoveMode>();
     gs.ecs.register::<Chasing>();
     gs.ecs.register::<EquipmentChanged>();

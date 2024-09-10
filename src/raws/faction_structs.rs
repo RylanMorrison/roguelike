@@ -9,5 +9,5 @@ pub struct FactionData {
 
 #[derive(PartialEq, Eq, Hash, Copy, Clone)]
 pub enum Reaction {
-    Ignore, Attack, Flee
+    Ignore, Attack
 }

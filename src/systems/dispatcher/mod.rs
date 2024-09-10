@@ -32,6 +32,7 @@ construct_dispatcher!(
     (AdjacentAI, "adjacent_ai", &["initiative"]),
     (VisibleAI, "visible_ai", &["adjacent_ai"]),
     (ApproachAI, "approach_ai", &["visible_ai"]),
+    (ChaseAI, "chase_ai", &["visible_ai"]),
     (DefaultMoveAI, "default_move_ai", &[ "approach_ai"]),
     (MovementSystem, "movement", &[]),
     (TriggerSystem, "triggers", &[]),

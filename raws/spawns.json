@@ -147,12 +147,7 @@
     "faction_table": [
         { "name": "Player", "responses": {} },
         { "name": "Mindless", "responses": { "default": "attack" } },
-        { "name": "Townsfolk", "responses": { 
-                "default": "flee",
-                "Player": "ignore",
-                "Townsfolk": "ignore"
-            } 
-        },
+        { "name": "Townsfolk", "responses": { "default": "ignore" } },
         { "name": "Bandits", "responses": {
                 "default": "attack",
                 "Bandits": "ignore"
@@ -166,11 +161,6 @@
         { "name": "Carnivores", "responses": {
                 "default": "attack",
                 "Carnivores": "ignore"
-            }
-        },
-        { "name": "Herbivores", "responses": {
-                "default": "flee",
-                "Herbivores": "ignore"
             }
         }
     ],

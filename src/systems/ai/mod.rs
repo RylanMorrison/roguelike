@@ -1,16 +1,14 @@
-mod default_move_system;
+mod default_move_ai_system;
 mod initiative_system;
 mod quipping_system;
 mod adjacent_ai_system;
 mod visible_ai_system;
 mod approach_ai_sytem;
-mod flee_ai_system;
 mod chase_ai_system;
-pub use default_move_system::DefaultMoveAI;
+pub use default_move_ai_system::DefaultMoveAI;
 pub use initiative_system::InitiativeSystem;
 pub use quipping_system::QuipSystem;
 pub use adjacent_ai_system::AdjacentAI;
 pub use visible_ai_system::VisibleAI;
 pub use approach_ai_sytem::ApproachAI;
-pub use flee_ai_system::FleeAI;
 pub use chase_ai_system::ChaseAI;

@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::{MyTurn, Faction, Position, Map, WantsToMelee, TileSize, Rect, Confusion};
+use crate::{MyTurn, Faction, Position, Map, WantsToMelee, TileSize, Rect, Confusion, RunState};
 use crate::raws::{Reaction, faction_reaction, RAWS};
 use crate::spatial;
 
@@ -15,13 +15,16 @@ impl<'a> System<'a> for AdjacentAI {
         Entities<'a>,
         ReadExpect<'a, Entity>,
         ReadStorage<'a, TileSize>,
-        ReadStorage<'a, Confusion>
+        ReadStorage<'a, Confusion>,
+        ReadExpect<'a, RunState>
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (mut turns, factions, positions, map, 
             mut want_melee, entities, player,
-            tile_sizes, confused) = data;
+            tile_sizes, confused, runstate) = data;
+
+        if RunState::Ticking != *runstate { return; }
 
         let mut turn_done: Vec<Entity> = Vec::new();
         for (entity, _turn, my_faction, pos) in (&entities, &turns, &factions, &positions).join() {

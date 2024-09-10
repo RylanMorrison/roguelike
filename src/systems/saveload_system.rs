@@ -59,13 +59,12 @@ pub fn save_game(ecs : &mut World) {
             WantsToDropItem, SerializationHelper, Equippable, Weapon, Wearable, WantsToUnequipItem,
             ParticleLifetime, MagicMapping, HungerClock, BlocksVisibility, Door, EntityMoved, Quips,
             Attributes, Skills, NaturalAttackDefence, LootTable, OtherLevelPosition, DMSerializationHelper,
-            LightSource, Initiative, MyTurn, Faction, WantsToApproach, WantsToFlee, MoveMode, Chasing,
-            EquipmentChanged, Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport,
-            Food, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, Duration, StatusEffect,
-            KnownAbilities, KnownAbility, AttributeBonus, WantsToUseAbility, RestoresMana, TeachesAbility,
-            Slow, DamageOverTime, TileSize, PendingCharacterLevelUp, SkillBonus, ItemSets, PartOfSet, Target,
-            WantsToShoot, Stun, StatusEffectChanged, Boss, Chest, CharacterClass, SelfDamage, Rage, Block, Fortress,
-            FrostShield, Dodge, WantsToLearnAbility, WantsToLevelAbility
+            LightSource, Initiative, MyTurn, Faction, WantsToApproach, MoveMode, Chasing, EquipmentChanged,
+            Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport, Food, SpawnParticleLine,
+            SpawnParticleBurst, AttributeBonus, Duration, StatusEffect, KnownAbilities, KnownAbility, AttributeBonus,
+            WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime, TileSize, PendingCharacterLevelUp,
+            SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot, Stun, StatusEffectChanged, Boss, Chest, CharacterClass,
+            SelfDamage, Rage, Block, Fortress, FrostShield, Dodge, WantsToLearnAbility, WantsToLevelAbility
         );
     }
 
@@ -116,13 +115,12 @@ pub fn load_game(ecs: &mut World) {
             WantsToDropItem, SerializationHelper, Equippable, Weapon, Wearable, WantsToUnequipItem,
             ParticleLifetime, MagicMapping, HungerClock, BlocksVisibility, Door, EntityMoved, Quips,
             Attributes, Skills, NaturalAttackDefence, LootTable, OtherLevelPosition, DMSerializationHelper,
-            LightSource, Initiative, MyTurn, Faction, WantsToApproach, WantsToFlee, MoveMode, Chasing,
-            EquipmentChanged, Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport,
-            Food, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, Duration, StatusEffect,
-            KnownAbilities, KnownAbility, Ability, WantsToUseAbility, RestoresMana, TeachesAbility,
-            Slow, DamageOverTime, TileSize, PendingCharacterLevelUp, SkillBonus, ItemSets, PartOfSet, Target,
-            WantsToShoot, Stun, StatusEffectChanged, Boss, Chest, CharacterClass, SelfDamage, Rage, Block, Fortress,
-            FrostShield, Dodge, WantsToLearnAbility, WantsToLevelAbility
+            LightSource, Initiative, MyTurn, Faction, WantsToApproach, MoveMode, Chasing, EquipmentChanged,
+            Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport, Food, SpawnParticleLine,
+            SpawnParticleBurst, AttributeBonus, Duration, StatusEffect, KnownAbilities, KnownAbility, Ability,
+            WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime, TileSize, PendingCharacterLevelUp,
+            SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot, Stun, StatusEffectChanged, Boss, Chest, CharacterClass,
+            SelfDamage, Rage, Block, Fortress, FrostShield, Dodge, WantsToLearnAbility, WantsToLevelAbility
         );
     }
 

@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::{Chasing, Map, MyTurn, Position, ApplyMove, TileSize};
+use crate::{Chasing, Map, MyTurn, Position, ApplyMove, TileSize, RunState};
 use std::collections::HashMap;
 
 pub struct ChaseAI {}
@@ -12,12 +12,16 @@ impl<'a> System<'a> for ChaseAI {
         WriteExpect<'a, Map>,
         Entities<'a>,
         WriteStorage<'a, ApplyMove>,
-        ReadStorage<'a, TileSize>
+        ReadStorage<'a, TileSize>,
+        ReadExpect<'a, RunState>
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (mut turns, mut chasing, mut positions, 
-            mut map, entities, mut apply_move, tile_sizes) = data;
+            mut map, entities, mut apply_move,
+            tile_sizes, runstate) = data;
+
+        if RunState::Ticking != *runstate { return; }
         
         let mut targets: HashMap<Entity, (i32, i32)> = HashMap::new();
         let mut end_chase: Vec<Entity> = Vec::new();

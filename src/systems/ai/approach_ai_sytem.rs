@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::{MyTurn, WantsToApproach, Position, Map, ApplyMove};
+use crate::{MyTurn, WantsToApproach, Position, Map, ApplyMove, RunState};
 
 pub struct ApproachAI {}
 
@@ -10,12 +10,15 @@ impl<'a> System<'a> for ApproachAI {
         WriteStorage<'a, Position>,
         WriteExpect<'a, Map>,
         Entities<'a>,
-        WriteStorage<'a, ApplyMove>
+        WriteStorage<'a, ApplyMove>,
+        ReadExpect<'a, RunState>
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (mut turns, mut want_approach, mut positions,
-            mut map, entities, mut apply_move) = data;
+            mut map, entities, mut apply_move, runstate) = data;
+
+        if RunState::Ticking != *runstate { return; }
 
         let mut turn_done: Vec<Entity> = Vec::new();
         for (entity, pos, approach, _myturn) in (&entities, &mut positions, &mut want_approach, &mut turns).join() {

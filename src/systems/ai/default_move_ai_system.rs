@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::{spatial, MyTurn, MoveMode, Movement, Position, Map, ApplyMove, tile_walkable};
+use crate::{spatial, MyTurn, MoveMode, Movement, Position, Map, ApplyMove, RunState, tile_walkable};
 use crate::rng;
 
 pub struct DefaultMoveAI {}
@@ -11,12 +11,15 @@ impl<'a> System<'a> for DefaultMoveAI {
         WriteStorage<'a, Position>,
         WriteExpect<'a, Map>,
         Entities<'a>,
-        WriteStorage<'a, ApplyMove>
+        WriteStorage<'a, ApplyMove>,
+        ReadExpect<'a, RunState>
     );
 
     fn run(&mut self, data: Self::SystemData) {
         let (mut turns, mut move_mode, mut positions, mut map,
-            entities, mut apply_move) = data;
+            entities, mut apply_move, runstate) = data;
+
+        if RunState::Ticking != *runstate { return; }
 
         let mut turn_done: Vec<Entity> = Vec::new();
         for (entity, pos, mode, _myturn) in (&entities, &mut positions, &mut move_mode, &turns).join() {
