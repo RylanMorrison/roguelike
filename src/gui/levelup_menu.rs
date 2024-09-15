@@ -194,9 +194,8 @@ fn handle_selection(selection: &str, passive_selections: HashMap<String, String>
 
         return LevelUpMenuResult::DeselectedPassive;
     } else {
-        if passive.is_max_level() {
-            return LevelUpMenuResult::NoResponse;
-        }
+        if passive.is_max_level() { return LevelUpMenuResult::NoResponse; }
+
         if let Some(currently_selected) = get_selected_passive(level_up, &player_class.passives) {
             currently_selected.current_level -= 1;
         }

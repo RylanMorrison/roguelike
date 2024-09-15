@@ -50,7 +50,8 @@ pub enum RunState {
     ShowVendor { vendor: Entity, mode: gui::VendorMode },
     TownPortal,
     TeleportingToOtherLevel { x: i32, y: i32, depth: i32 },
-    LevelUp
+    LevelUp,
+    ShowQuestMenu { quest_giver: Entity, mode: gui::QuestGiverMode }
 }
 
 pub struct State {
@@ -392,7 +393,44 @@ impl GameState for State {
                     gui::VendorResult::SellMode => newrunstate = RunState::ShowVendor { vendor, mode: gui::VendorMode::Sell },
                     gui::VendorResult::ImproveMode => newrunstate = RunState::ShowVendor { vendor, mode: gui::VendorMode::Improve }
                 }
-                self.run_systems();
+                self.run_systems(); // TODO set runstate to AwaitingInput instead?
+            }
+            RunState::ShowQuestMenu{quest_giver, mode} => {
+                let result = gui::show_quest_giver_menu(self, ctx, quest_giver, mode);
+                match result.0 {
+                    gui::QuestGiverResult::Cancel => newrunstate = RunState::AwaitingInput,
+                    gui::QuestGiverResult::NoResponse => {}
+                    gui::QuestGiverResult::TakeOnQuest => {
+                        let chosen_quest = result.1.unwrap();
+                        let quests = &mut self.ecs.fetch_mut::<Quests>().quests;
+                        let active_quests = &mut self.ecs.fetch_mut::<ActiveQuests>().quests;
+
+                        active_quests.push(chosen_quest.clone());
+                        quests.retain(|quest| quest.name != chosen_quest.name);
+                        newrunstate = RunState::AwaitingInput;
+                    }
+                    gui::QuestGiverResult::TurnInQuest => {
+                        let chosen_quest = result.1.unwrap();
+                        let active_quests = &mut self.ecs.fetch_mut::<ActiveQuests>().quests;
+
+                        let player = self.ecs.fetch::<Entity>();
+                        let mut pools = self.ecs.write_storage::<Pools>();
+                        let player_pools = pools.get_mut(*player).unwrap();
+
+                        if let Some(gold) = chosen_quest.reward.gold {
+                            player_pools.gold += determine_roll(&gold);
+                        }
+
+                        active_quests.retain(|quest| quest.name != chosen_quest.name);
+                        newrunstate = RunState::AwaitingInput;
+                    }
+                    gui::QuestGiverResult::TakeOnQuestMode => {
+                        newrunstate = RunState::ShowQuestMenu { quest_giver, mode: gui::QuestGiverMode::TakeOn };
+                    }
+                    gui::QuestGiverResult::TurnInQuestMode => {
+                        newrunstate = RunState::ShowQuestMenu { quest_giver, mode: gui::QuestGiverMode::TurnIn };
+                    }
+                }
             }
             RunState::TownPortal => {
                 spawner::spawn_town_portal(&mut self.ecs);
@@ -550,6 +588,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Quests>();
     gs.ecs.register::<ActiveQuests>();
     gs.ecs.register::<QuestProgress>();
+    gs.ecs.register::<QuestGiver>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     raws::load_raws();

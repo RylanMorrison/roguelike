@@ -1,18 +1,16 @@
 use specs::prelude::*;
-use crate::{ActiveQuests, Pools, ProgressSource, QuestProgress, QuestRequirementGoal, determine_roll};
+use crate::{ActiveQuests, ProgressSource, QuestProgress, QuestRequirementGoal};
 
 pub struct QuestSystem {}
 
 impl<'a> System<'a> for QuestSystem {
     type SystemData = (
-        ReadExpect<'a, Entity>,
-        WriteStorage<'a, Pools>,
         WriteExpect<'a, ActiveQuests>,
         WriteStorage<'a, QuestProgress>
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player, mut pools, mut active_quests, mut quest_progress) = data;
+        let (mut active_quests, mut quest_progress) = data;
 
         if quest_progress.count() < 1 { return; }
 
@@ -37,10 +35,6 @@ impl<'a> System<'a> for QuestSystem {
                                 }
                                 _ => {}
                             }
-                        }
-                        if quest.is_complete() {
-                            let player_pools = pools.get_mut(*player).unwrap();
-                            player_pools.gold += determine_roll(&quest.reward.gold);
                         }
                     }
                 }

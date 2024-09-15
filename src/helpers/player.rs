@@ -2,17 +2,17 @@ use rltk::{Point, Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
 use std::cmp::{max, min};
 
-use crate::{spatial, gamelog, InBackpack, WantsToUseItem};
+use crate::{spatial, gamelog};
 use crate::raws::{faction_reaction, Reaction, RAWS};
 use crate::effects::{add_effect, EffectType, Targets};
 use crate::rng;
 
-use crate::{Position, Player, Viewshed, State, Map, RunState, Item, 
+use crate::{Position, Player, Viewshed, State, Map, RunState, Item, InBackpack, WantsToUseItem,
     TileType, particle_system::ParticleBuilder, Pools, WantsToMelee, WantsToPickupItem,
     HungerState, HungerClock, Door, BlocksVisibility, BlocksTile, Renderable, EntityMoved,
     Consumable, Ranged, Faction, Vendor, gui::VendorMode, KnownAbilities, WantsToUseAbility,
     CharacterClass, PendingCharacterLevelUp, Equipped, Weapon, Target, WantsToShoot, Name,
-    Chest, KnownAbility, AbilityType};
+    Chest, KnownAbility, AbilityType, QuestGiver, gui::QuestGiverMode};
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
     let mut result = RunState::AwaitingInput;
@@ -33,6 +33,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
     let mut swap_entities: Vec<(Entity, i32, i32)> = Vec::new();
     let vendors = ecs.read_storage::<Vendor>();
     let chests = ecs.read_storage::<Chest>();
+    let quest_givers = ecs.read_storage::<QuestGiver>();
     
     for (entity, _player, pos, viewshed) in (&entities, &players, &mut positions, &mut viewsheds).join() {
         if pos.x + delta_x < 1 || pos.x + delta_x > map.width-1 || pos.y + delta_y < 1 || pos.y + delta_y > map.height-1 { return RunState::AwaitingInput; }
@@ -41,6 +42,9 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
         result = spatial::for_each_tile_content_with_gamemode(destination_idx, |potential_target| {
             if vendors.get(potential_target).is_some() {
                 return Some(RunState::ShowVendor{ vendor: potential_target, mode: VendorMode::Sell });
+            }
+            if quest_givers.get(potential_target).is_some() {
+                return Some(RunState::ShowQuestMenu { quest_giver: potential_target, mode: QuestGiverMode::TakeOn });
             }
 
             let mut hostile = true;

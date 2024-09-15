@@ -1131,7 +1131,7 @@ impl Quest {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct QuestReward {
-    pub gold: String
+    pub gold: Option<String>
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Copy, Clone)]
@@ -1159,3 +1159,6 @@ pub struct QuestProgress {
     pub target: String,
     pub source: ProgressSource
 }
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct QuestGiver {}

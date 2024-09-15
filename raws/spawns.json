@@ -3070,6 +3070,30 @@
                 "melee": 2
             },
             "vendor": "wearables"
+        },
+        {
+            "name": "Quartermaster",
+            "renderable": {
+                "glyph": "☺",
+                "fg": "#EE82EE",
+                "bg": "#000000",
+                "order": 1
+            },
+            "blocks_tile": true,
+            "vision_range": 4,
+            "movement": "static",
+            "faction": "Townsfolk",
+            "attributes": {
+                "intelligence": 13,
+                "strength": 13,
+                "dexterity": 13,
+                "constitution": 13
+            },
+            "skills": {
+                "melee": 4,
+                "defence": 4
+            },
+            "quest_giver": true
         }
     ],
 

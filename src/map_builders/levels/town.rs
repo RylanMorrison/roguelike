@@ -9,6 +9,7 @@ enum BuildingTag {
     Alchemist,
     Armoursmith,
     Weaponsmith,
+    Quartermaster,
     PlayerHouse,
     Hovel,
     Abandoned,
@@ -209,7 +210,8 @@ impl TownBuilder {
         building_size[4].2 = BuildingTag::Weaponsmith;
         building_size[5].2 = BuildingTag::Armoursmith;
         building_size[6].2 = BuildingTag::PlayerHouse;
-        for b in building_size.iter_mut().skip(7) {
+        building_size[7].2 = BuildingTag::Quartermaster;
+        for b in building_size.iter_mut().skip(8) {
             b.2 = BuildingTag::Hovel;
         }
         let last_index = building_size.len()-1;
@@ -227,6 +229,7 @@ impl TownBuilder {
                 BuildingTag::Alchemist => self.build_alchemist(&building, build_data),
                 BuildingTag::Weaponsmith => self.build_weaponsmith(&building, build_data),
                 BuildingTag::Armoursmith => self.build_armoursmith(&building, build_data),
+                BuildingTag::Quartermaster => self.build_quartermaster(&building, build_data),
                 BuildingTag::Abandoned => self.build_abandoned_house(&building, build_data),
                 _ => {}
             }
@@ -285,6 +288,11 @@ impl TownBuilder {
 
     fn build_armoursmith(&mut self, building: &(i32, i32, i32, i32), build_data: &mut BuilderMap) {
         let mut to_place: Vec<&str> = vec!["Armoursmith", "Table", "Chair"];
+        self.random_building_spawn(building, build_data, &mut to_place, 0);
+    }
+
+    fn build_quartermaster(&mut self, building: &(i32, i32, i32, i32), build_data: &mut BuilderMap) {
+        let mut to_place: Vec<&str> = vec!["Quartermaster"];
         self.random_building_spawn(building, build_data, &mut to_place, 0);
     }
 

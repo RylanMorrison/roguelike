@@ -38,8 +38,8 @@ pub fn carry_capacity_lbs(strength: &Attribute) -> f32 {
     ((strength.base + strength.total_modifiers()) * 15) as f32
 }
 
-/// Parse a dice string into its values
-/// eg. 1d10+4 => (1, 10, 4)
+/// Parse a dice string into its values:
+/// * 1d10+4 => (1, 10, 4)
 pub fn parse_dice_string(dice: &str) -> (i32, i32, i32) {
     lazy_static! {
         static ref DICE_RE: Regex = Regex::new(r"(\d+)d(\d+)([\+\-]\d+)?").unwrap();
@@ -64,4 +64,12 @@ pub fn parse_dice_string(dice: &str) -> (i32, i32, i32) {
 pub fn determine_roll(dice_string: &str) -> i32 {
     let (n_dice, die_type, die_bonus) = parse_dice_string(dice_string);
     rng::roll_dice(n_dice, die_type) + die_bonus
+}
+
+/// Parse a dice string into its range:
+/// * 1d10+4 => 5 - 14
+pub fn dice_range(dice: &str) -> String {
+    let (n_dice, die_type, die_bonus) = parse_dice_string(dice);
+
+    format!("{} - {}", n_dice + die_bonus, n_dice * die_type + die_bonus)
 }

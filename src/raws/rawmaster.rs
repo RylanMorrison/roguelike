@@ -561,6 +561,12 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
         eb = eb.with(Vendor{ category: vendor.clone() });
     }
 
+    if let Some(quest_giver) = &mob_template.quest_giver {
+        if *quest_giver {
+            eb = eb.with(QuestGiver{});
+        }
+    }
+
     // light
     if let Some(light) = &mob_template.light {
         eb = eb.with(LightSource{ range: light.range, colour: RGB::from_hex(&light.colour).expect("Bad colour") });
@@ -789,9 +795,6 @@ pub fn store_named_quest(raws: &RawMaster, ecs: &mut World, key: &str) {
             reward: quest_reward,
             requirements: quest_requirements
         });
-
-        let mut active = ecs.fetch_mut::<ActiveQuests>();
-        active.quests.push(quests.quests.back().unwrap().clone());
     }
 }
 
