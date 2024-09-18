@@ -21,7 +21,11 @@ pub fn show_levelup_menu(gs: &mut State, ctx: &mut Rltk) -> LevelUpMenuResult {
     
     draw_batch.draw_box(Rect::with_size(0, 0, 99, 79), ColorPair::new(white(), black()));
     draw_batch.print_color(Point::new(2, 2), "Level Up", ColorPair::new(yellow(), black()));
-    draw_batch.print_color(Point::new(2, 4), "Pick a passive ability to learn/improve", ColorPair::new(yellow(), black()));
+    draw_batch.print_color(
+        Point::new(2, 4),
+        "Pick a passive ability to learn/improve",
+        ColorPair::new(yellow(), black())
+    );
 
     let mut y = 8;
     let mut j = 0;
@@ -96,20 +100,32 @@ fn draw_passive_choice(draw_batch: &mut DrawBatch, y: &mut i32, passive: &ClassP
             draw_batch.print_color(Point::new(4, *y), "Attribute bonuses:", ColorPair::new(colour, black()));
             *y += 1;
             if let Some(strength_bonus) = &attribute_bonus.strength {
-                draw_batch.print_color(Point::new(4, *y), format!("Strength ({})", strength_bonus), ColorPair::new(colour, black()));
-                *y += 1;
+                draw_batch.print_color(
+                    Point::new(4, *y),
+                    format!("Strength ({})", strength_bonus),
+                    ColorPair::new(colour, black())
+                ); *y += 1;
             }
             if let Some(dexterity_bonus) = &attribute_bonus.dexterity {
-                draw_batch.print_color(Point::new(4, *y), format!("Dexterity ({})", dexterity_bonus), ColorPair::new(colour, black()));
-                *y += 1;
+                draw_batch.print_color(
+                    Point::new(4, *y),
+                    format!("Dexterity ({})", dexterity_bonus),
+                    ColorPair::new(colour, black())
+                ); *y += 1;
             }
             if let Some(constitution_bonus) = &attribute_bonus.constitution {
-                draw_batch.print_color(Point::new(4, *y), format!("Constitution ({})", constitution_bonus), ColorPair::new(colour, black()));
-                *y += 1;
+                draw_batch.print_color(
+                    Point::new(4, *y),
+                    format!("Constitution ({})", constitution_bonus),
+                    ColorPair::new(colour, black())
+                ); *y += 1;
             }
             if let Some(intelligence_bonus) = &attribute_bonus.intelligence {
-                draw_batch.print_color(Point::new(4, *y), format!("Intelligence ({})", intelligence_bonus), ColorPair::new(colour, black()));
-                *y += 1;
+                draw_batch.print_color(
+                    Point::new(4, *y),
+                    format!("Intelligence ({})", intelligence_bonus),
+                    ColorPair::new(colour, black())
+                ); *y += 1;
             }
             *y += 1;
         }
@@ -117,30 +133,48 @@ fn draw_passive_choice(draw_batch: &mut DrawBatch, y: &mut i32, passive: &ClassP
             draw_batch.print_color(Point::new(4, *y), "Skill bonuses:", ColorPair::new(colour, black()));
             *y += 1;
             if let Some(melee_bonus) = &skill_bonus.melee {
-                draw_batch.print_color(Point::new(4, *y), format!("Melee ({})", melee_bonus), ColorPair::new(colour, black()));
-                *y += 1;
+                draw_batch.print_color(
+                    Point::new(4, *y),
+                    format!("Melee ({})", melee_bonus),
+                    ColorPair::new(colour, black())
+                ); *y += 1;
             }
             if let Some(defence_bonus) = &skill_bonus.defence {
-                draw_batch.print_color(Point::new(4, *y), format!("Defence ({})", defence_bonus), ColorPair::new(colour, black()));
-                *y += 1;
+                draw_batch.print_color(
+                    Point::new(4, *y),
+                    format!("Defence ({})", defence_bonus),
+                    ColorPair::new(colour, black())
+                ); *y += 1;
             }
             if let Some(ranged_bonus) = &skill_bonus.ranged {
-                draw_batch.print_color(Point::new(4, *y), format!("Ranged ({})", ranged_bonus), ColorPair::new(colour, black()));
-                *y += 1;
+                draw_batch.print_color(
+                    Point::new(4, *y),
+                    format!("Ranged ({})", ranged_bonus),
+                    ColorPair::new(colour, black())
+                ); *y += 1;
             }
             if let Some(magic_bonus) = &skill_bonus.magic {
-                draw_batch.print_color(Point::new(4, *y), format!("Magic ({})", magic_bonus), ColorPair::new(colour, black()));
-                *y += 1;
+                draw_batch.print_color(
+                    Point::new(4, *y),
+                    format!("Magic ({})", magic_bonus),
+                    ColorPair::new(colour, black())
+                ); *y += 1;
             }
             *y += 1;
         }
         if let Some(learn_ability) = &display_level.learn_ability {
-            draw_batch.print_color(Point::new(4, *y), format!("Learn ability: {}", learn_ability), ColorPair::new(colour, black()));
-            *y += 1;
+            draw_batch.print_color(
+                Point::new(4, *y),
+                format!("Learn ability: {}", learn_ability),
+                ColorPair::new(colour, black())
+            ); *y += 1;
         }
         if let Some(level_ability) = &display_level.level_ability {
-            draw_batch.print_color(Point::new(4, *y), format!("Improve ability: {}", level_ability), ColorPair::new(colour, black()));
-            *y += 1;
+            draw_batch.print_color(
+                Point::new(4, *y),
+                format!("Improve ability: {}", level_ability),
+                ColorPair::new(colour, black())
+            ); *y += 1;
         }
     }
     *y += 2;

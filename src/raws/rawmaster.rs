@@ -790,8 +790,9 @@ pub fn store_named_quest(raws: &RawMaster, ecs: &mut World, key: &str) {
         let quest_reward = QuestReward {
             gold: quest_template.reward.gold.clone()
         };
-        quests.quests.push_back(Quest {
+        quests.quests.push(Quest {
             name: quest_template.name.clone(),
+            description: quest_template.description.clone(),
             reward: quest_reward,
             requirements: quest_requirements
         });

@@ -24,7 +24,7 @@ fn draw_borders(ecs: &World, draw_batch: &mut DrawBatch) {
 
     // map name
     let name_length = map.name.len() + 2;
-    let x_pos = (32 - (name_length / 2)) as i32;
+    let x_pos = (32 - (name_length / 2)) as i32; 
     draw_batch.set(Point::new(x_pos, 0), ColorPair::new(box_gray(), black()), to_cp437('┤'));
     draw_batch.set(Point::new(x_pos + name_length as i32, 0), ColorPair::new(box_gray(), black()), to_cp437('├'));
     draw_batch.print_color(Point::new(x_pos+1, 0), &map.name, ColorPair::new(white(), black()));
@@ -70,7 +70,11 @@ fn draw_attributes(ecs: &World, draw_batch: &mut DrawBatch, player_pools: &Pools
     let weight = player_pools.total_weight;
     let capacity = carry_capacity_lbs(&player_attributes.strength);
     let colour = if weight > capacity { red() } else { white() };
-    draw_batch.print_color(Point::new(70, 18), &format!("{:0} lbs ({} lbs max)", weight, capacity), ColorPair::new(colour, black()));
+    draw_batch.print_color(
+        Point::new(70, 18),
+        &format!("{:0} lbs ({} lbs max)", weight, capacity),
+        ColorPair::new(colour, black())
+    );
 }
 
 fn draw_attribute(name: &str, attribute: &Attribute, y: i32, draw_batch: &mut DrawBatch) {
@@ -83,7 +87,11 @@ fn draw_attribute(name: &str, attribute: &Attribute, y: i32, draw_batch: &mut Dr
     } else {
         green()
     };
-    draw_batch.print_color(Point::new(87, y), &format!("{}", attribute.base + attribute.total_modifiers()), ColorPair::new(modified_colour, black()));
+    draw_batch.print_color(
+        Point::new(87, y),
+        &format!("{}", attribute.base + attribute.total_modifiers()),
+        ColorPair::new(modified_colour, black())
+    );
     
     let bonus_colour: RGB = if attribute.bonus < 0 {
         red()
@@ -204,34 +212,54 @@ fn draw_status_effects(ecs: &World, draw_batch: &mut DrawBatch, player: &Entity)
 fn quest_box_height(quests: &Vec<Quest>) -> i32 {
     let mut height = 0;
     for quest in quests.iter() {
-        height += quest.requirements.len() + 1;
+        height += quest.requirements.len() + 3;
     }
-    (height * 2 - 1) as i32
+    height as i32
 }
 
 fn draw_quests(ecs: &World, draw_batch: &mut DrawBatch) {
     let active_quests = &ecs.fetch::<ActiveQuests>().quests;
-    if active_quests.len() == 0 { return; }
+    if active_quests.len() < 1 { return; }
 
     let mut y = 2;
     draw_batch.draw_box(Rect::with_size(0, 0, 40, quest_box_height(active_quests)), ColorPair::new(box_gray(), black()));
     for quest in active_quests.iter() {
-        if quest.is_complete() {
-            draw_batch.print_color(Point::new(1, y), quest.name.clone(), ColorPair::new(green(), black()));
-        } else {
-            draw_batch.print_color(Point::new(1, y), quest.name.clone(), ColorPair::new(yellow(), black()));
-        }
+        draw_batch.print_color(
+            Point::new(1, y),
+            quest.name.clone(),
+            if quest.is_complete() {
+                ColorPair::new(green(), black())
+            } else {
+                ColorPair::new(yellow(), black())
+            }
+        );
         y += 1;
 
         let requirements = &quest.requirements;
-        for req in requirements.iter() {
-            match req.requirement_goal {
+        for requirement in requirements.iter() {
+            let color = if requirement.complete {
+                ColorPair::new(green(), black())
+            } else {
+                ColorPair::new(white(), black())
+            };
+
+            match requirement.requirement_goal {
                 QuestRequirementGoal::KillCount => {
-                    if req.complete {
-                        draw_batch.print_color(Point::new(3, y), format!("{}/{} killed", req.count, req.target_count), ColorPair::new(green(), black()));
-                    } else {
-                        draw_batch.print_color(Point::new(3, y), format!("{}/{} killed", req.count, req.target_count), ColorPair::new(white(), black()));
-                    }
+                    if requirement.targets.len() > 1 {
+                        let mut text = format!("{}/{} {}", requirement.count, requirement.target_count, requirement.targets.first().unwrap());
+                        for target in requirement.targets.iter().skip(1) {
+                          text += format!("/{}", target).as_str();
+                        }
+                        text += " kills";
+                  
+                        draw_batch.print_color(Point::new(2, y), text, color);
+                      } else {
+                        draw_batch.print_color(
+                          Point::new(2, y),
+                          format!("{}/{} {} kills", requirement.count, requirement.target_count, requirement.targets.first().unwrap()),
+                          color
+                        );
+                      }
                 }
                 QuestRequirementGoal::None => {}
             }

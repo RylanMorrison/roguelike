@@ -9,7 +9,7 @@ use serde::{Serialize, Deserialize};
 use rltk::{RGB, Point, FontCharType};
 use crate::gamelog::LogFragment;
 use super::attr_bonus;
-use std::{collections::{BTreeMap, HashMap, VecDeque}, convert::Infallible};
+use std::{collections::{BTreeMap, HashMap}, convert::Infallible};
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Position {
@@ -1105,7 +1105,7 @@ pub struct WantsToLevelAbility {
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Quests {
-    pub quests: VecDeque<Quest>
+    pub quests: Vec<Quest>
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
@@ -1113,9 +1113,10 @@ pub struct ActiveQuests {
     pub quests: Vec<Quest>
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Quest {
     pub name: String,
+    pub description: String,
     pub reward: QuestReward,
     pub requirements: Vec<QuestRequirement>
 }
@@ -1129,7 +1130,7 @@ impl Quest {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct QuestReward {
     pub gold: Option<String>
 }
@@ -1140,7 +1141,7 @@ pub enum QuestRequirementGoal {
     KillCount
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct QuestRequirement {
     pub requirement_goal: QuestRequirementGoal,
     pub targets: Vec<String>,

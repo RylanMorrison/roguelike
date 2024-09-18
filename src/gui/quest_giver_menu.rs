@@ -1,10 +1,8 @@
 use specs::prelude::*;
 use rltk::prelude::*;
-use super::{menu_box, white, black, yellow};
-use crate::{State, QuestGiver, Quest, Quests, ActiveQuests, dice_range};
-
-#[derive(PartialEq, Copy, Clone, Debug)]
-pub enum QuestGiverMode { TakeOn, TurnIn }
+use super::{white, black, yellow, green};
+use crate::{dice_range, ActiveQuests, Name, Quest, QuestRequirement, Quests, State};
+use crate::gamelog;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum QuestGiverResult {
@@ -12,114 +10,145 @@ pub enum QuestGiverResult {
   Cancel,
   TakeOnQuest,
   TurnInQuest,
-  TakeOnQuestMode,
-  TurnInQuestMode
+  ShowPreviousQuest,
+  ShowNextQuest
 }
 
+pub fn draw_requirements(requirements: &Vec<QuestRequirement>, draw_batch: &mut DrawBatch, y: &mut i32) {
+  draw_batch.print_color(Point::new(2, *y), "Requirements:", ColorPair::new(yellow(), black()));
+  *y += 2;
 
-pub fn show_quest_giver_menu(gs: &mut State, ctx: &mut Rltk, quest_giver: Entity, mode: QuestGiverMode) -> (QuestGiverResult, Option<Quest>) {
-  match mode {
-    QuestGiverMode::TakeOn => quest_take_on_menu(gs, ctx),
-    QuestGiverMode::TurnIn => quest_turn_in_menu(gs, ctx)
+  for requirement in requirements.iter() {
+    let color = if requirement.complete {
+      ColorPair::new(green(), black())
+    } else {
+      ColorPair::new(white(), black())
+    };
+
+    if requirement.targets.len() > 1 {
+      let mut text = format!("{}/{} {}", requirement.count, requirement.target_count, requirement.targets.first().unwrap());
+      for target in requirement.targets.iter().skip(1) {
+        text += format!("/{}", target).as_str();
+      }
+      text += " kills";
+
+      draw_batch.print_color(Point::new(2, *y), text, color);
+    } else {
+      draw_batch.print_color(
+        Point::new(2, *y),
+        format!("{}/{} {} kills", requirement.count, requirement.target_count, requirement.targets.first().unwrap()),
+        color
+      );
+    }
   }
+
+  *y += 4;
 }
 
-fn quest_take_on_menu(gs: &mut State, ctx: &mut Rltk) -> (QuestGiverResult, Option<Quest>) {
+pub fn show_quest_giver_menu(gs: &mut State, ctx: &mut Rltk, quest_giver: Entity, index: i32) -> QuestGiverResult {
   let quests = &gs.ecs.fetch::<Quests>().quests;
-  let mut draw_batch = DrawBatch::new();
-
-  let count = quests.len() as i32;
-  let mut y = 25 - (count / 2);
-  menu_box(&mut draw_batch, 10, y, count*2+3, "Take on which quest? (SPACE to switch to turn in mode)");
-
-  let mut j = 0;
-  for quest in quests.iter() {
-    draw_batch.set(Point::new(13, y), ColorPair::new(white(), black()), rltk::to_cp437('('));
-    draw_batch.set(Point::new(14, y), ColorPair::new(yellow(), black()), 97+j as rltk::FontCharType);
-    draw_batch.set(Point::new(15, y), ColorPair::new(white(), black()), rltk::to_cp437(')'));
-
-    draw_batch.print_color(Point::new(18, y), quest.name.clone(), ColorPair::new(white(), black()));
-    y += 1;
-    
-    if let Some(gold) = &quest.reward.gold {
-      draw_batch.print_color(Point::new(20, y), format!("Gold: {}", dice_range(&gold)), ColorPair::new(super::gold(), black()));
-      y += 1;
-    }
-
-    y += 2;
-    j += 1;
-  }
-
-  draw_batch.submit(1000).expect("Draw batch submission failed");
-
-  match ctx.key {
-    None => (QuestGiverResult::NoResponse, None),
-    Some(key) => {
-      match key {
-        VirtualKeyCode::Space => (QuestGiverResult::TurnInQuestMode, None),
-        VirtualKeyCode::Escape => (QuestGiverResult::Cancel, None),
-        _ => {
-          let selection = rltk::letter_to_option(key);
-          if selection > -1 && selection < count {
-            return (QuestGiverResult::TakeOnQuest, Some(quests[selection as usize].clone()))
-          }
-          (QuestGiverResult::NoResponse, None)
-        }
-      }
-    }
-  }
-}
-
-fn quest_turn_in_menu(gs: &mut State, ctx: &mut Rltk) -> (QuestGiverResult, Option<Quest>) {
   let active_quests = &gs.ecs.fetch::<ActiveQuests>().quests;
+  let current_quest = quests.get(index as usize).unwrap();
+  let names = gs.ecs.read_storage::<Name>();
   let mut draw_batch = DrawBatch::new();
+  let max_index = (quests.len() - 1) as i32;
+  let mut current_active_quest: Option<Quest> = None;
 
-  let mut complete_quests: Vec<&Quest> = Vec::new();
   for quest in active_quests {
-    if quest.is_complete() {
-      complete_quests.push(quest);
+    if quest.name == current_quest.name {
+      current_active_quest = Some(quest.clone());
+      break;
     }
   }
 
-  let count = complete_quests.len() as i32;
-  let mut y = 25 - (count / 2);
-  menu_box(&mut draw_batch, 10, y, count*2+3, "Turn in which quest? (SPACE to switch to take on mode)");
+  draw_batch.draw_box(Rect::with_size(0, 0, 99, 79), ColorPair::new(white(), black()));
+  draw_batch.print_color(Point::new(2, 2),
+    names.get(quest_giver).unwrap().name.clone(),
+    ColorPair::new(yellow(), black())
+  );
+  draw_batch.print_color(Point::new(2, 6), current_quest.name.clone(), ColorPair::new(yellow(), black()));
 
-  let mut j = 0;
-  for quest in complete_quests.iter() {
-    draw_batch.set(Point::new(13, y), ColorPair::new(white(), black()), rltk::to_cp437('('));
-    draw_batch.set(Point::new(14, y), ColorPair::new(yellow(), black()), 97+j as rltk::FontCharType);
-    draw_batch.set(Point::new(15, y), ColorPair::new(white(), black()), rltk::to_cp437(')'));
-
-    draw_batch.print_color(Point::new(18, y), quest.name.clone(), ColorPair::new(white(), black()));
-    y += 1;
-
-    if let Some(gold) = &quest.reward.gold {
-      draw_batch.print_color(Point::new(20, y), format!("Gold: {}", dice_range(&gold)), ColorPair::new(super::gold(), black()));
-      y += 1;
-    }
-
+  let mut y = 8;
+  if current_active_quest.is_some() {
+    draw_batch.print_color(Point::new(2, y), "ACTIVE", ColorPair::new(green(), black()));
     y += 2;
-    j += 1;
+  }
+  // TODO: text wrapping
+  draw_batch.print_color(Point::new(2, y), current_quest.description.clone(), ColorPair::new(white(), black()));
+  y += 4;
+
+  if let Some(quest) = &current_active_quest {
+    draw_requirements(&quest.requirements, &mut draw_batch, &mut y);
   }
 
-  draw_batch.submit(1000).expect("Draw batch submission failed");
+  draw_batch.print_color(Point::new(2, y), "Rewards:", ColorPair::new(yellow(), black()));
+  y += 2;
+
+  if let Some(gold) = &current_quest.reward.gold {
+    draw_batch.print_color(
+      Point::new(6, y),
+      format!("Gold: {}", dice_range(&gold)),
+      ColorPair::new(super::gold(), black())
+    ); y += 1;
+  }
+  y += 4;
+
+  if let Some(quest) = &current_active_quest {
+    if quest.is_complete() {
+      draw_batch.print_color(Point::new(2, y), "(t)", ColorPair::new(yellow(), black()));
+      draw_batch.print_color(Point::new(6, y), "Turn in", ColorPair::new(white(), black()));
+    }
+  } else if current_active_quest.is_none() {
+    draw_batch.print_color(Point::new(2, y), "(t)", ColorPair::new(yellow(), black()));
+    draw_batch.print_color(Point::new(6, y), "Take on", ColorPair::new(white(), black()));
+  }
+
+  if index > 0 {
+    draw_batch.print_color(Point::new(57, 77), "(p)", ColorPair::new(yellow(), black()));
+    draw_batch.print_color(Point::new(61, 77), "Previous quest", ColorPair::new(white(), black()));
+  }
+  if index < max_index {
+    draw_batch.print_color(Point::new(81, 77), "(n)", ColorPair::new(yellow(), black()));
+    draw_batch.print_color(Point::new(85, 77), "Next quest", ColorPair::new(white(), black()));
+  }
+
+  gamelog::clear_log();
+  draw_batch.submit(5000).expect("Draw batch submission failed");
 
   match ctx.key {
-    None => (QuestGiverResult::NoResponse, None),
+    None => QuestGiverResult::NoResponse,
     Some(key) => {
       match key {
-        VirtualKeyCode::Space => (QuestGiverResult::TakeOnQuestMode, None),
-        VirtualKeyCode::Escape => (QuestGiverResult::Cancel, None),
-        _ => {
-          let selection = rltk::letter_to_option(key);
-          if selection > -1 && selection < count {
-            return (QuestGiverResult::TurnInQuest, Some(complete_quests[selection as usize].clone()))
+        VirtualKeyCode::Escape => QuestGiverResult::Cancel,
+        VirtualKeyCode::T => {
+          if let Some(quest) = &current_active_quest {
+            if quest.is_complete() {
+              QuestGiverResult::TurnInQuest
+            } else {
+              QuestGiverResult::NoResponse
+            }
+          } else {
+            QuestGiverResult::TakeOnQuest
           }
-          (QuestGiverResult::NoResponse, None)
+        }
+        VirtualKeyCode::P => {
+          if index > 0 {
+            QuestGiverResult::ShowPreviousQuest
+          } else {
+            QuestGiverResult::NoResponse
+          }
+        }
+        VirtualKeyCode::N => {
+          if index < max_index {
+            QuestGiverResult::ShowNextQuest
+          } else {
+            QuestGiverResult::NoResponse
+          }
+        }
+        _ => {
+          QuestGiverResult::NoResponse
         }
       }
     }
   }
 }
-

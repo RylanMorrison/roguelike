@@ -2,8 +2,9 @@
     "quests": [
         {
             "name": "Kill 2 wolves and 3 kobolds",
+            "description": "Wolves and kobolds are fighting in the woods, thin their numbers a bit.",
             "reward": {
-                "gold": "3d20"
+                "gold": "3d20+50"
             },
             "requirements": [
                 {
@@ -20,8 +21,9 @@
         },
         {
             "name": "Kill 5 bandits",
+            "description": "Bandits are terrorising villagers moving through the forest. Send them a message.",
             "reward": {
-                "gold": "3d20+10"
+                "gold": "5d10+100"
             },
             "requirements": [
                 {
@@ -33,8 +35,9 @@
         },
         {
             "name": "Kill 10 forest enemies",
+            "description": "Make the forest a bit safer.",
             "reward": {
-                "gold": "4d20"
+                "gold": "2d20+100"
             },
             "requirements": [
                 {

@@ -3,7 +3,7 @@ use gui::LevelUpMenuResult;
 use rltk::{GameState, Rltk, Point};
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
-use std::collections::{HashMap, VecDeque};
+use std::collections::HashMap;
 
 pub mod components;
 pub mod map;
@@ -51,7 +51,7 @@ pub enum RunState {
     TownPortal,
     TeleportingToOtherLevel { x: i32, y: i32, depth: i32 },
     LevelUp,
-    ShowQuestMenu { quest_giver: Entity, mode: gui::QuestGiverMode }
+    ShowQuestMenu { quest_giver: Entity, index: i32}
 }
 
 pub struct State {
@@ -395,40 +395,50 @@ impl GameState for State {
                 }
                 self.run_systems(); // TODO set runstate to AwaitingInput instead?
             }
-            RunState::ShowQuestMenu{quest_giver, mode} => {
-                let result = gui::show_quest_giver_menu(self, ctx, quest_giver, mode);
-                match result.0 {
+            RunState::ShowQuestMenu{quest_giver, index} => {
+                let result = gui::show_quest_giver_menu(self, ctx, quest_giver, index);
+                match result {
                     gui::QuestGiverResult::Cancel => newrunstate = RunState::AwaitingInput,
                     gui::QuestGiverResult::NoResponse => {}
                     gui::QuestGiverResult::TakeOnQuest => {
-                        let chosen_quest = result.1.unwrap();
                         let quests = &mut self.ecs.fetch_mut::<Quests>().quests;
                         let active_quests = &mut self.ecs.fetch_mut::<ActiveQuests>().quests;
+                        let current_quest = quests.get(index as usize).unwrap();
 
-                        active_quests.push(chosen_quest.clone());
-                        quests.retain(|quest| quest.name != chosen_quest.name);
-                        newrunstate = RunState::AwaitingInput;
+                        active_quests.push(current_quest.clone());
+                        newrunstate = RunState::ShowQuestMenu { quest_giver, index };
                     }
                     gui::QuestGiverResult::TurnInQuest => {
-                        let chosen_quest = result.1.unwrap();
+                        let quests = &mut self.ecs.fetch_mut::<Quests>().quests;
                         let active_quests = &mut self.ecs.fetch_mut::<ActiveQuests>().quests;
+                        let current_quest = quests.get(index as usize).unwrap();
 
                         let player = self.ecs.fetch::<Entity>();
                         let mut pools = self.ecs.write_storage::<Pools>();
                         let player_pools = pools.get_mut(*player).unwrap();
 
-                        if let Some(gold) = chosen_quest.reward.gold {
+                        if let Some(gold) = &current_quest.reward.gold {
                             player_pools.gold += determine_roll(&gold);
                         }
 
-                        active_quests.retain(|quest| quest.name != chosen_quest.name);
-                        newrunstate = RunState::AwaitingInput;
+                        let current_quest_name = current_quest.name.clone();
+                        active_quests.retain(|quest| quest.name != current_quest_name);
+                        quests.retain(|quest| quest.name != current_quest_name);
+
+                        newrunstate = RunState::ShowQuestMenu { quest_giver, index: 0 };
                     }
-                    gui::QuestGiverResult::TakeOnQuestMode => {
-                        newrunstate = RunState::ShowQuestMenu { quest_giver, mode: gui::QuestGiverMode::TakeOn };
+                    gui::QuestGiverResult::ShowPreviousQuest => {
+                        let mut new_index = index - 1;
+                        if new_index < 0 { new_index = 0; }
+
+                        newrunstate = RunState::ShowQuestMenu { quest_giver, index: new_index };
                     }
-                    gui::QuestGiverResult::TurnInQuestMode => {
-                        newrunstate = RunState::ShowQuestMenu { quest_giver, mode: gui::QuestGiverMode::TurnIn };
+                    gui::QuestGiverResult::ShowNextQuest => {
+                        let quests = &mut self.ecs.fetch_mut::<Quests>().quests;
+                        let mut new_index = index + 1;
+                        if new_index >= quests.len() as i32 { new_index = (quests.len() - 1) as i32; }
+
+                        newrunstate = RunState::ShowQuestMenu { quest_giver, index: new_index };
                     }
                 }
             }
@@ -605,7 +615,7 @@ fn main() -> rltk::BError {
     raws::spawn_all_abilities(&mut gs.ecs);
     gs.ecs.insert(ItemSets{ item_sets: HashMap::new() });
     raws::store_all_item_sets(&mut gs.ecs);
-    gs.ecs.insert(Quests{ quests: VecDeque::new() });
+    gs.ecs.insert(Quests{ quests: Vec::new() });
     gs.ecs.insert(ActiveQuests{ quests: Vec::new() });
     raws::store_all_quests(&mut gs.ecs);
     rltk::main_loop(context, gs)

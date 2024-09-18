@@ -12,7 +12,7 @@ use crate::{Position, Player, Viewshed, State, Map, RunState, Item, InBackpack, 
     HungerState, HungerClock, Door, BlocksVisibility, BlocksTile, Renderable, EntityMoved,
     Consumable, Ranged, Faction, Vendor, gui::VendorMode, KnownAbilities, WantsToUseAbility,
     CharacterClass, PendingCharacterLevelUp, Equipped, Weapon, Target, WantsToShoot, Name,
-    Chest, KnownAbility, AbilityType, QuestGiver, gui::QuestGiverMode};
+    Chest, KnownAbility, AbilityType, QuestGiver};
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
     let mut result = RunState::AwaitingInput;
@@ -44,7 +44,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
                 return Some(RunState::ShowVendor{ vendor: potential_target, mode: VendorMode::Sell });
             }
             if quest_givers.get(potential_target).is_some() {
-                return Some(RunState::ShowQuestMenu { quest_giver: potential_target, mode: QuestGiverMode::TakeOn });
+                return Some(RunState::ShowQuestMenu { quest_giver: potential_target, index: 0 });
             }
 
             let mut hostile = true;
