@@ -409,23 +409,13 @@ impl GameState for State {
                         newrunstate = RunState::ShowQuestMenu { quest_giver, index };
                     }
                     gui::QuestGiverResult::TurnInQuest => {
-                        let quests = &mut self.ecs.fetch_mut::<Quests>().quests;
-                        let active_quests = &mut self.ecs.fetch_mut::<ActiveQuests>().quests;
-                        let current_quest = quests.get(index as usize).unwrap();
-
+                        let wants_turn_in = &mut self.ecs.write_storage::<WantsToTurnInQuest>();
                         let player = self.ecs.fetch::<Entity>();
-                        let mut pools = self.ecs.write_storage::<Pools>();
-                        let player_pools = pools.get_mut(*player).unwrap();
+                        let quests = &self.ecs.fetch::<Quests>().quests;
+                        let quest = quests.get(index as usize).unwrap();
+                        wants_turn_in.insert(*player, WantsToTurnInQuest{ quest: quest.clone() }).expect("Unable to insert");
 
-                        if let Some(gold) = &current_quest.reward.gold {
-                            player_pools.gold += determine_roll(&gold);
-                        }
-
-                        let current_quest_name = current_quest.name.clone();
-                        active_quests.retain(|quest| quest.name != current_quest_name);
-                        quests.retain(|quest| quest.name != current_quest_name);
-
-                        newrunstate = RunState::ShowQuestMenu { quest_giver, index: 0 };
+                        newrunstate = RunState::Ticking;
                     }
                     gui::QuestGiverResult::ShowPreviousQuest => {
                         let mut new_index = index - 1;
@@ -599,6 +589,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<ActiveQuests>();
     gs.ecs.register::<QuestProgress>();
     gs.ecs.register::<QuestGiver>();
+    gs.ecs.register::<WantsToTurnInQuest>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     raws::load_raws();

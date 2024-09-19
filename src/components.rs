@@ -1163,3 +1163,8 @@ pub struct QuestProgress {
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct QuestGiver {}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct WantsToTurnInQuest {
+    pub quest: Quest
+}

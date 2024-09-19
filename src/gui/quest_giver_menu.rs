@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use rltk::prelude::*;
 use super::{white, black, yellow, green};
-use crate::{dice_range, ActiveQuests, Name, Quest, QuestRequirement, Quests, State};
+use crate::{dice_range, ActiveQuests, Name, Quest, QuestRequirement, QuestRequirementGoal, Quests, State};
 use crate::gamelog;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
@@ -14,35 +14,33 @@ pub enum QuestGiverResult {
   ShowNextQuest
 }
 
-pub fn draw_requirements(requirements: &Vec<QuestRequirement>, draw_batch: &mut DrawBatch, y: &mut i32) {
-  draw_batch.print_color(Point::new(2, *y), "Requirements:", ColorPair::new(yellow(), black()));
-  *y += 2;
+pub fn draw_requirement(requirement: &QuestRequirement, draw_batch: &mut DrawBatch, y: i32) {
+  let color = if requirement.complete {
+    ColorPair::new(green(), black())
+  } else {
+    ColorPair::new(white(), black())
+  };
 
-  for requirement in requirements.iter() {
-    let color = if requirement.complete {
-      ColorPair::new(green(), black())
-    } else {
-      ColorPair::new(white(), black())
-    };
+  match requirement.requirement_goal {
+    QuestRequirementGoal::KillCount => {
+      if requirement.targets.len() > 1 {
+        let mut text = format!("{}/{} {}", requirement.count, requirement.target_count, requirement.targets.first().unwrap());
+        for target in requirement.targets.iter().skip(1) {
+          text += format!("/{}", target).as_str();
+        }
+        text += " kills";
 
-    if requirement.targets.len() > 1 {
-      let mut text = format!("{}/{} {}", requirement.count, requirement.target_count, requirement.targets.first().unwrap());
-      for target in requirement.targets.iter().skip(1) {
-        text += format!("/{}", target).as_str();
+        draw_batch.print_color(Point::new(2, y), text, color);
+      } else {
+        draw_batch.print_color(
+          Point::new(2, y),
+          format!("{}/{} {} kills", requirement.count, requirement.target_count, requirement.targets.first().unwrap()),
+          color
+        );
       }
-      text += " kills";
-
-      draw_batch.print_color(Point::new(2, *y), text, color);
-    } else {
-      draw_batch.print_color(
-        Point::new(2, *y),
-        format!("{}/{} {} kills", requirement.count, requirement.target_count, requirement.targets.first().unwrap()),
-        color
-      );
     }
+    _ => {}
   }
-
-  *y += 4;
 }
 
 pub fn show_quest_giver_menu(gs: &mut State, ctx: &mut Rltk, quest_giver: Entity, index: i32) -> QuestGiverResult {
@@ -78,7 +76,15 @@ pub fn show_quest_giver_menu(gs: &mut State, ctx: &mut Rltk, quest_giver: Entity
   y += 4;
 
   if let Some(quest) = &current_active_quest {
-    draw_requirements(&quest.requirements, &mut draw_batch, &mut y);
+    draw_batch.print_color(Point::new(2, y), "Requirements:", ColorPair::new(yellow(), black()));
+    y += 2;
+
+    for requirement in quest.requirements.iter() {
+      draw_requirement(requirement, &mut draw_batch, y);
+      y += 1;
+    }
+
+    y += 4;
   }
 
   draw_batch.print_color(Point::new(2, y), "Rewards:", ColorPair::new(yellow(), black()));

@@ -1,8 +1,8 @@
 use specs::prelude::*;
 use rltk::prelude::*;
-use super::{box_gray, light_gray, cyan, green, red, black, white, yellow, orange, gold, blue, draw_tooltips};
+use super::{black, blue, box_gray, cyan, draw_requirement, draw_tooltips, gold, green, light_gray, orange, red, white, yellow};
 use crate::{Map, Entity, Pools, Attributes, Attribute, Skills, Skill, Equipped, Item, Name, Consumable, InBackpack, AbilityType,
-    KnownAbilities, KnownAbility, HungerClock, StatusEffect, Duration, HungerState, QuestRequirementGoal, Quest, ActiveQuests,
+    KnownAbilities, KnownAbility, HungerClock, StatusEffect, Duration, HungerState, Quest, ActiveQuests,
     player_xp_for_level, carry_capacity_lbs};
 use crate::raws;
 use crate::gamelog;
@@ -237,32 +237,7 @@ fn draw_quests(ecs: &World, draw_batch: &mut DrawBatch) {
 
         let requirements = &quest.requirements;
         for requirement in requirements.iter() {
-            let color = if requirement.complete {
-                ColorPair::new(green(), black())
-            } else {
-                ColorPair::new(white(), black())
-            };
-
-            match requirement.requirement_goal {
-                QuestRequirementGoal::KillCount => {
-                    if requirement.targets.len() > 1 {
-                        let mut text = format!("{}/{} {}", requirement.count, requirement.target_count, requirement.targets.first().unwrap());
-                        for target in requirement.targets.iter().skip(1) {
-                          text += format!("/{}", target).as_str();
-                        }
-                        text += " kills";
-                  
-                        draw_batch.print_color(Point::new(2, y), text, color);
-                      } else {
-                        draw_batch.print_color(
-                          Point::new(2, y),
-                          format!("{}/{} {} kills", requirement.count, requirement.target_count, requirement.targets.first().unwrap()),
-                          color
-                        );
-                      }
-                }
-                QuestRequirementGoal::None => {}
-            }
+            draw_requirement(requirement, draw_batch, y);
             y += 1;
         }
         y += 1;

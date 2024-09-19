@@ -17,6 +17,8 @@ impl<'a> System<'a> for ItemUseSystem {
     fn run(&mut self, data: Self::SystemData) {
         let (player_entity, map, entities, mut wants_use, aoe, mut dirty) = data;
 
+        if wants_use.is_empty() { return; }
+
         for (entity, useitem) in (&entities, &wants_use).join() {
             add_effect(
                 Some(entity),
@@ -53,6 +55,8 @@ impl<'a> System<'a> for AbilityUseSystem {
     fn run(&mut self, data: Self::SystemData) {
         let (player_entity, map, entities, mut wants_cast,
             aoe, mut dirty) = data;
+
+        if wants_cast.is_empty() { return; }
 
         for (entity, use_ability) in (&entities, &wants_cast).join() {
             dirty.insert(entity, EquipmentChanged{}).expect("Unable to insert");
