@@ -10,12 +10,13 @@ pub enum CheatMenuResult {
     RevealMap,
     GodMode,
     LevelUp,
-    MakeRich
+    MakeRich,
+    QuestComplete
 }
 
 pub fn show_cheat_mode(ctx: &mut Rltk) -> CheatMenuResult {
     let mut draw_batch = DrawBatch::new();
-    let count = 6;
+    let count = 7;
     let mut y = (25 - (count / 2)) as i32;
     menu_box(&mut draw_batch, 15, y, (count+3) as i32, "Cheating!");
 
@@ -30,6 +31,8 @@ pub fn show_cheat_mode(ctx: &mut Rltk) -> CheatMenuResult {
     menu_option(&mut draw_batch, 17, y, rltk::to_cp437('L'), "Level up", None);
     y += 1;
     menu_option(&mut draw_batch, 17, y, rltk::to_cp437('M'), "Make rich", None);
+    y += 1;
+    menu_option(&mut draw_batch, 17, y, rltk::to_cp437('Q'), "Quest complete", None);
 
     draw_batch.submit(1000).expect("Draw batch submission failed");
 
@@ -43,6 +46,7 @@ pub fn show_cheat_mode(ctx: &mut Rltk) -> CheatMenuResult {
                 VirtualKeyCode::G => CheatMenuResult::GodMode,
                 VirtualKeyCode::L => CheatMenuResult::LevelUp,
                 VirtualKeyCode::M => CheatMenuResult::MakeRich,
+                VirtualKeyCode::Q => CheatMenuResult::QuestComplete,
                 VirtualKeyCode::Escape => CheatMenuResult::Cancel,
                 _ => CheatMenuResult::NoResponse
             }

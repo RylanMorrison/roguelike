@@ -225,7 +225,7 @@ fn draw_quests(ecs: &World, draw_batch: &mut DrawBatch) {
     draw_batch.draw_box(Rect::with_size(0, 0, 40, quest_box_height(active_quests)), ColorPair::new(box_gray(), black()));
     for quest in active_quests.iter() {
         draw_batch.print_color(
-            Point::new(1, y),
+            Point::new(2, y),
             quest.name.clone(),
             if quest.is_complete() {
                 ColorPair::new(green(), black())
@@ -237,7 +237,7 @@ fn draw_quests(ecs: &World, draw_batch: &mut DrawBatch) {
 
         let requirements = &quest.requirements;
         for requirement in requirements.iter() {
-            draw_requirement(requirement, draw_batch, y);
+            draw_requirement(requirement, draw_batch, 4, y);
             y += 1;
         }
         y += 1;

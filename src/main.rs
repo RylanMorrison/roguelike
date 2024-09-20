@@ -370,6 +370,15 @@ impl GameState for State {
                         player_pools.gold = 999999;
                         newrunstate = RunState::AwaitingInput;
                     }
+                    gui::CheatMenuResult::QuestComplete => {
+                        let active_quests = &mut self.ecs.fetch_mut::<ActiveQuests>().quests;
+                        for quest in active_quests.iter_mut() {
+                            for requirement in quest.requirements.iter_mut() {
+                                requirement.complete = true
+                            }
+                        }
+                        newrunstate = RunState::AwaitingInput;
+                    }
                 }
             }
             RunState::ShowVendor{vendor, mode} => {
