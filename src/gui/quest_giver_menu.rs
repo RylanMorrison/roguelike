@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use rltk::prelude::*;
-use super::{white, black, yellow, green};
+use super::{white, black, yellow, green, cyan};
 use crate::{dice_range, ActiveQuests, Name, Quest, QuestRequirement, QuestRequirementGoal, Quests, State};
 use crate::gamelog;
 
@@ -90,13 +90,23 @@ pub fn show_quest_giver_menu(gs: &mut State, ctx: &mut Rltk, quest_giver: Entity
   draw_batch.print_color(Point::new(2, y), "Rewards:", ColorPair::new(yellow(), black()));
   y += 2;
 
-  if let Some(gold) = &current_quest.reward.gold {
-    draw_batch.print_color(
-      Point::new(6, y),
-      format!("Gold: {}", dice_range(&gold)),
-      ColorPair::new(super::gold(), black())
-    ); y += 1;
+  for reward in current_quest.rewards.iter() {
+    if let Some(gold) = &reward.gold {
+      draw_batch.print_color(
+        Point::new(6, y),
+        format!("Gold: {}", dice_range(&gold)),
+        ColorPair::new(super::gold(), black())
+      ); y += 2;
+    }
+    if let Some(xp) = &reward.xp {
+      draw_batch.print_color(
+        Point::new(6, y),
+        format!("XP: {}", xp),
+        ColorPair::new(cyan(), black())
+      ); y += 2;
+    }
   }
+
   y += 4;
 
   if let Some(quest) = &current_active_quest {

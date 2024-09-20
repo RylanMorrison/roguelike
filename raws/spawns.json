@@ -3,16 +3,16 @@
         {
             "name": "Kill 2 wolves and 3 kobolds",
             "description": "Wolves and kobolds are fighting in the woods, thin their numbers a bit.",
-            "reward": {
-                "gold": "3d20+50"
-            },
-            "requirements": [
-                {
+            "rewards": [ {
+                    "gold": "3d20+50",
+                    "xp": 600
+                }
+            ],
+            "requirements": [ {
                     "goal": "kill_count",
                     "targets": ["Wolf"],
                     "count": 2
-                },
-                {
+                }, {
                     "goal": "kill_count",
                     "targets": ["Kobold"],
                     "count": 3
@@ -22,11 +22,12 @@
         {
             "name": "Kill 5 bandits",
             "description": "Bandits are terrorising villagers moving through the forest. Send them a message.",
-            "reward": {
-                "gold": "5d10+100"
-            },
-            "requirements": [
-                {
+            "rewards": [ {
+                    "gold": "5d10+100",
+                    "xp": 1000
+                }
+            ],
+            "requirements": [ {
                     "goal": "kill_count",
                     "targets": ["Bandit"],
                     "count": 5
@@ -36,11 +37,12 @@
         {
             "name": "Kill 10 forest enemies",
             "description": "Make the forest a bit safer.",
-            "reward": {
-                "gold": "2d20+100"
-            },
-            "requirements": [
-                {
+            "rewards": [ {
+                    "gold": "2d20+100",
+                    "xp": 1500
+                }
+            ],
+            "requirements": [ {
                     "goal": "kill_count",
                     "targets": ["Wolf", "Kobold", "Bandit"],
                     "count": 10

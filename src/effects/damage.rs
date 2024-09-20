@@ -1,7 +1,6 @@
 use specs::{prelude::*, saveload::SimpleMarker, saveload::MarkedBuilder};
 use super::*;
-use crate::{Pools, StatusEffect, StatusEffectChanged, DamageOverTime, Duration, Name, Map, Player, QuestProgress, ProgressSource, RunState, 
-    SerializeMe, player_xp_for_level};
+use crate::{player_xp_for_level, CharacterClass, DamageOverTime, Duration, Map, Name, Player, Pools, ProgressSource, QuestProgress, RunState, SerializeMe, StatusEffect, StatusEffectChanged, WantsToLevelUp};
 use crate::gamelog;
 use crate::spatial;
 use crate::player;
@@ -105,7 +104,11 @@ pub fn death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
                 player_pools.xp += xp_gain;
                 player_pools.gold += gold_gain;
                 if player_pools.xp >= player_xp_for_level(player_pools.level) {
-                    player::level_up(ecs, source, player_pools);
+                    let character_classes = ecs.read_storage::<CharacterClass>();
+                    let player_class = character_classes.get(source).unwrap();
+                    let mut level_ups = ecs.write_storage::<WantsToLevelUp>();
+                    level_ups.insert(source, WantsToLevelUp{ passives: player_class.passives.clone() }).expect("Unable to insert");
+
                     let mut runstate = ecs.fetch_mut::<RunState>();
                     *runstate = RunState::LevelUp;
                 }

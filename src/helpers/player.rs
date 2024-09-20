@@ -1,4 +1,4 @@
-use rltk::{Point, Rltk, VirtualKeyCode, RGB};
+use rltk::{Point, Rltk, VirtualKeyCode};
 use specs::prelude::*;
 use std::cmp::{max, min};
 
@@ -11,8 +11,7 @@ use crate::{Position, Player, Viewshed, State, Map, RunState, Item, InBackpack, 
     TileType, particle_system::ParticleBuilder, Pools, WantsToMelee, WantsToPickupItem,
     HungerState, HungerClock, Door, BlocksVisibility, BlocksTile, Renderable, EntityMoved,
     Consumable, Ranged, Faction, Vendor, gui::VendorMode, KnownAbilities, WantsToUseAbility,
-    CharacterClass, PendingCharacterLevelUp, Equipped, Weapon, Target, WantsToShoot, Name,
-    Chest, KnownAbility, AbilityType, QuestGiver};
+    Equipped, Weapon, Target, WantsToShoot, Name, Chest, KnownAbility, AbilityType, QuestGiver};
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
     let mut result = RunState::AwaitingInput;
@@ -355,38 +354,6 @@ pub fn skip_turn(ecs: &mut World) -> RunState {
     }
 
     RunState::Ticking
-}
-
-pub fn level_up(ecs: &World, source: Entity, pools: &mut Pools) {
-    gamelog::clear_log();
-    gamelog::Logger::new()
-        .append("You are now level")
-        .colour(RGB::named(rltk::GOLD))
-        .append(pools.level + 1)
-        .reset_colour()
-        .append("!")
-        .log();
-
-    let player_pos = ecs.fetch::<rltk::Point>();
-    let map = ecs.fetch::<Map>();
-    for i in 0..10 {
-        if player_pos.y - i > 1 {
-            add_effect(None, 
-                EffectType::Particle{ 
-                    glyph: rltk::to_cp437('░'),
-                    fg : rltk::RGB::named(rltk::GOLD),
-                    bg : rltk::RGB::named(rltk::BLACK),
-                    lifespan: 400.0
-                }, 
-                Targets::Tile{ tile_idx : map.xy_idx(player_pos.x, player_pos.y - i) as i32 }
-            );
-        }
-    }
-
-    let mut pending_level_ups = ecs.write_storage::<PendingCharacterLevelUp>();
-    let character_classes = ecs.read_storage::<CharacterClass>();
-    let source_class = character_classes.get(source).unwrap();
-    pending_level_ups.insert(source, PendingCharacterLevelUp{ passives: source_class.passives.clone() }).expect("Unable to insert");
 }
 
 fn get_target_list(ecs: &mut World) -> Vec<(f32, Entity)> {

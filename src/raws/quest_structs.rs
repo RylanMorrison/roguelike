@@ -4,13 +4,14 @@ use serde::Deserialize;
 pub struct QuestData {
     pub name: String,
     pub description: String,
-    pub reward: QuestRewardData,
+    pub rewards: Vec<QuestRewardData>,
     pub requirements: Vec<QuestRewardRequirement>
 }
 
 #[derive(Deserialize, Debug)]
 pub struct QuestRewardData {
-    pub gold: Option<String>
+    pub gold: Option<String>,
+    pub xp: Option<i32>
 }
 
 #[derive(Deserialize, Debug)]

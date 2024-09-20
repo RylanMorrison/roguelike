@@ -825,7 +825,7 @@ pub struct TileSize {
 }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
-pub struct PendingCharacterLevelUp {
+pub struct WantsToLevelUp {
     pub passives: BTreeMap<String, ClassPassive>
 }
 
@@ -1117,7 +1117,7 @@ pub struct ActiveQuests {
 pub struct Quest {
     pub name: String,
     pub description: String,
-    pub reward: QuestReward,
+    pub rewards: Vec<QuestReward>,
     pub requirements: Vec<QuestRequirement>
 }
 
@@ -1132,7 +1132,8 @@ impl Quest {
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct QuestReward {
-    pub gold: Option<String>
+    pub gold: Option<String>,
+    pub xp: Option<i32>
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Copy, Clone)]

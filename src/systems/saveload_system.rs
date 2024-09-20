@@ -62,7 +62,7 @@ pub fn save_game(ecs : &mut World) {
             LightSource, Initiative, MyTurn, Faction, WantsToApproach, MoveMode, Chasing, EquipmentChanged,
             Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport, Food, SpawnParticleLine,
             SpawnParticleBurst, AttributeBonus, Duration, StatusEffect, KnownAbilities, KnownAbility, AttributeBonus,
-            WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime, TileSize, PendingCharacterLevelUp,
+            WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime, TileSize, WantsToLevelUp,
             SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot, Stun, StatusEffectChanged, Boss, Chest, CharacterClass,
             SelfDamage, Rage, Block, Fortress, FrostShield, Dodge, WantsToLearnAbility, WantsToLevelAbility,
             Quests, ActiveQuests, QuestProgress, QuestGiver, WantsToTurnInQuest
@@ -119,7 +119,7 @@ pub fn load_game(ecs: &mut World) {
             LightSource, Initiative, MyTurn, Faction, WantsToApproach, MoveMode, Chasing, EquipmentChanged,
             Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport, Food, SpawnParticleLine,
             SpawnParticleBurst, AttributeBonus, Duration, StatusEffect, KnownAbilities, KnownAbility, Ability,
-            WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime, TileSize, PendingCharacterLevelUp,
+            WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime, TileSize, WantsToLevelUp,
             SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot, Stun, StatusEffectChanged, Boss, Chest, CharacterClass,
             SelfDamage, Rage, Block, Fortress, FrostShield, Dodge, WantsToLearnAbility, WantsToLevelAbility,
             Quests, ActiveQuests, QuestProgress, QuestGiver, WantsToTurnInQuest

@@ -765,7 +765,7 @@ pub fn store_named_quest(raws: &RawMaster, ecs: &mut World, key: &str) {
         let quest_template = &raws.raws.quests[raws.quest_index[key]];
 
         let mut quests = ecs.fetch_mut::<Quests>();
-        let mut quest_requirements: Vec<QuestRequirement> = Vec::new();
+        let mut requirements: Vec<QuestRequirement> = Vec::new();
         for requirement in quest_template.requirements.iter() {
             let requirement_goal = match requirement.goal.as_str() {
                 "kill_count" => QuestRequirementGoal::KillCount,
@@ -779,7 +779,7 @@ pub fn store_named_quest(raws: &RawMaster, ecs: &mut World, key: &str) {
                 rltk::console::log(format!("WARNING - Kill count requirement without a count! [{}]", requirement.goal));
             }
 
-            quest_requirements.push(QuestRequirement {
+            requirements.push(QuestRequirement {
                 requirement_goal,
                 targets: requirement.targets.clone(),
                 count: 0,
@@ -787,14 +787,18 @@ pub fn store_named_quest(raws: &RawMaster, ecs: &mut World, key: &str) {
                 complete: false
             });
         }
-        let quest_reward = QuestReward {
-            gold: quest_template.reward.gold.clone()
-        };
+        let mut rewards: Vec<QuestReward> = Vec::new();
+        for reward in quest_template.rewards.iter() {
+            rewards.push(QuestReward {
+                gold: reward.gold.clone(),
+                xp: reward.xp
+            });
+        }
         quests.quests.push(Quest {
             name: quest_template.name.clone(),
             description: quest_template.description.clone(),
-            reward: quest_reward,
-            requirements: quest_requirements
+            rewards,
+            requirements
         });
     }
 }

@@ -357,9 +357,10 @@ impl GameState for State {
                     }
                     gui::CheatMenuResult::LevelUp => {
                         let player = self.ecs.fetch::<Entity>();
-                        let mut pools = self.ecs.write_storage::<Pools>();
-                        let player_pools = pools.get_mut(*player).unwrap();
-                        player::level_up(&self.ecs, *player, player_pools);
+                        let character_classes = self.ecs.read_storage::<CharacterClass>();
+                        let player_class = character_classes.get(*player).unwrap();
+                        let mut level_ups = self.ecs.write_storage::<WantsToLevelUp>();
+                        level_ups.insert(*player, WantsToLevelUp{ passives: player_class.passives.clone() }).expect("Unable to insert");
                         newrunstate = RunState::LevelUp;
                     }
                     gui::CheatMenuResult::MakeRich => {
@@ -563,7 +564,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Slow>();
     gs.ecs.register::<DamageOverTime>();
     gs.ecs.register::<TileSize>();
-    gs.ecs.register::<PendingCharacterLevelUp>();
+    gs.ecs.register::<WantsToLevelUp>();
     gs.ecs.register::<ItemSets>();
     gs.ecs.register::<PartOfSet>();
     gs.ecs.register::<Target>();

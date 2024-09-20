@@ -2,7 +2,7 @@ use rltk::RGB;
 use specs::prelude::*;
 use crate::effects::add_effect;
 use crate::{ActiveQuests, ProgressSource, QuestProgress, QuestRequirementGoal, WantsToTurnInQuest,
-    Pools, Quests, Point, Map, determine_roll};
+    Pools, Quests, Point, Map, RunState, WantsToLevelUp, CharacterClass, determine_roll, player_xp_for_level};
 use crate::gamelog;
 use crate::effects;
 
@@ -59,16 +59,20 @@ impl<'a> System<'a> for QuestTurnInSystem {
         ReadExpect<'a, Entity>,
         Entities<'a>,
         WriteStorage<'a, WantsToTurnInQuest>,
+        WriteStorage<'a, WantsToLevelUp>,
+        ReadStorage<'a, CharacterClass>,
         WriteStorage<'a, Pools>,
         WriteExpect<'a, Quests>,
         WriteExpect<'a, ActiveQuests>,
         ReadExpect<'a, Point>,
-        ReadExpect<'a, Map>
+        ReadExpect<'a, Map>,
+        WriteExpect<'a, RunState>
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player, entities, mut wants_turn_in, mut pools, mut quests,
-            mut active_quests, player_pos, map) = data;
+        let (player, entities, mut wants_turn_in, mut level_ups,
+            character_classes, mut pools, mut quests, mut active_quests,
+            player_pos, map, mut runstate) = data;
 
         if wants_turn_in.is_empty() { return; }
 
@@ -76,11 +80,24 @@ impl<'a> System<'a> for QuestTurnInSystem {
             let quest_name = turn_in.quest.name.clone();
 
             if let Some(pool) = pools.get_mut(entity) {
-                if let Some(gold) = &turn_in.quest.reward.gold {
-                    let gold_reward = determine_roll(gold);
-                    pool.gold += gold_reward;
-                    if entity == *player {
-                        gamelog::Logger::new().append(format!("You receive {} gold", gold_reward)).log();
+                for reward in &turn_in.quest.rewards {
+                    if let Some(gold) = &reward.gold {
+                        let gold_reward = determine_roll(gold);
+                        pool.gold += gold_reward;
+                        if entity == *player {
+                            gamelog::Logger::new().append(format!("You receive {} gold", gold_reward)).log();
+                        }
+                    }
+                    if let Some(xp) = &reward.xp {
+                        pool.xp += xp;
+                        if entity == *player {
+                            gamelog::Logger::new().append(format!("You receive {} xp", xp)).log();
+                            if pool.xp >= player_xp_for_level(pool.level) {
+                                let player_class = character_classes.get(entity).unwrap();
+                                level_ups.insert(entity, WantsToLevelUp{ passives: player_class.passives.clone() }).expect("Unable to insert");
+                                *runstate = RunState::LevelUp;
+                            }
+                        }
                     }
                 }
             }
