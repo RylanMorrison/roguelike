@@ -52,6 +52,9 @@ impl TownBuilder {
         for t in build_data.map.visible_tiles.iter_mut() {
             *t = true;
         }
+        for t in build_data.map.revealed_tiles.iter_mut() {
+            *t = true;
+        }
         build_data.take_snapshot();
     }
 

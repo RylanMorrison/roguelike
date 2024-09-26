@@ -45,6 +45,13 @@ pub struct RenderableData {
 }
 
 #[derive(Deserialize, Debug)]
+pub struct MapMarkerData {
+    pub glyph: String,
+    pub fg: Option<String>,
+    pub bg: Option<String>
+}
+
+#[derive(Deserialize, Debug)]
 pub struct AttributeBonusData {
     pub strength: Option<i32>,
     pub dexterity: Option<i32>,

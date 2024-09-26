@@ -19,20 +19,20 @@ impl<'a> System<'a> for VisibilitySystem {
     fn run(&mut self, data : Self::SystemData) {
         let (mut map, entities, mut viewshed, pos, player,
             blocks_visibility) = data;
-        
+
         map.view_blocked.clear();
         for (block_pos, _block) in (&pos, &blocks_visibility).join() {
             let idx = map.xy_idx(block_pos.x, block_pos.y);
             map.view_blocked.insert(idx);
         }
-        
+
         for(ent, viewshed, pos) in (&entities, &mut viewshed, &pos).join() {
             if viewshed.dirty {
                 viewshed.dirty = false;
                 viewshed.visible_tiles.clear();
                 viewshed.visible_tiles = field_of_view(Point::new(pos.x, pos.y), viewshed.range, &*map);
                 viewshed.visible_tiles.retain(|p| p.x >= 0 && p.x < map.width && p.y >= 0 && p.y < map.height );
-    
+
                 let _p : Option<&Player> = player.get(ent);
                 if let Some(_p) = _p {
                     for t in map.visible_tiles.iter_mut() { *t = false }

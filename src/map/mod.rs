@@ -1,7 +1,7 @@
-use rltk::{BaseMap, Algorithm2D, Point, RGB};
+use rltk::{BaseMap, Algorithm2D, Point, RGB, FontCharType};
 use specs::prelude::*;
 use serde::{Serialize, Deserialize};
-use std::collections::HashSet;
+use std::collections::{HashSet, HashMap};
 mod tile_type;
 mod themes;
 mod dungeon;
@@ -11,6 +11,12 @@ pub use tile_type::{TileType, tile_walkable, tile_opaque, tile_cost};
 pub use dungeon::{MasterDungeonMap, level_transition, freeze_level_entities, thaw_level_entities};
 pub use themes::*;
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct Marker {
+    pub glyph: FontCharType,
+    pub fg: RGB,
+    pub bg: RGB
+}
 
 #[derive(Default, Serialize, Deserialize, Clone)]
 pub struct Map {
@@ -24,7 +30,8 @@ pub struct Map {
     pub bloodstains: HashSet<usize>,
     pub view_blocked: HashSet<usize>,
     pub outdoors: bool,
-    pub light: Vec<RGB>
+    pub light: Vec<RGB>,
+    pub markers: HashMap<usize, Marker>
 }
 
 impl Map {
@@ -43,7 +50,8 @@ impl Map {
             bloodstains: HashSet::new(),
             view_blocked: HashSet::new(),
             outdoors: true,
-            light: vec![RGB::named(rltk::BLACK); map_tile_count]
+            light: vec![RGB::named(rltk::BLACK); map_tile_count],
+            markers: HashMap::new()
         }
     }
     

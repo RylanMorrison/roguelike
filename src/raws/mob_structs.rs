@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use super::RenderableData;
+use super::{RenderableData, MapMarkerData};
 use std::collections::HashMap;
 
 #[derive(Deserialize, Debug)]
@@ -24,7 +24,8 @@ pub struct MobData {
     pub vendor: Option<String>,
     pub quest_giver: Option<bool>,
     pub abilities: Option<Vec<MobAbilityData>>,
-    pub boss: Option<bool>
+    pub boss: Option<bool>,
+    pub map_marker: Option<MapMarkerData>
 }
 
 #[derive(Deserialize, Debug)]

@@ -9,9 +9,11 @@ use crate::{Pools, Player, Renderable, Name, Position, Viewshed,
     Map, TileType, Attributes, Skills, Pool, LightSource, Faction,
     Initiative, EquipmentChanged, Point, EntryTrigger, TeleportTo, 
     SingleActivation, mana_at_level, player_hp_at_level, StatusEffect,
-    Duration, AttributeBonus, KnownAbilities, EntityVec, InitiativePenalty
+    Duration, AttributeBonus, KnownAbilities, EntityVec, InitiativePenalty,
+    MapMarker
 };
 use crate::rng;
+use crate::map::Marker;
 
 pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     let attributes = Attributes::default();
@@ -144,7 +146,7 @@ pub fn spawn_region(_map: &Map, area: &[usize], map_depth: i32, spawn_list: &mut
 }
 
 // spawn an entity using (location, name)
-pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
+pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) -> Option<Entity> {
     let map = ecs.fetch::<Map>();
     let width = map.width as usize;
     let x = (*spawn.0 % width) as i32;
@@ -155,9 +157,23 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) {
         &RAWS.lock().unwrap(), ecs,
         &spawn.1, SpawnType::AtPosition{ x, y }
     );
-    if spawn_result.is_some() { return; }
+    if spawn_result.is_none() {
+        rltk::console::log(format!("WARNING: We don't know how to spawn [{}]!", spawn.1));
+        return None;
+    }
 
-    rltk::console::log(format!("WARNING: We don't know how to spawn [{}]!", spawn.1));
+    // use the entity's spawn location for any map markers the entity has
+    let markers = ecs.read_storage::<MapMarker>();
+    let mut map = ecs.fetch_mut::<Map>();
+    if let Some(marker) = markers.get(spawn_result.unwrap()) {
+        map.markers.insert(*spawn.0, Marker {
+            glyph: marker.glyph,
+            fg: marker.fg,
+            bg: marker.bg
+        });
+    }
+
+    spawn_result
 }
 
 pub fn spawn_town_portal(ecs: &mut World) {

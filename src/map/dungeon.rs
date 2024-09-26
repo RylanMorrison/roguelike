@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
 use specs::prelude::*;
 use super::{World, Map, Point, Entity, TileType};
-use crate::components::{Position, Viewshed, OtherLevelPosition};
+use crate::components::{Position, Viewshed, OtherLevelPosition, MapMarker};
 use crate::map_builders::level_builder;
 
 #[derive(Default, Serialize, Deserialize, Clone)]
@@ -82,11 +82,13 @@ fn transition_to_new_map(ecs: &mut World, new_depth: i32) -> Vec<Map> {
         player_pos_comp.y = player_y;
     }
 
-    // reset the player's visibility
-    let mut viewshed_components = ecs.write_storage::<Viewshed>();
-    let player_viewshed = viewshed_components.get_mut(*player_entity);
-    if let Some(player_viewshed) = player_viewshed {
-        player_viewshed.dirty = true;
+    if builder.build_data.map.depth > 0 {
+        // reset the player's visibility
+        let mut viewshed_components = ecs.write_storage::<Viewshed>();
+        let player_viewshed = viewshed_components.get_mut(*player_entity);
+        if let Some(player_viewshed) = player_viewshed {
+            player_viewshed.dirty = true;
+        }
     }
 
     let mut dungeon_master = ecs.write_resource::<MasterDungeonMap>();
@@ -121,11 +123,13 @@ fn transition_to_existing_map(ecs: &mut World, new_depth: i32, offset: i32) {
     dungeon_master.store_map(&worldmap_resource.clone());
     *worldmap_resource = map;
 
-    // reset player visibility
-    let mut viewsheds = ecs.write_storage::<Viewshed>();
-    let player_viewshed = viewsheds.get_mut(*player_entity);
-    if let Some(viewshed) = player_viewshed {
-        viewshed.dirty = true;
+    if worldmap_resource.depth > 0 {
+        // reset player visibility
+        let mut viewsheds = ecs.write_storage::<Viewshed>();
+        let player_viewshed = viewsheds.get_mut(*player_entity);
+        if let Some(viewshed) = player_viewshed {
+            viewshed.dirty = true;
+        }
     }
 }
 

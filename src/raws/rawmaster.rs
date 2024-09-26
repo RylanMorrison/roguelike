@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet, BTreeMap};
 use specs::prelude::*;
 use rltk::RGB;
 use crate::components::*;
-use super::{Raws, Reaction, RenderableData, SpawnTableEntry};
+use super::{Raws, Reaction, RenderableData, SpawnTableEntry, MapMarkerData};
 use crate::{attr_bonus, npc_hp, mana_at_level, parse_dice_string, determine_roll};
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use crate::rng;
@@ -223,6 +223,26 @@ fn get_renderable_component(renderable: &RenderableData, fg_override: Option<&St
     }
 }
 
+fn get_map_marker_component(map_marker: &MapMarkerData) -> MapMarker {
+    MapMarker {
+        glyph: rltk::to_cp437(map_marker.glyph.chars().next().unwrap()),
+        fg: {
+            if let Some(fg) = &map_marker.fg {
+                RGB::from_hex(fg).expect("Inavlid RGB")
+            } else {
+                RGB::named(rltk::WHITE)
+            }
+        },
+        bg: {
+            if let Some(bg) = &map_marker.bg {
+                RGB::from_hex(bg).expect("Invalid RGB")
+            } else {
+                RGB::named(rltk::BLACK)
+            }
+        }
+    }
+}
+
 pub fn spawn_named_entity(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnType) -> Option<Entity> {
     if raws.item_index.contains_key(key) {
         return spawn_named_item(raws, ecs, key, pos);
@@ -439,6 +459,11 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
         }
     }
 
+    // map marker
+    if let Some(marker) = &mob_template.map_marker {
+        eb = eb.with(get_map_marker_component(marker));
+    }
+
     // initiative
     eb = eb.with(Initiative{current: 2});
 
@@ -620,6 +645,8 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
     if let Some(renderable) = &prop_template.renderable {
         eb = eb.with(get_renderable_component(renderable, None));
     }
+
+
     
     eb = eb.with(Name{ name: prop_template.name.clone() });
 

@@ -2719,6 +2719,10 @@
                 "bg": "#000000",
                 "order": 1
             },
+            "map_marker": {
+                "glyph": "!",
+                "fg": "#FF0000"
+            },
             "blocks_tile": true,
             "vision_range": 6,
             "movement": "static",
@@ -2818,6 +2822,10 @@
                 "bg": "#000000",
                 "order": 1
             },
+            "map_marker": {
+                "glyph": "B",
+                "fg": "#EE82EE"
+            },
             "blocks_tile": true,
             "vision_range": 4,
             "movement": "static",
@@ -2870,6 +2878,10 @@
                 "fg": "#EE82EE",
                 "bg": "#000000",
                 "order": 1
+            },
+            "map_marker": {
+                "glyph": "P",
+                "fg": "#EE82EE"
             },
             "blocks_tile": true,
             "vision_range": 4,
@@ -3004,6 +3016,10 @@
                 "bg": "#000000",
                 "order": 1
             },
+            "map_marker": {
+                "glyph": "C",
+                "fg": "#EE82EE"
+            },
             "blocks_tile": true,
             "vision_range": 4,
             "movement": "static",
@@ -3023,6 +3039,10 @@
                 "fg": "#EE82EE",
                 "bg": "#000000",
                 "order": 1
+            },
+            "map_marker": {
+                "glyph": "M",
+                "fg": "#EE82EE"
             },
             "blocks_tile": true,
             "vision_range": 4,
@@ -3044,6 +3064,10 @@
                 "bg": "#000000",
                 "order": 1
             },
+            "map_marker": {
+                "glyph": "W",
+                "fg": "#EE82EE"
+            },
             "blocks_tile": true,
             "vision_range": 4,
             "movement": "static",
@@ -3064,6 +3088,10 @@
                 "bg": "#000000",
                 "order": 1
             },
+            "map_marker": {
+                "glyph": "A",
+                "fg": "#EE82EE"
+            },
             "blocks_tile": true,
             "vision_range": 4,
             "movement": "static",
@@ -3083,6 +3111,10 @@
                 "fg": "#EE82EE",
                 "bg": "#000000",
                 "order": 1
+            },
+            "map_marker": {
+                "glyph": "Q",
+                "fg": "#EE82EE"
             },
             "blocks_tile": true,
             "vision_range": 4,
@@ -3203,6 +3235,10 @@
                 "bg": "#000000",
                 "order": 2
             },
+            "map_marker": {
+                "glyph": "?",
+                "fg": "#ffffff"
+            },
             "loot_table": "Common Chest",
             "gold": "2d10",
             "capacity": 6
@@ -3214,6 +3250,10 @@
                 "fg": "#3d19da",
                 "bg": "#000000",
                 "order": 2
+            },
+            "map_marker": {
+                "glyph": "?",
+                "fg": "#3d19da"
             },
             "loot_table": "Rare Chest",
             "gold": "4d10+2",

@@ -1,4 +1,4 @@
-use super::{Map, Rect, TileType, Position, spawner, SHOW_MAPGEN_VISUALIZER};
+use super::{Map, Rect, TileType, Position, MapMarker, spawner, SHOW_MAPGEN_VISUALIZER};
 use crate::rng;
 use specs::prelude::*;
 mod simple_map;
@@ -121,8 +121,8 @@ impl BuilderChain {
     }
 
     pub fn spawn_entites(&mut self, ecs: &mut World) {
-        for entity in self.build_data.spawn_list.iter() {
-            spawner::spawn_entity(ecs, &(&entity.0, &entity.1));
+        for (location, name) in self.build_data.spawn_list.iter() {
+            spawner::spawn_entity(ecs, &(location, name));
         }
     }
 }

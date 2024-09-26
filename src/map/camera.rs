@@ -4,10 +4,11 @@ use crate::tile_glyph;
 use crate::{Map, Position, Renderable, World, TileSize, Target};
 
 const SHOW_BOUNDARIES: bool = true;
+const WINDOW_BOUNDARIES: (i32, i32) = (68, 64);
 
 pub fn get_screen_bounds(ecs: &World, _ctx: &mut Rltk) -> (i32, i32, i32, i32) {
     let player_pos = ecs.fetch::<Point>();
-    let (x_chars, y_chars) = (68, 64);
+    let (x_chars, y_chars) = WINDOW_BOUNDARIES;
 
     let center_x = (x_chars / 2) as i32;
     let center_y = (y_chars / 2) as i32;
@@ -83,16 +84,26 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
             }
         } else {
             let idx = map.xy_idx(pos.x, pos.y);
-            if map.visible_tiles[idx] {
-                let entity_screen_x = pos.x - min_x;
-                let entity_screen_y = pos.y - min_y;
-                if entity_screen_x > 0 && entity_screen_x < map_width
-                && entity_screen_y > 0 && entity_screen_y < map_height {
+            let entity_screen_x = pos.x - min_x;
+            let entity_screen_y = pos.y - min_y;
+
+            if entity_screen_x > 0 && entity_screen_x < map_width
+            && entity_screen_y > 0 && entity_screen_y < map_height {
+                if map.visible_tiles[idx] {
                     draw_batch.set(
                         Point::new(entity_screen_x + 1, entity_screen_y + 1),
                         ColorPair::new(render.fg, render.bg),
                         render.glyph
                     );
+                } else if let Some(marker) = map.markers.get(&idx) {
+                    let (x_boundary, y_boundary) = WINDOW_BOUNDARIES;
+                    if entity_screen_x < x_boundary && entity_screen_y < y_boundary {
+                        draw_batch.set(
+                            Point::new(entity_screen_x + 1, entity_screen_y + 1),
+                            ColorPair::new(marker.fg, marker.bg),
+                            marker.glyph
+                        );
+                    }
                 }
             }
         }
@@ -143,8 +154,13 @@ pub fn render_debug_map(map: &Map, ctx: &mut Rltk) {
                         ColorPair::new(fg, bg),
                         glyph
                     );
+                } else if let Some(marker) = map.markers.get(&idx) {
+                    draw_batch.set(
+                        Point::new(x, y),
+                        ColorPair::new(marker.fg, marker.bg),
+                        marker.glyph
+                    );
                 }
-                
             } else if SHOW_BOUNDARIES {
                 draw_batch.set(
                     Point::new(x, y),

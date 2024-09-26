@@ -1169,3 +1169,10 @@ pub struct QuestGiver {}
 pub struct WantsToTurnInQuest {
     pub quest: Quest
 }
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct MapMarker {
+    pub glyph: FontCharType,
+    pub fg: RGB,
+    pub bg: RGB
+}
