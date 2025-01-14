@@ -50,7 +50,7 @@ const ORC_CAMP_RIGHT: &str = "
       #############################
 ";
 
-pub const WARBOSS_DEN: PrefabSection = PrefabSection{
+pub const WARBOSS_DEN: PrefabSection = PrefabSection {
     template: WARBOSS_DEN_TEMPLATE,
     width: 53,
     height: 23,
@@ -65,7 +65,7 @@ const WARBOSS_DEN_TEMPLATE: &str = "
 #                                                   #
 ##########################+##########################
 #                                                   #
-#                      o  W  o                      #
+#                      o  B  o                      #
 #                                                   #
 #                                                   #
 ##########################+##########################
@@ -81,4 +81,36 @@ const WARBOSS_DEN_TEMPLATE: &str = "
 #                                                   #
 #                                                   #
 #####################          ######################
+";
+
+pub const WOLF_DEN: PrefabSection = PrefabSection {
+    template: WOLF_DEN_TEMPLATE,
+    width: 35,
+    height: 22,
+    placement: (HorizontalPlacement::Left, VerticalPlacement::Top)
+};
+
+const WOLF_DEN_TEMPLATE: &str = "
+                                   
+                                   
+                                   
+     #########################     
+    #    ◘   #                #    
+   #         #     w           #   
+   #        #                  #   
+   #    W    #  w     w        #   
+   ##                          #   
+   # ##           w            #   
+   #   #     w                 #   
+   #                           #   
+   #  w   w    w               #   
+   #                           #   
+   #    w                      #   
+   #                           #   
+   #                               
+   #                               
+   ##########################      
+                                   
+                                   
+                                   
 ";

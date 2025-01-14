@@ -44,7 +44,6 @@ impl<'a> System<'a> for QuestProgressSystem {
                         }
                     }
                 }
-                _ => {}
             }
         }
 
@@ -94,7 +93,9 @@ impl<'a> System<'a> for QuestTurnInSystem {
                             gamelog::Logger::new().append(format!("You receive {} xp", xp)).log();
                             if pool.xp >= player_xp_for_level(pool.level) {
                                 let player_class = character_classes.get(entity).unwrap();
-                                level_ups.insert(entity, WantsToLevelUp{ passives: player_class.passives.clone() }).expect("Unable to insert");
+                                level_ups.insert(entity, WantsToLevelUp {
+                                    passives: player_class.passives.clone()
+                                }).expect("Unable to insert");
                                 *runstate = RunState::LevelUp;
                             }
                         }
@@ -104,17 +105,16 @@ impl<'a> System<'a> for QuestTurnInSystem {
             
             active_quests.quests.retain(|quest| quest.name != quest_name);
             quests.quests.retain(|quest| quest.name != quest_name);
-
             for i in 0..10 {
                 if player_pos.y - i > 1 {
                     add_effect(None,
-                        effects::EffectType::Particle{
+                        effects::EffectType::Particle {
                             glyph: rltk::to_cp437('░'),
                             fg: RGB::named(rltk::BLUE),
                             bg: RGB::named(rltk::BLACK),
                             lifespan: 400.0
                         },
-                        effects::Targets::Tile{ tile_idx: map.xy_idx(player_pos.x, player_pos.y -i) as i32 }
+                        effects::Targets::Tile { tile_idx: map.xy_idx(player_pos.x, player_pos.y -i) as i32 }
                     );
                 }
             }

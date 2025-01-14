@@ -794,23 +794,23 @@ pub fn store_named_quest(raws: &RawMaster, ecs: &mut World, key: &str) {
         let mut quests = ecs.fetch_mut::<Quests>();
         let mut requirements: Vec<QuestRequirement> = Vec::new();
         for requirement in quest_template.requirements.iter() {
-            let requirement_goal = match requirement.goal.as_str() {
-                "kill_count" => QuestRequirementGoal::KillCount,
+            let mut target_count = 1;
+            let mut requirement_goal = QuestRequirementGoal::None;
+            match requirement.goal.as_str() {
+                "kill_count" => {
+                    target_count = requirement.count.unwrap();
+                    requirement_goal = QuestRequirementGoal::KillCount;
+                }
                 _ => {
                     rltk::console::log(format!("WARNING - Unknown quest requirement goal [{}]", requirement.goal));
-                    QuestRequirementGoal::None
                 }
-            };
-            let requirement_count = requirement.count.unwrap_or(0);
-            if requirement_goal == QuestRequirementGoal::KillCount && requirement_count == 0 {
-                rltk::console::log(format!("WARNING - Kill count requirement without a count! [{}]", requirement.goal));
             }
 
             requirements.push(QuestRequirement {
                 requirement_goal,
                 targets: requirement.targets.clone(),
                 count: 0,
-                target_count: requirement_count,
+                target_count,
                 complete: false
             });
         }
@@ -821,11 +821,28 @@ pub fn store_named_quest(raws: &RawMaster, ecs: &mut World, key: &str) {
                 xp: reward.xp
             });
         }
+        // let mut prerequisites: Option<Vec<QuestPrerequisite>> = None;
+        // if let Some(prerequisites) = &quest_template.prerequisites {
+        //     for prerequisite in prerequisites.iter() {
+        //         prerequisites.push(QuestPrerequisite {
+        //             quests: prerequisite.quests,
+        //             status: match prerequisite.status {
+        //                 "available" => QuestStatus::Available,
+        //                 "active" => QuestStatus::Active,
+        //                 "complete" => QuestStatus::Complete,
+        //                 "failed" => QuestStatus::Failed,
+        //                 _ => QuestStatus::Unavailable,
+        //             }
+        //         });
+        //     }
+        // }
         quests.quests.push(Quest {
             name: quest_template.name.clone(),
             description: quest_template.description.clone(),
             rewards,
-            requirements
+            requirements,
+            // prerequisites,
+            status: QuestStatus::Available
         });
     }
 }
@@ -970,7 +987,7 @@ fn get_item_class_colour(class_string: &str, raws: &RawMaster) -> RGB {
 
 pub fn parse_particle_line(token_string: &str) -> SpawnParticleLine {
     let tokens: Vec<_> = token_string.split(';').collect();
-    SpawnParticleLine{
+    SpawnParticleLine {
         glyph: rltk::to_cp437(tokens[0].chars().next().unwrap()),
         colour: RGB::from_hex(tokens[1]).expect("Invalid RGB"),
         lifetime_ms: tokens[2].parse::<f32>().unwrap()
@@ -979,9 +996,9 @@ pub fn parse_particle_line(token_string: &str) -> SpawnParticleLine {
 
 pub fn parse_particle(token_string: &str) -> SpawnParticleBurst {
     let tokens: Vec<_> = token_string.split(';').collect();
-    SpawnParticleBurst{
+    SpawnParticleBurst {
         glyph: rltk::to_cp437(tokens[0].chars().next().unwrap()),
-        colour: RGB::from_hex(tokens[1]).expect("Bad RGB"),
+        colour: RGB::from_hex(tokens[1]).expect("Invalid RGB"),
         lifetime_ms: tokens[2].parse::<f32>().unwrap()
     }
 }

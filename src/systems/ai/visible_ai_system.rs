@@ -1,4 +1,5 @@
 use specs::prelude::*;
+use rltk::Point;
 use crate::{spatial, AbilityType, Chasing, Confusion, Equipped, Faction, KnownAbilities, KnownAbility, Map, MyTurn, Position,
     Ranged, Viewshed, WantsToApproach, WantsToShoot, WantsToUseAbility, Weapon, RunState};
 use crate::raws::{Reaction, faction_reaction, RAWS};
@@ -56,8 +57,8 @@ impl<'a> System<'a> for VisibleAI {
                     match reaction.1 {
                         Reaction::Attack => {
                             let range = rltk::DistanceAlg::Pythagoras.distance2d(
-                                rltk::Point::new(pos.x, pos.y),
-                                rltk::Point::new(reaction.0 as i32 % map.width, reaction.0 as i32 / map.width)
+                                Point::new(pos.x, pos.y),
+                                Point::new(reaction.0 as i32 % map.width, reaction.0 as i32 / map.width)
                             );
                             if let Some(ability_entities) = known_ability_lists.get(entity) {
                                 if rng::roll_dice(1, 100) >= 50 { // TODO ability chance per ability/entity
@@ -77,15 +78,21 @@ impl<'a> System<'a> for VisibleAI {
                                     if potential_abilities.len() >= 1 {
                                         // pick a single random ability to use
                                         let random_ability = potential_abilities.get(
-                                            rng::roll_dice(1, potential_abilities.len() as i32) as usize -1
+                                            rng::roll_dice(1, potential_abilities.len() as i32) as usize - 1
                                         ).unwrap();
+
+                                        let target: Option<Point>;
+                                        if ranged.get(*random_ability).is_some() || (range > 0.0 && range < 2.0) {
+                                            // targeting ranged and melee
+                                            target = Some(Point::new(reaction.0 as i32 % map.width, reaction.0 as i32 / map.width));
+                                        } else {
+                                            // targeting self ("flare" abilties)
+                                            target = Some(Point::new(pos.x, pos.y));
+                                        }
 
                                         wants_cast.insert(
                                             entity,
-                                            WantsToUseAbility{
-                                                ability: *random_ability,
-                                                target: Some(rltk::Point::new(reaction.0 as i32 % map.width, reaction.0 as i32 / map.width))
-                                            }
+                                            WantsToUseAbility { ability: *random_ability, target }
                                         ).expect("Unable to insert");
                                         done = true;
                                     }

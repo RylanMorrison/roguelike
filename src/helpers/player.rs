@@ -301,13 +301,13 @@ pub fn skip_turn(ecs: &mut World) -> RunState {
     let positions = ecs.read_storage::<Position>();
     let mut particle_builder = ecs.fetch_mut::<ParticleBuilder>();
 
-    // prevent skip turn healing if monsters are nearby
+    // prevent skip turn healing if enemies are nearby
     let mut can_heal = true;
     let viewshed = viewsheds.get(*player_entity).unwrap();
     for tile in viewshed.visible_tiles.iter() {
         let idx = worldmap.xy_idx(tile.x, tile.y);
-        spatial::for_each_tile_content(idx, |entity_id| {
-            let faction = factions.get(entity_id);
+        spatial::for_each_tile_content(idx, |entity| {
+            let faction = factions.get(entity);
             match faction {
                 None => {},
                 Some(faction) => {

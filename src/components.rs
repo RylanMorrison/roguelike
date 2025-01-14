@@ -1118,7 +1118,9 @@ pub struct Quest {
     pub name: String,
     pub description: String,
     pub rewards: Vec<QuestReward>,
-    pub requirements: Vec<QuestRequirement>
+    pub requirements: Vec<QuestRequirement>,
+    // pub prerequisites: Option<Vec<QuestPrerequisite>>,
+    pub status: QuestStatus
 }
 
 impl Quest {
@@ -1128,6 +1130,15 @@ impl Quest {
         }
         true
     }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub enum QuestStatus {
+    Unavailable,
+    Available,
+    Active,
+    Complete,
+    Failed
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -1149,6 +1160,11 @@ pub struct QuestRequirement {
     pub count: i32,
     pub target_count: i32,
     pub complete: bool
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct QuestPrerequisite {
+    pub quest_statuses: HashMap<String, QuestStatus>
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Copy, Clone)]

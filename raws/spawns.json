@@ -1,33 +1,33 @@
 {
     "quests": [
         {
-            "name": "Kill 2 wolves and 3 kobolds",
-            "description": "Wolves and kobolds are fighting in the woods, thin their numbers a bit.",
-            "rewards": [ {
+            "name": "Cold the bold",
+            "description": "Agressive kobolds are bothering villagers. Thin their numbers.",
+            "rewards": [
+                {
                     "gold": "3d20+50",
-                    "xp": 600
+                    "xp": 800
                 }
             ],
-            "requirements": [ {
-                    "goal": "kill_count",
-                    "targets": ["Wolf"],
-                    "count": 2
-                }, {
+            "requirements": [
+                {
                     "goal": "kill_count",
                     "targets": ["Kobold"],
-                    "count": 3
+                    "count": 6
                 }
             ]
         },
         {
-            "name": "Kill 5 bandits",
+            "name": "This is a stick up",
             "description": "Bandits are terrorising villagers moving through the forest. Send them a message.",
-            "rewards": [ {
+            "rewards": [ 
+                {
                     "gold": "5d10+100",
                     "xp": 1000
                 }
             ],
-            "requirements": [ {
+            "requirements": [
+                {
                     "goal": "kill_count",
                     "targets": ["Bandit"],
                     "count": 5
@@ -35,17 +35,24 @@
             ]
         },
         {
-            "name": "Kill 10 forest enemies",
-            "description": "Make the forest a bit safer.",
-            "rewards": [ {
-                    "gold": "2d20+100",
-                    "xp": 1500
+            "name": "Pack leader",
+            "description": "An agressive alpha wolf deep in the forest is causing problems. Clear out its den.",
+            "rewards": [
+                {
+                    "gold": "5d40+100",
+                    "xp": 1600
                 }
             ],
-            "requirements": [ {
+            "requirements": [ 
+                {
                     "goal": "kill_count",
-                    "targets": ["Wolf", "Kobold", "Bandit"],
-                    "count": 10
+                    "targets": ["Wolf"],
+                    "count": 6
+                },
+                {
+                    "goal": "kill_count",
+                    "targets": ["Alpha Wolf"],
+                    "count": 1
                 }
             ]
         }
@@ -739,7 +746,24 @@
                         "slow": "10",
                         "area_of_effect": "3",
                         "duration": "5",
-                        "particle_line" : "☼;#FFFFFF;400.0"
+                        "particle" : "☼;#FFFFFF;400.0"
+                    }
+                }
+            },
+            "ability_type": "active"
+        },
+        {
+            "name": "Howl",
+            "description": "Let out a powerful cry that enrages allies and slows enemies.",
+            "levels": {
+                "1": {
+                    "mana_cost": 2,
+                    "effects": {
+                        "slow": "10",
+                        "area_of_effect": "6",
+                        "duration": "5",
+                        "rage": "10",
+                        "particle" : "▓;#fa6363;400.0"
                     }
                 }
             },
@@ -2437,6 +2461,36 @@
             "loot_table": "Animal"
         },
         {
+            "name": "Alpha Wolf",
+            "level": 2,
+            "renderable": {
+                "glyph": "W",
+                "fg": "#FF0000",
+                "bg": "#000000",
+                "order": 1
+            },
+            "map_marker": {
+                "glyph": "!",
+                "fg": "#FF0000"
+            },
+            "blocks_tile": true,
+            "vision_range": 10,
+            "movement": "static",
+            "faction": "Carnivores",
+            "attributes": {
+                "strength": 13,
+                "dexterity": 13,
+                "constitution": 12
+            },
+            "natural" : {
+                "armour_class": 14
+            },
+            "abilities": [
+                { "name": "Howl" }
+            ],
+            "loot_table": "Animal"
+        },
+        {
             "name": "Kobold",
             "level": 1,
             "renderable": {
@@ -2714,7 +2768,7 @@
             "name": "Warboss",
             "level": 5,
             "renderable": {
-                "glyph": "W",
+                "glyph": "B",
                 "fg": "#FF0000",
                 "bg": "#000000",
                 "order": 1

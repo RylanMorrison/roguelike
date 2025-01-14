@@ -85,7 +85,7 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
     if let Some(particle) = ecs.read_storage::<SpawnParticleBurst>().get(entity) {
         add_effect(
             creator,
-            EffectType::Particle{
+            EffectType::Particle {
                 glyph: particle.glyph,
                 fg: particle.colour,
                 bg: RGB::named(rltk::BLACK),
