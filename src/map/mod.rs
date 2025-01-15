@@ -11,7 +11,7 @@ pub use tile_type::{TileType, tile_walkable, tile_opaque, tile_cost};
 pub use dungeon::{MasterDungeonMap, level_transition, freeze_level_entities, thaw_level_entities};
 pub use themes::*;
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Marker {
     pub glyph: FontCharType,
     pub fg: RGB,

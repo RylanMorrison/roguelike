@@ -123,13 +123,11 @@ fn transition_to_existing_map(ecs: &mut World, new_depth: i32, offset: i32) {
     dungeon_master.store_map(&worldmap_resource.clone());
     *worldmap_resource = map;
 
-    if worldmap_resource.depth > 0 {
-        // reset player visibility
-        let mut viewsheds = ecs.write_storage::<Viewshed>();
-        let player_viewshed = viewsheds.get_mut(*player_entity);
-        if let Some(viewshed) = player_viewshed {
-            viewshed.dirty = true;
-        }
+    // reset player visibility
+    let mut viewsheds = ecs.write_storage::<Viewshed>();
+    let player_viewshed = viewsheds.get_mut(*player_entity);
+    if let Some(viewshed) = player_viewshed {
+        viewshed.dirty = true;
     }
 }
 

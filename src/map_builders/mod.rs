@@ -1,43 +1,43 @@
-use super::{Map, Rect, TileType, Position, MapMarker, spawner, SHOW_MAPGEN_VISUALIZER};
+use super::{spawner, Map, Position, Rect, TileType, SHOW_MAPGEN_VISUALIZER};
 use crate::rng;
 use specs::prelude::*;
-mod simple_map;
+mod area_starting_points;
 mod bsp_dungeon;
 mod bsp_interior;
 mod cellular_automata;
-mod drunkard;
-mod maze;
-mod dla;
 mod common;
-mod voronoi;
-mod prefab_builder;
-mod area_starting_points;
-mod cull_unreachable;
-mod voronoi_spawning;
-mod distant_exit;
-mod door_placement;
-mod levels;
-mod rooms;
 mod corridors;
+mod cull_unreachable;
+mod distant_exit;
+mod dla;
+mod door_placement;
+mod drunkard;
+mod levels;
+mod maze;
+mod prefab_builder;
+mod rooms;
+mod simple_map;
+mod voronoi;
+mod voronoi_spawning;
 
-use levels::*;
-use rooms::*;
-use corridors::*;
-use distant_exit::DistantExit;
-use simple_map::SimpleMapBuilder;
+use area_starting_points::{AreaStartingPosition, XStart, YStart};
 use bsp_dungeon::BspDungeonBuilder;
 use bsp_interior::BspInteriorBuilder;
 use cellular_automata::CellularAutomataBuilder;
-use drunkard::DrunkardsWalkBuilder;
-use voronoi::VoronoiCellBuilder;
-use prefab_builder::PrefabBuilder;
-use area_starting_points::{AreaStartingPosition, XStart, YStart};
-use cull_unreachable::CullUnreachable;
-use voronoi_spawning::VoronoiSpawning;
-use maze::MazeBuilder;
-use dla::DLABuilder;
 use common::*;
+use corridors::*;
+use cull_unreachable::CullUnreachable;
+use distant_exit::DistantExit;
+use dla::DLABuilder;
 use door_placement::DoorPlacement;
+use drunkard::DrunkardsWalkBuilder;
+use levels::*;
+use maze::MazeBuilder;
+use prefab_builder::PrefabBuilder;
+use rooms::*;
+use simple_map::SimpleMapBuilder;
+use voronoi::VoronoiCellBuilder;
+use voronoi_spawning::VoronoiSpawning;
 
 pub struct BuilderMap {
     pub spawn_list: Vec<(usize, String)>,
@@ -78,7 +78,7 @@ pub struct BuilderChain {
 
 impl BuilderChain {
     pub fn new<S: ToString>(name: S, new_depth: i32, width: i32, height: i32) -> BuilderChain {
-        BuilderChain{
+        BuilderChain {
             starter: None,
             builders: Vec::new(),
             build_data: BuilderMap {
@@ -124,6 +124,10 @@ impl BuilderChain {
         for (location, name) in self.build_data.spawn_list.iter() {
             spawner::spawn_entity(ecs, &(location, name));
         }
+
+        // update builder with markers created from spawning entities
+        let map = ecs.fetch::<Map>();
+        self.build_data.map.markers = map.markers.clone();
     }
 }
 
@@ -155,12 +159,13 @@ pub fn random_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
 fn random_room_builder(builder: &mut BuilderChain) {
     let build_roll = rng::roll_dice(1, 3);
     match build_roll {
-        1 => builder.start_with(SimpleMapBuilder::new( 6, 10 )),
+        1 => builder.start_with(SimpleMapBuilder::new(6, 10)),
         2 => builder.start_with(BspDungeonBuilder::new()),
         _ => builder.start_with(BspInteriorBuilder::new())
     }
 
-    if build_roll != 3 { // skip BSP Interior
+    if build_roll != 3 {
+        // skip BSP Interior
         let sort_roll = rng::roll_dice(1, 5);
         match sort_roll {
             // randomly sort the rooms
@@ -179,7 +184,7 @@ fn random_room_builder(builder: &mut BuilderChain) {
             1 => builder.with(DoglegCorridors::new()),
             2 => builder.with(NearestCorridors::new()),
             3 => builder.with(StraightLineCorridors::new()),
-            _ => builder.with(BspCorridors::new( 1 ))
+            _ => builder.with(BspCorridors::new(1))
         }
 
         let cspawn_roll = rng::roll_dice(1, 2);
@@ -227,9 +232,10 @@ fn random_room_builder(builder: &mut BuilderChain) {
 
 fn random_shape_builder(new_depth: i32, builder: &mut BuilderChain) {
     // start with the first 5 map types and add the next one every depth
-    let builder_roll = rng::roll_dice(1, new_depth + 4); 
+    let builder_roll = rng::roll_dice(1, new_depth + 4);
     let starter: Box<dyn InitialMapBuilder>;
-    match builder_roll { // order is important!
+    match builder_roll {
+        // order is important!
         1 => starter = DrunkardsWalkBuilder::open_area(),
         2 => starter = DrunkardsWalkBuilder::open_halls(),
         3 => starter = DLABuilder::walk_outwards(),
@@ -277,5 +283,5 @@ fn random_start_position() -> (XStart, YStart) {
         YStart::CENTER
     };
 
-    (x,y)
+    (x, y)
 }
