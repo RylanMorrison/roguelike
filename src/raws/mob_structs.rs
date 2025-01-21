@@ -1,13 +1,13 @@
+use super::{MapMarkerData, RenderableData};
 use serde::Deserialize;
-use super::{RenderableData, MapMarkerData};
 use std::collections::HashMap;
 
 #[derive(Deserialize, Debug)]
 pub struct MobData {
-    pub name : String,
-    pub renderable : Option<RenderableData>,
-    pub blocks_tile : bool,
-    pub vision_range : i32,
+    pub name: String,
+    pub renderable: Option<RenderableData>,
+    pub blocks_tile: bool,
+    pub vision_range: i32,
     pub faction: Option<String>,
     pub quips: Option<Vec<String>>,
     pub attributes: MobAttributesData,
@@ -25,7 +25,8 @@ pub struct MobData {
     pub quest_giver: Option<bool>,
     pub abilities: Option<Vec<MobAbilityData>>,
     pub boss: Option<bool>,
-    pub map_marker: Option<MapMarkerData>
+    pub map_marker: Option<MapMarkerData>,
+    pub species: String
 }
 
 #[derive(Deserialize, Debug)]

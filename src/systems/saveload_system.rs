@@ -65,7 +65,7 @@ pub fn save_game(ecs : &mut World) {
             WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime, TileSize, WantsToLevelUp,
             SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot, Stun, StatusEffectChanged, Boss, Chest, CharacterClass,
             SelfDamage, Rage, Block, Fortress, FrostShield, Dodge, WantsToLearnAbility, WantsToLevelAbility,
-            Quests, ActiveQuests, QuestProgress, QuestGiver, WantsToTurnInQuest, MapMarker
+            Quests, ActiveQuests, QuestProgress, QuestGiver, WantsToTurnInQuest, MapMarker, Species
         );
     }
 
@@ -122,7 +122,7 @@ pub fn load_game(ecs: &mut World) {
             WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime, TileSize, WantsToLevelUp,
             SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot, Stun, StatusEffectChanged, Boss, Chest, CharacterClass,
             SelfDamage, Rage, Block, Fortress, FrostShield, Dodge, WantsToLearnAbility, WantsToLevelAbility,
-            Quests, ActiveQuests, QuestProgress, QuestGiver, WantsToTurnInQuest, MapMarker
+            Quests, ActiveQuests, QuestProgress, QuestGiver, WantsToTurnInQuest, MapMarker, Species
         );
     }
 

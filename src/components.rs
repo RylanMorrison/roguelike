@@ -1171,10 +1171,38 @@ pub enum ProgressSource {
     Kill
 }
 
-#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+#[derive(Component, Debug, Clone)]
 pub struct QuestProgress {
-    pub target: String,
+    pub target: Entity,
     pub source: ProgressSource
+}
+
+// QuestProgress wrapper
+#[derive(Serialize, Deserialize, Clone)]
+pub struct QuestProgressData<M>(M, ProgressSource);
+
+impl<M: Marker + Serialize> ConvertSaveload<M> for QuestProgress
+where
+    for<'de> M: Deserialize<'de>,
+{
+    type Data = QuestProgressData<M>;
+    type Error = Infallible;
+
+    fn convert_into<F>(&self, mut ids: F) -> Result<Self::Data, Self::Error>
+    where
+        F: FnMut(Entity) -> Option<M>,
+    {
+        let marker = ids(self.target).unwrap();
+        Ok(QuestProgressData(marker, self.source))
+    }
+
+    fn convert_from<F>(data: Self::Data, mut ids: F) -> Result<Self, Self::Error>
+    where
+        F: FnMut(M) -> Option<Entity>,
+    {
+        let entity = ids(data.0).unwrap();
+        Ok(QuestProgress{target: entity, source : data.1})
+    }
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
@@ -1190,4 +1218,9 @@ pub struct MapMarker {
     pub glyph: FontCharType,
     pub fg: RGB,
     pub bg: RGB
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Species {
+    pub name: String
 }

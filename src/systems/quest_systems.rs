@@ -2,7 +2,8 @@ use rltk::RGB;
 use specs::prelude::*;
 use crate::effects::add_effect;
 use crate::{ActiveQuests, ProgressSource, QuestProgress, QuestRequirementGoal, WantsToTurnInQuest,
-    Pools, Quests, Point, Map, RunState, WantsToLevelUp, CharacterClass, QuestStatus, determine_roll, player_xp_for_level};
+    Pools, Quests, Point, Map, RunState, WantsToLevelUp, CharacterClass, QuestStatus, Name, Species,
+    determine_roll, player_xp_for_level};
 use crate::gamelog;
 use crate::effects;
 
@@ -11,11 +12,13 @@ pub struct QuestProgressSystem {}
 impl<'a> System<'a> for QuestProgressSystem {
     type SystemData = (
         WriteExpect<'a, ActiveQuests>,
-        WriteStorage<'a, QuestProgress>
+        WriteStorage<'a, QuestProgress>,
+        ReadStorage<'a, Name>,
+        ReadStorage<'a, Species>
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut active_quests, mut quest_progress) = data;
+        let (mut active_quests, mut quest_progress, names, all_species) = data;
 
         if quest_progress.is_empty() { return; }
 
@@ -30,7 +33,16 @@ impl<'a> System<'a> for QuestProgressSystem {
 
                             match requirement.requirement_goal {
                                 QuestRequirementGoal::KillCount => {
-                                    if requirement.targets.contains(&progress.target)
+
+                                    let target_name = if let Some(name) = names.get(progress.target) {
+                                        name.name.clone()
+                                    } else { "None".to_string() };
+
+                                    let target_species = if let Some(species) = all_species.get(progress.target) {
+                                        species.name.clone()
+                                    } else { "None".to_string() };
+
+                                    if (requirement.targets.contains(&target_name) || requirement.targets.contains(&target_species))
                                     && requirement.count < requirement.target_count {
                                         requirement.count += 1;
                                     }

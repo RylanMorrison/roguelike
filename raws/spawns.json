@@ -264,6 +264,20 @@
         }
     ],
 
+    "species": [
+        { "name": "Human" },
+        { "name": "Vermin" },
+        { "name": "Canine" },
+        { "name": "Kobold" },
+        { "name": "Ooze" },
+        { "name": "Orc" },
+        { "name": "Goblin" },
+        { "name": "Ogre" },
+        { "name": "Reptile" },
+        { "name": "Arachnid" },
+        { "name": "Hellspawn" }
+    ],
+
     "abilities": [
         {
             "name": "Heavy Strike",
@@ -2472,7 +2486,8 @@
                 "attacks" : [
                     { "name" : "bite", "hit_bonus" : 0, "damage" : "1d4" }
                 ]   
-            }
+            },
+            "species": "Vermin"
         },
         {
             "name": "Wolf",
@@ -2498,7 +2513,8 @@
                     { "name" : "bite", "hit_bonus" : 1, "damage" : "1d6" }
                 ]   
             },
-            "loot_table": "Animal"
+            "loot_table": "Animal",
+            "species": "Canine"
         },
         {
             "name": "Alpha Wolf",
@@ -2528,7 +2544,8 @@
             "abilities": [
                 { "name": "Howl" }
             ],
-            "loot_table": "Animal"
+            "loot_table": "Animal",
+            "species": "Canine"
         },
         {
             "name": "Kobold",
@@ -2550,7 +2567,8 @@
                 "constitution": 4
             },
             "equipped": [],
-            "loot_table": "Lesser Monster"
+            "loot_table": "Lesser Monster",
+            "species": "Kobold"
         },
         {
             "name": "Bandit",
@@ -2581,7 +2599,8 @@
             "light": {
                 "range": 6,
                 "colour": "#FFFF55"
-            }
+            },
+            "species": "Human"
         },
         {
             "name": "Goblin Warrior",
@@ -2608,7 +2627,8 @@
                 "Leather Boots",
                 "Leather Helmet"
             ],
-            "loot_table": "Lesser Monster"
+            "loot_table": "Lesser Monster",
+            "species": "Goblin"
         },
         {
             "name": "Goblin Archer",
@@ -2630,7 +2650,8 @@
                 "constitution": 7
             },
             "equipped": ["Shortbow", "Leather Armour", "Leather Boots", "Leather Helmet"],
-            "loot_table": "Lesser Monster"
+            "loot_table": "Lesser Monster",
+            "species": "Goblin"
         },
         {
             "name": "Orc Warrior",
@@ -2661,7 +2682,8 @@
                 "armour_class": 12
             },
             "equipped": ["Bronze Battleaxe", "Iron Armour", "Leather Boots"],
-            "loot_table": "Lesser Monster"
+            "loot_table": "Lesser Monster",
+            "species": "Orc"
         },
         {
             "name": "Orc Archer",
@@ -2688,7 +2710,8 @@
                 "armour_class": 12
             },
             "equipped": ["Longbow", "Leather Gloves", "Iron Armour", "Leather Boots"],
-            "loot_table": "Lesser Monster"
+            "loot_table": "Lesser Monster",
+            "species": "Orc"
         },
         {
             "name": "Large Spider",
@@ -2712,7 +2735,8 @@
             },
             "abilities": [
                 { "name": "Web" }
-            ]
+            ],
+            "species": "Arachnid"
         },
         {
             "name": "Gelatinous Cube",
@@ -2739,7 +2763,8 @@
             "light": {
                 "range": 4,
                 "colour": "#550000"
-            }
+            },
+            "species": "Ooze"
         },
         {
             "name": "Lizard Warrior",
@@ -2767,7 +2792,8 @@
                 "armour_class": 13
             },
             "equipped": ["Steel Longsword", "Tower Shield", "Iron Armour", "Iron Greaves", "Iron Gauntlets"],
-            "loot_table": "Greater Monster"
+            "loot_table": "Greater Monster",
+            "species": "Reptile"
         },
         {
             "name": "Ogre",
@@ -2802,7 +2828,8 @@
                 "armour_class": 14
             },
             "equipped": ["Ogre Club", "Iron Armour", "Iron Helmet"],
-            "loot_table": "Greater Monster"
+            "loot_table": "Greater Monster",
+            "species": "Ogre"
         },
         {
             "name": "Warboss",
@@ -2839,7 +2866,8 @@
                 "armour_class": 14
             },
             "equipped": ["High on Fireaxe", "Iron Armour", "Iron Helmet", "Iron Greaves", "Iron Gauntlets"],
-            "loot_table": "Warboss"
+            "loot_table": "Warboss",
+            "species": "Orc"
         },
         {
             "name": "Imp",
@@ -2867,7 +2895,8 @@
             "abilities": [
                 { "name": "Scorching Ray" }
             ],
-            "loot_table": "Lesser Monster"
+            "loot_table": "Lesser Monster",
+            "species": "Hellspawn"
         },
         {
             "name": "Demon",
@@ -2906,7 +2935,8 @@
             "abilities": [
                 { "name": "Drain Soul" }
             ],
-            "loot_table": "Greater Monster"
+            "loot_table": "Greater Monster",
+            "species": "Hellspawn"
         },
         {
             "name": "Barkeep",
@@ -2930,7 +2960,8 @@
             "skills": {
                 "melee": 2
             },
-            "vendor": "food"
+            "vendor": "food",
+            "species": "Human"
         },
         {
             "name": "Shady Salesman",
@@ -2944,7 +2975,8 @@
             "vision_range": 4,
             "movement": "static",
             "faction": "Townsfolk",
-            "attributes": {}
+            "attributes": {},
+            "species": "Human"
         },
         {
             "name": "Patron",
@@ -2963,7 +2995,8 @@
                 "Ooh I think I've drunk too much.",
                 "Still saving the world, eh?"
             ],
-            "attributes": {}
+            "attributes": {},
+            "species": "Human"
         },
         {
             "name": "Priest",
@@ -2986,7 +3019,8 @@
                 "Where did I put the holy water?",
                 "Tell me what troubles you my child."
             ],
-            "attributes": {}
+            "attributes": {},
+            "species": "Human"
         },
         {
             "name": "Parishioner",
@@ -3005,7 +3039,8 @@
                 "Forgive me for I have sinned.",
                 "Oh lawd!"
             ],
-            "attributes": {}
+            "attributes": {},
+            "species": "Human"
         },
         {
             "name": "Peasant",
@@ -3024,7 +3059,8 @@
                 "Nice weather.", 
                 "Hello!"
             ],
-            "attributes": {}
+            "attributes": {},
+            "species": "Human"
         },
         {
             "name": "Dock Worker",
@@ -3043,7 +3079,8 @@
                 "Nice weather.", 
                 "Hello!"
             ],
-            "attributes": {}
+            "attributes": {},
+            "species": "Human"
         },
         {
             "name": "Fisher",
@@ -3062,7 +3099,8 @@
                 "I caught something, but it wasn't a fish!",
                 "Looks like rain."
             ],
-            "attributes": {}
+            "attributes": {},
+            "species": "Human"
         },
         {
             "name": "Wannabe Pirate",
@@ -3081,7 +3119,8 @@
                 "Grog!", 
                 "Booze!"
             ],
-            "attributes": {}
+            "attributes": {},
+            "species": "Human"
         },
         {
             "name": "Drunk",
@@ -3100,7 +3139,8 @@
                 "Need... more... booze!",
                 "Spare a copper?"
             ],
-            "attributes": {}
+            "attributes": {},
+            "species": "Human"
         },
         {
             "name": "Alchemist",
@@ -3124,7 +3164,8 @@
             "skills": {
                 "melee": 2
             },
-            "vendor": "alchemy"
+            "vendor": "alchemy",
+            "species": "Human"
         },
         {
             "name": "Wizard",
@@ -3148,7 +3189,8 @@
             "skills": {
                 "melee": 2
             },
-            "vendor": "magic"
+            "vendor": "magic",
+            "species": "Human"
         },
         {
             "name": "Weaponsmith",
@@ -3172,7 +3214,8 @@
             "skills": {
                 "melee": 2
             },
-            "vendor": "weapons"
+            "vendor": "weapons",
+            "species": "Human"
         },
         {
             "name": "Armoursmith",
@@ -3196,7 +3239,8 @@
             "skills": {
                 "melee": 2
             },
-            "vendor": "wearables"
+            "vendor": "wearables",
+            "species": "Human"
         },
         {
             "name": "Quartermaster",
@@ -3224,7 +3268,8 @@
                 "melee": 4,
                 "defence": 4
             },
-            "quest_giver": true
+            "quest_giver": true,
+            "species": "Human"
         }
     ],
 

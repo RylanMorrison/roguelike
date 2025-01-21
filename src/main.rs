@@ -601,6 +601,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<QuestGiver>();
     gs.ecs.register::<WantsToTurnInQuest>();
     gs.ecs.register::<MapMarker>();
+    gs.ecs.register::<Species>();
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     raws::load_raws();

@@ -25,7 +25,8 @@ pub struct RawMaster {
     faction_index: HashMap<String, HashMap<String, Reaction>>,
     chest_index: HashMap<String, usize>,
     character_class_index: HashMap<String, usize>,
-    quest_index: HashMap<String, usize>
+    quest_index: HashMap<String, usize>,
+    species_index: HashMap<String, usize>
 }
 
 impl RawMaster {
@@ -43,7 +44,8 @@ impl RawMaster {
                 faction_table: Vec::new(),
                 chests: Vec::new(),
                 character_classes: Vec::new(),
-                quests: Vec::new()
+                quests: Vec::new(),
+                species: Vec::new()
             },
             item_index: HashMap::new(),
             item_set_index: HashMap::new(),
@@ -54,14 +56,17 @@ impl RawMaster {
             faction_index: HashMap::new(),
             chest_index: HashMap::new(),
             character_class_index: HashMap::new(),
-            quest_index: HashMap::new()
+            quest_index: HashMap::new(),
+            species_index: HashMap::new()
         }
     }
 
     pub fn load(&mut self, raws: Raws) {
         self.raws = raws;
-        self.item_index = HashMap::new();
         let mut used_names: HashSet<String> = HashSet::new();
+
+        // order is important!
+        // items
         for (i, item) in self.raws.items.iter().enumerate() {
             if used_names.contains(&item.name) {
                 rltk::console::log(format!("WARNING - duplicate item name in raws [{}]", item.name));
@@ -72,6 +77,7 @@ impl RawMaster {
             self.item_index.insert(item.name.clone(), i);
             used_names.insert(item.name.clone());
         }
+        // item sets
         for (i, item_set) in self.raws.item_sets.iter().enumerate() {
             if used_names.contains(&item_set.name) {
                 rltk::console::log(format!("WARNING - duplicate item set name in raws [{}]", &item_set.name));
@@ -79,6 +85,7 @@ impl RawMaster {
             self.item_set_index.insert(item_set.name.clone(), i);
             used_names.insert(item_set.name.clone());
         }
+        // mobs
         for (i, mob) in self.raws.mobs.iter().enumerate() {
             if used_names.contains(&mob.name) {
                 rltk::console::log(format!("WARNING - duplicate mob name in raws [{}]", mob.name));
@@ -86,6 +93,7 @@ impl RawMaster {
             self.mob_index.insert(mob.name.clone(), i);
             used_names.insert(mob.name.clone());
         }
+        // props
         for (i, prop) in self.raws.props.iter().enumerate() {
             if used_names.contains(&prop.name) {
                 rltk::console::log(format!("WARNING - duplicate prop name in raws [{}]", prop.name));
@@ -93,12 +101,15 @@ impl RawMaster {
             self.prop_index.insert(prop.name.clone(), i);
             used_names.insert(prop.name.clone());
         }
+        // abilities
         for (i, ability) in self.raws.abilities.iter().enumerate() {
             self.ability_index.insert(ability.name.clone(), i);
         }
+        // loot tables
         for (i, loot) in self.raws.loot_tables.iter().enumerate() {
             self.loot_index.insert(loot.name.clone(), i);
         }
+        // chests
         for (i, chest) in self.raws.chests.iter().enumerate() {
             if let Some(loot_table) = &chest.loot_table {
                 if !self.loot_index.contains_key(loot_table) {
@@ -108,11 +119,13 @@ impl RawMaster {
             self.chest_index.insert(chest.name.clone(), i);
             used_names.insert(chest.name.clone());
         }
+        // spawn table
         for spawn in self.raws.spawn_table.iter() {
             if !used_names.contains(&spawn.name) {
                 rltk::console::log(format!("WARNING - Spawn table references unspecified entity {}", spawn.name));
             }
         }
+        // faction table
         for faction in self.raws.faction_table.iter() {
             let mut reactions: HashMap<String, Reaction> = HashMap::new();
             for response in faction.responses.iter() {
@@ -126,6 +139,7 @@ impl RawMaster {
             }
             self.faction_index.insert(faction.name.clone(), reactions);
         }
+        // character classes
         for (i, character_class) in self.raws.character_classes.iter().enumerate() {
             if used_names.contains(&character_class.name) {
                 rltk::console::log(format!("WARNING - duplicate character class name in raws [{}]", character_class.name));
@@ -133,7 +147,15 @@ impl RawMaster {
             self.character_class_index.insert(character_class.name.clone(), i);
             used_names.insert(character_class.name.clone());
         }
-        
+        // species
+        for (i, species) in self.raws.species.iter().enumerate() {
+            if self.species_index.contains_key(&species.name) {
+                rltk::console::log(format!("WARNING - duplicate species name in raws [{}]", species.name));
+            }
+            self.species_index.insert(species.name.clone(), i);
+            used_names.insert(species.name.clone());
+        }
+        // quests
         for (i, quest) in self.raws.quests.iter().enumerate() {
             if used_names.contains(&quest.name) {
                 rltk::console::log(format!("WARNING - duplicate quest name in raws [{}]", quest.name));
@@ -597,12 +619,19 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
         eb = eb.with(LightSource{ range: light.range, colour: RGB::from_hex(&light.colour).expect("Bad colour") });
     }
 
-    //faction
+    // faction
     if let Some(faction) = &mob_template.faction {
         eb = eb.with(Faction{ name: faction.clone() });
     } else {
         eb = eb.with(Faction{ name: "Mindless".to_string() })
     }
+
+    // species
+    let species_name = mob_template.species.clone();
+    if !raws.species_index.contains_key(&species_name) {
+        rltk::console::log(format!("WARNING - Unkown species: [{}]", species_name));
+    }
+    eb = eb.with(Species{ name: species_name });
 
     // bosses
     if mob_template.boss.is_some() {
