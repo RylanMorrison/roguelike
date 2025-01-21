@@ -57,13 +57,14 @@ pub fn show_quest_giver_menu(gs: &mut State, ctx: &mut Rltk, quest_giver: Entity
     ColorPair::new(yellow(), black())
   );
 
-  let quests = &gs.ecs.fetch::<Quests>().quests;
+  let quests: &Vec<Quest> = &gs.ecs.fetch::<Quests>().quests;
+  let available_quests: Vec<&Quest> = quests.iter().filter(|quest| quest.is_available()).collect();
   let mut current_active_quest: Option<Quest> = None;
-  let mut max_index = 0;
-  if !quests.is_empty() {
+  let mut max_index: i32 = 0;
+  if !available_quests.is_empty() {
     let active_quests = &gs.ecs.fetch::<ActiveQuests>().quests;
-    let current_quest = quests.get(index as usize).unwrap();
-    max_index = (quests.len() - 1) as i32;
+    let current_quest = *available_quests.get(index as usize).unwrap();
+    max_index = (available_quests.len() - 1) as i32;
 
     for quest in active_quests {
       if quest.name == current_quest.name {

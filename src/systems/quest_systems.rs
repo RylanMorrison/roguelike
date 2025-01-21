@@ -2,7 +2,7 @@ use rltk::RGB;
 use specs::prelude::*;
 use crate::effects::add_effect;
 use crate::{ActiveQuests, ProgressSource, QuestProgress, QuestRequirementGoal, WantsToTurnInQuest,
-    Pools, Quests, Point, Map, RunState, WantsToLevelUp, CharacterClass, determine_roll, player_xp_for_level};
+    Pools, Quests, Point, Map, RunState, WantsToLevelUp, CharacterClass, QuestStatus, determine_roll, player_xp_for_level};
 use crate::gamelog;
 use crate::effects;
 
@@ -105,6 +105,21 @@ impl<'a> System<'a> for QuestTurnInSystem {
             
             active_quests.quests.retain(|quest| quest.name != quest_name);
             quests.quests.retain(|quest| quest.name != quest_name);
+
+            // unlock following quests
+            let mut new_quests = false;
+            turn_in.quest.next_quests.iter().for_each(|quest_name| {
+                quests.quests.iter_mut().for_each(|quest| {
+                    if quest.name == *quest_name {
+                        quest.status = QuestStatus::Available;
+                        new_quests = true;
+                    }
+                })
+            });
+            if new_quests {
+                gamelog::Logger::new().append("New quests are available!").log();
+            }
+
             for i in 0..10 {
                 if player_pos.y - i > 1 {
                     add_effect(None,

@@ -15,7 +15,8 @@
                     "targets": ["Kobold"],
                     "count": 6
                 }
-            ]
+            ],
+            "initial": true
         },
         {
             "name": "This is a stick up",
@@ -32,7 +33,8 @@
                     "targets": ["Bandit"],
                     "count": 5
                 }
-            ]
+            ],
+            "initial": true
         },
         {
             "name": "Pack leader",
@@ -54,6 +56,44 @@
                     "targets": ["Alpha Wolf"],
                     "count": 1
                 }
+            ],
+            "initial": true,
+            "next_quests": ["Orcs and goblins", "The Warboss"]
+        },
+        {
+            "name": "Orcs and goblins",
+            "description": "Orcs and goblins have set up camp beyond the dark forest. Clear them out.",
+            "rewards": [
+                {
+                    "gold": "4d100+200",
+                    "xp": 2000,
+                    "items": []
+                }
+            ],
+            "requirements": [
+                {
+                    "goal": "kill_count",
+                    "targets": ["Orc", "Goblin"],
+                    "count": 25
+                }
+            ]
+        },
+        {
+            "name": "The Warboss",
+            "description": "A warboss is leading the orcs. Finish it.",
+            "rewards": [
+                {
+                    "gold": "4d200+200",
+                    "xp": 4000,
+                    "items": []
+                }
+            ],
+            "requirements": [
+                {
+                    "goal": "kill_count",
+                    "targets": ["Warboss"],
+                    "count": 1
+                }
             ]
         }
     ],
@@ -61,7 +101,7 @@
     "spawn_table": [ 
         { "name": "Common Chest", "weight": 3, "min_depth": 3, "max_depth": 100 },
         { "name": "Rare Chest", "weight": 2, "min_depth": 5, "max_depth": 100 },
-        { "name": "Wolf", "weight": 13, "min_depth": 1, "max_depth": 3 },
+        { "name": "Wolf", "weight": 13, "min_depth": 2, "max_depth": 3 },
         { "name": "Bandit", "weight": 10, "min_depth": 1, "max_depth": 2 },
         { "name": "Kobold", "weight": 12, "min_depth": 1, "max_depth": 3 },
         { "name": "Large Spider", "weight": 6, "min_depth": 2, "max_depth": 3 },

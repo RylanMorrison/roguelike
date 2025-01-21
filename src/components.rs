@@ -1119,8 +1119,8 @@ pub struct Quest {
     pub description: String,
     pub rewards: Vec<QuestReward>,
     pub requirements: Vec<QuestRequirement>,
-    // pub prerequisites: Option<Vec<QuestPrerequisite>>,
-    pub status: QuestStatus
+    pub status: QuestStatus,
+    pub next_quests: Vec<String>
 }
 
 impl Quest {
@@ -1129,6 +1129,10 @@ impl Quest {
             if !requirement.complete { return false; }
         }
         true
+    }
+
+    pub fn is_available(&self) -> bool {
+        self.status == QuestStatus::Available
     }
 }
 
@@ -1160,11 +1164,6 @@ pub struct QuestRequirement {
     pub count: i32,
     pub target_count: i32,
     pub complete: bool
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub struct QuestPrerequisite {
-    pub quest_statuses: HashMap<String, QuestStatus>
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Copy, Clone)]

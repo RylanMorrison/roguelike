@@ -821,28 +821,15 @@ pub fn store_named_quest(raws: &RawMaster, ecs: &mut World, key: &str) {
                 xp: reward.xp
             });
         }
-        // let mut prerequisites: Option<Vec<QuestPrerequisite>> = None;
-        // if let Some(prerequisites) = &quest_template.prerequisites {
-        //     for prerequisite in prerequisites.iter() {
-        //         prerequisites.push(QuestPrerequisite {
-        //             quests: prerequisite.quests,
-        //             status: match prerequisite.status {
-        //                 "available" => QuestStatus::Available,
-        //                 "active" => QuestStatus::Active,
-        //                 "complete" => QuestStatus::Complete,
-        //                 "failed" => QuestStatus::Failed,
-        //                 _ => QuestStatus::Unavailable,
-        //             }
-        //         });
-        //     }
-        // }
         quests.quests.push(Quest {
             name: quest_template.name.clone(),
             description: quest_template.description.clone(),
             rewards,
             requirements,
-            // prerequisites,
-            status: QuestStatus::Available
+            status: if let Some(initial) = quest_template.initial {
+                if initial { QuestStatus::Available } else { QuestStatus::Unavailable }
+            } else { QuestStatus::Unavailable },
+            next_quests: quest_template.next_quests.clone().unwrap_or(Vec::new())
         });
     }
 }

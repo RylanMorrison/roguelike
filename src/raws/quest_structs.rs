@@ -6,7 +6,8 @@ pub struct QuestData {
     pub description: String,
     pub rewards: Vec<QuestRewardData>,
     pub requirements: Vec<QuestRewardRequirementData>,
-    pub prerequisites: Option<Vec<QuestPrerequisiteData>>
+    pub initial: Option<bool>,
+    pub next_quests: Option<Vec<String>>
 }
 
 #[derive(Deserialize, Debug)]
