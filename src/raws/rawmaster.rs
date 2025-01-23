@@ -675,7 +675,10 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         eb = eb.with(get_renderable_component(renderable, None));
     }
 
-
+    // map marker
+    if let Some(marker) = &prop_template.map_marker {
+        eb = eb.with(get_map_marker_component(marker));
+    }
     
     eb = eb.with(Name{ name: prop_template.name.clone() });
 
@@ -708,6 +711,11 @@ pub fn spawn_named_chest(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spaw
 
     if let Some(renderable) = &chest_template.renderable {
         eb = eb.with(get_renderable_component(renderable, None));
+    }
+
+    // map marker
+    if let Some(marker) = &chest_template.map_marker {
+        eb = eb.with(get_map_marker_component(marker));
     }
 
     eb = eb.with(Name{ name: chest_template.name.clone() });

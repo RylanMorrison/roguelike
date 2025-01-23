@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
 use specs::prelude::*;
 use super::{World, Map, Point, Entity, TileType};
-use crate::components::{Position, Viewshed, OtherLevelPosition, MapMarker};
+use crate::components::{Position, Viewshed, OtherLevelPosition};
 use crate::map_builders::level_builder;
 
 #[derive(Default, Serialize, Deserialize, Clone)]

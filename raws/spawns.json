@@ -181,8 +181,6 @@
                 { "name": "Mithril Battleaxe", "weight": 3 },
                 { "name": "Mithril Greatsword", "weight": 3 },
                 { "name": "Mithril Greatsword", "weight": 3 },
-                { "name": "High on Fireaxe", "weight": 5 },
-                { "name": "Mammoth Plate", "weight": 2 },
                 { "name": "Mithril Shield", "weight": 3 }
             ]
         },
@@ -2865,7 +2863,7 @@
             "natural" : {
                 "armour_class": 14
             },
-            "equipped": ["High on Fireaxe", "Iron Armour", "Iron Helmet", "Iron Greaves", "Iron Gauntlets"],
+            "equipped": ["Steel Greataxe", "Iron Armour", "Iron Helmet", "Iron Greaves", "Iron Gauntlets"],
             "loot_table": "Warboss",
             "species": "Orc"
         },
@@ -3386,13 +3384,13 @@
             "name": "Rare Chest",
             "renderable": {
                 "glyph": "◘",
-                "fg": "#3d19da",
+                "fg": "#5cc9e4",
                 "bg": "#000000",
                 "order": 2
             },
             "map_marker": {
                 "glyph": "?",
-                "fg": "#3d19da"
+                "fg": "#5cc9e4"
             },
             "loot_table": "Rare Chest",
             "gold": "4d10+2",
@@ -3414,7 +3412,7 @@
             "name": "Legendary Chest",
             "renderable": {
                 "glyph": "◘",
-                "fg": "#f2ee10e2",
+                "fg": "#f2ee10",
                 "bg": "#000000",
                 "order": 2
             },

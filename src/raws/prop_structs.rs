@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use super::RenderableData;
+use super::{RenderableData, MapMarkerData};
 use std::collections::HashMap;
 
 #[derive(Deserialize, Debug)]
@@ -10,7 +10,8 @@ pub struct PropData {
     pub blocks_visibility: Option<bool>,
     pub door_open: Option<bool>,
     pub entry_trigger: Option<EntryTriggerData>,
-    pub light: Option<PropLightData>
+    pub light: Option<PropLightData>,
+    pub map_marker: Option<MapMarkerData>
 }
 
 #[derive(Deserialize, Debug)]

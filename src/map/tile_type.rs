@@ -35,7 +35,7 @@ pub fn tile_walkable(tt: TileType) -> bool {
 
 pub fn tile_opaque(tt: TileType) -> bool {
     match tt {
-        TileType::Wall => true,
+        TileType::Wall | TileType::TownWall => true,
         _ => false
     }
 }
