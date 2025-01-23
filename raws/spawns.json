@@ -180,7 +180,6 @@
                 { "name": "Mithril Longsword", "weight": 3 },
                 { "name": "Mithril Battleaxe", "weight": 3 },
                 { "name": "Mithril Greatsword", "weight": 3 },
-                { "name": "Mithril Greatsword", "weight": 3 },
                 { "name": "Mithril Shield", "weight": 3 }
             ]
         },
@@ -202,41 +201,68 @@
                 { "name": "Leather Helmet", "weight": 5 },
                 { "name": "Leather Armour", "weight": 5 },
                 { "name": "Leather Boots", "weight": 5 },
-                { "name": "Leather Gloves", "weight": 5 }
+                { "name": "Leather Gloves", "weight": 5 },
+                { "name": "Initiate Robe", "weight": 5 }
             ]
         },
         {
             "name": "Rare Chest",
             "drops": [
-                { "name": "Hide", "weight": 5 },
-                { "name": "Health Potion", "weight": 5 },
-                { "name": "Greater Health Potion", "weight": 3 },
-                { "name": "Magic Mapping Scroll", "weight": 3 },
-                { "name": "Iron Helmet", "weight": 3 },
-                { "name": "Iron Breastplate", "weight": 3 },
-                { "name": "Iron Greaves", "weight": 3 },
-                { "name": "Iron Gauntlets", "weight": 3 },
-                { "name": "Tower Shield", "weight": 3 },
-                { "name": "Steel Longsword", "weight": 3 },
-                { "name": "Steel Battleaxe", "weight": 3 },
-                { "name": "Steel Greatsword", "weight": 3 },
-                { "name": "Steel Greataxe", "weight": 3 },
-                { "name": "Birch Staff", "weight": 4 },
-                { "name": "Oak Staff", "weight": 3 },
-                { "name": "Longbow", "weight": 3 },
-                { "name": "Rod of Fireballs", "weight": 3 }
+                { "name": "Hide", "weight": 3 },
+                { "name": "Health Potion", "weight": 3 },
+                { "name": "Greater Health Potion", "weight": 5 },
+                { "name": "Magic Mapping Scroll", "weight": 5 },
+                { "name": "Iron Helmet", "weight": 5 },
+                { "name": "Iron Breastplate", "weight": 5 },
+                { "name": "Iron Greaves", "weight": 5 },
+                { "name": "Iron Gauntlets", "weight": 5 },
+                { "name": "Tower Shield", "weight": 5 },
+                { "name": "Steel Longsword", "weight": 5 },
+                { "name": "Steel Battleaxe", "weight": 5 },
+                { "name": "Steel Greatsword", "weight": 5 },
+                { "name": "Steel Greataxe", "weight": 5 },
+                { "name": "Birch Staff", "weight": 5 },
+                { "name": "Longbow", "weight": 5 },
+                { "name": "Rod of Fireballs", "weight": 5 },
+                { "name": "Apprentice Robe", "weight": 5 }
             ]
         },
         {
             "name": "Epic Chest",
             "drops": [
-
+                { "name": "Mithril Helmet", "weight": 5 },
+                { "name": "Mithril Plate", "weight": 5 },
+                { "name": "Mithril Greaves", "weight": 5 },
+                { "name": "Mithril Gauntlets", "weight": 5 },
+                { "name": "Mithril Longsword", "weight": 5 },
+                { "name": "Mithril Battleaxe", "weight": 5 },
+                { "name": "Mithril Greatsword", "weight": 5 },
+                { "name": "Mithril Shield", "weight": 5 },
+                { "name": "Oak Staff", "weight": 5 },
+                { "name": "Recurve Bow", "weight": 5 },
+                { "name": "Greatbow", "weight": 5 },
+                { "name": "Adept Robe", "weight": 5 }
             ]
         },
         {
             "name": "Legendary Chest",
             "drops": [
-
+                { "name": "Mammoth Plate", "weight": 5 },
+                { "name": "Acid King Dagger", "weight": 5 },
+                { "name": "Red Fang", "weight": 5 },
+                { "name": "Earth Staff", "weight": 5 },
+                { "name": "Elder Staff", "weight": 5 },
+                { "name": "High on Fireaxe", "weight": 5 },
+                { "name": "Steel Rain", "weight": 5 },
+                { "name": "Cobra", "weight": 5 },
+                { "name": "Dopelord's Gloves", "weight": 5 },
+                { "name": "Dopelord's Hat", "weight": 5 },
+                { "name": "Dopelord's Stick", "weight": 5 },
+                { "name": "Electric Wizard's Gloves", "weight": 5 },
+                { "name": "Electric Wizard's Hat", "weight": 5 },
+                { "name": "Electric Wizard's Robe", "weight": 5 },
+                { "name": "Electric Wizard's Sandals", "weight": 5 },
+                { "name": "Electric Wizard's Staff", "weight": 5 }
             ]
         }
     ],
@@ -1518,7 +1544,7 @@
                 "defence": 4
             },
             "attribute_bonuses": {
-                "intelligence": 2
+                "intelligence": 4
             }
         },
         {
@@ -1546,10 +1572,10 @@
                 "defence": -5
             },
             "attribute_bonuses": {
-                "intelligence": 4,
+                "intelligence": 5,
                 "strength": -3,
                 "dexterity": -3,
-                "constitution": -3
+                "constitution": -2
             }
         },
         {
@@ -1796,7 +1822,7 @@
                 "range": "4",
                 "attribute": "Dexterity",
                 "base_damage": "1d6",
-                "hit_bonus": 0,
+                "hit_bonus": 1,
                 "slot": "Two Handed"
             },
             "weight_lbs": 2.0,
@@ -1824,6 +1850,138 @@
             "initiative_penalty": 1,
             "vendor_category": "weapon",
             "class": "common"
+        },
+        {
+            "name": "Recurve Bow",
+            "renderable": {
+                "glyph": "}",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "7",
+                "attribute": "Dexterity",
+                "base_damage": "1d10+2",
+                "hit_bonus": 1,
+                "slot": "Two Handed"
+            },
+            "weight_lbs": 4.0,
+            "base_value": 500,
+            "initiative_penalty": 1,
+            "vendor_category": "weapon",
+            "class": "rare"
+        },
+        {
+            "name": "Greatbow",
+            "renderable": {
+                "glyph": "}",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "8",
+                "attribute": "Dexterity",
+                "base_damage": "2d8+4",
+                "hit_bonus": -1,
+                "slot": "Two Handed"
+            },
+            "weight_lbs": 8.0,
+            "base_value": 1000,
+            "initiative_penalty": 2,
+            "vendor_category": "weapon",
+            "class": "rare",
+            "skill_bonuses": {
+                "defence": -2,
+                "ranged": 2
+            }
+        },
+        {
+            "name": "Compound Bow",
+            "renderable": {
+                "glyph": "}",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "10",
+                "attribute": "Dexterity",
+                "base_damage": "1d12+4",
+                "hit_bonus": 2,
+                "slot": "Two Handed"
+            },
+            "weight_lbs": 4.0,
+            "base_value": 1500,
+            "initiative_penalty": 0.5,
+            "vendor_category": "weapon",
+            "class": "legendary",
+            "skill_bonuses": {
+                "ranged": 2
+            },
+            "attribute_bonuses": {
+                "dexterity": 1
+            }
+        },
+        {
+            "name": "Steel Rain",
+            "renderable": {
+                "glyph": "}",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "9",
+                "attribute": "Dexterity",
+                "base_damage": "6d6+4",
+                "hit_bonus": 2,
+                "slot": "Two Handed"
+            },
+            "weight_lbs": 4.0,
+            "base_value": 3000,
+            "initiative_penalty": 0.0,
+            "vendor_category": "weapon",
+            "class": "unique",
+            "attribute_bonuses": {
+                "dexterity": 4
+            },
+            "skill_bonuses": {
+                "melee": -4,
+                "magic": -4,
+                "ranged": 4
+            }
+        },
+        {
+            "name": "Cobra",
+            "renderable": {
+                "glyph": "}",
+                "bg": "#000000",
+                "order": 2
+            },
+            "weapon": {
+                "range": "7",
+                "attribute": "Dexterity",
+                "base_damage": "1d14",
+                "hit_bonus": 3,
+                "slot": "Two Handed",
+                "proc_effects": {
+                    "damage_over_time": "20",
+                    "duration": "10"
+                }
+            },
+            "weight_lbs": 4.0,
+            "base_value": 3000,
+            "initiative_penalty": 0.5,
+            "vendor_category": "weapon",
+            "class": "unique",
+            "attribute_bonuses": {
+                "dexterity": 3,
+                "constitution": -1
+            },
+            "skill_bonuses": {
+                "melee": -4,
+                "magic": -4,
+                "defence": -2,
+                "ranged": 4
+            }
         },
 
         {
@@ -2163,7 +2321,7 @@
             "weight_lbs": 5.0,
             "base_value": 400,
             "initiative_penalty": 0.0,
-            "class": "common",
+            "class": "rare",
             "vendor_category": "magic",
             "skill_bonuses": {
                 "magic": 2,
@@ -2188,7 +2346,7 @@
             "weight_lbs": 5.0,
             "base_value": 800,
             "initiative_penalty": 0.0,
-            "class": "common",
+            "class": "legendary",
             "vendor_category": "magic",
             "skill_bonuses": {
                 "magic": 4,
@@ -2212,12 +2370,12 @@
             },
             "weight_lbs": 40.0,
             "base_value": 2000,
-            "initiative_penalty": 0.6,
+            "initiative_penalty": 2,
             "class": "unique",
             "vendor_category": "wearables",
             "skill_bonuses": {
                 "melee": -2,
-                "defence": 5,
+                "defence": 7,
                 "magic": -5
             },
             "attribute_bonuses": {
