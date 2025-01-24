@@ -191,11 +191,22 @@ fn cumulative_level(passive: &ClassPassive, display_level: i32) -> Option<ClassP
     let level_ability: Option<String> = passive.levels[&display_level].level_ability.clone();
 
     for i in 2..=display_level {
-        if attribute_bonus.is_some() {
-            attribute_bonus.as_mut().unwrap().combine(passive.levels[&i].attribute_bonus.as_ref());
+        let new_attribute_bonus = passive.levels[&i].attribute_bonus.as_ref();
+        if new_attribute_bonus.is_some() {
+            if attribute_bonus.is_none() {
+                attribute_bonus = new_attribute_bonus.cloned();
+            } else {
+                attribute_bonus.as_mut().unwrap().combine(new_attribute_bonus);
+            }
         }
-        if skill_bonus.is_some() {
-            skill_bonus.as_mut().unwrap().combine(passive.levels[&i].skill_bonus.as_ref());
+
+        let new_skill_bonus = passive.levels[&i].skill_bonus.as_ref();
+        if new_skill_bonus.is_some() {
+            if skill_bonus.is_none() {
+                skill_bonus = new_skill_bonus.cloned();
+            } else {
+                skill_bonus.as_mut().unwrap().combine(new_skill_bonus);
+            }
         }
     }
 
