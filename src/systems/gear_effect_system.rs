@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use crate::{attr_bonus, gamelog, AttributeBonus, Attributes, EquipmentChanged, Equipped, InBackpack, Item, Weapon, 
-    Pools, Slow, StatusEffect, Wearable, Skills, SkillBonus, player_hp_at_level, mana_at_level, carry_capacity_lbs,
+    Pools, Slow, StatusEffect, Wearable, Skills, SkillBonus, hp_at_level, mana_at_level, carry_capacity_lbs,
     ItemSets, PartOfSet, StatusEffectChanged};
 use std::collections::HashMap;
 use rltk::RGB;
@@ -188,7 +188,7 @@ impl<'a> System<'a> for GearEffectSystem {
                     attr.intelligence.bonus = attr_bonus(attr.intelligence.base + attr.intelligence.total_modifiers());
 
                     // update health and mana
-                    pool.hit_points.max = player_hp_at_level(
+                    pool.hit_points.max = hp_at_level(
                         attr.constitution.base + attr.constitution.total_modifiers(),
                         pool.level
                     );

@@ -3,7 +3,7 @@ use specs::prelude::*;
 use rltk::RGB;
 use crate::components::*;
 use super::{Raws, Reaction, RenderableData, SpawnTableEntry, MapMarkerData};
-use crate::{attr_bonus, npc_hp, mana_at_level, parse_dice_string, determine_roll};
+use crate::{attr_bonus, hp_at_level, mana_at_level, parse_dice_string, determine_roll};
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use crate::rng;
 use crate::helpers::*;
@@ -533,7 +533,7 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
     } else {
         1
     };
-    let mob_hp = npc_hp(mob_constitution, mob_level);
+    let mob_hp = hp_at_level(mob_constitution, mob_level);
     let mob_mana = mana_at_level(mob_intelligence, mob_level);
     let pools = Pools{
         level: mob_level,

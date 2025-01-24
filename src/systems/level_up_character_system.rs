@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::{mana_at_level, player_hp_at_level, Attributes, CharacterClass, EquipmentChanged, WantsToLevelUp,
+use crate::{mana_at_level, hp_at_level, Attributes, CharacterClass, EquipmentChanged, WantsToLevelUp,
     Pools, RunState, Skills, WantsToLearnAbility, WantsToLevelAbility, Point, Map};
 use crate::gamelog;
 use crate::effects::{add_effect, EffectType, Targets};
@@ -61,7 +61,7 @@ impl<'a> System<'a> for LevelUpCharacterSystem {
                         }
                     }
 
-                    pool.hit_points.max = player_hp_at_level(
+                    pool.hit_points.max = hp_at_level(
                         char_attr.constitution.base + char_attr.constitution.total_modifiers(),
                         pool.level
                     );

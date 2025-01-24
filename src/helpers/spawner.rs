@@ -8,7 +8,7 @@ use crate::{Pools, Player, Renderable, Name, Position, Viewshed,
     Rect, SerializeMe, random_table::RandomTable, HungerClock, HungerState, 
     Map, TileType, Attributes, Skills, Pool, LightSource, Faction,
     Initiative, EquipmentChanged, Point, EntryTrigger, TeleportTo, 
-    SingleActivation, mana_at_level, player_hp_at_level, StatusEffect,
+    SingleActivation, mana_at_level, hp_at_level, StatusEffect,
     Duration, AttributeBonus, KnownAbilities, EntityVec, InitiativePenalty,
     MapMarker
 };
@@ -37,8 +37,8 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
         .with(Skills::default())
         .with(Pools{
             hit_points: Pool{
-                current: player_hp_at_level(constitution, 1),
-                max: player_hp_at_level(constitution, 1)
+                current: hp_at_level(constitution, 1),
+                max: hp_at_level(constitution, 1)
             },
             mana: Pool{
                 current: mana_at_level(intelligence, 1),

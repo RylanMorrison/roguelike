@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use rltk::prelude::*;
 use super::{box_gray, light_gray, white, black};
-use crate::{Map, Name, Position, Pools, StatusEffect, Duration, Item};
+use crate::{Map, Name, Position, Pools, StatusEffect, Duration, Item, Attributes};
 use crate::camera;
 
 struct Tooltip {
@@ -66,13 +66,6 @@ pub fn draw_tooltips(ecs: &World, ctx : &mut Rltk) {
             let mut tip = Tooltip::new();
             tip.add(name.name.to_string());
 
-            // attributes
-            // let attr = attributes.get(entity);
-            // if let Some(attr) = attr {
-            //     let mut s = "".to_string();
-            //     // TODO
-            // }
-
             // status effects
             let statuses = ecs.read_storage::<StatusEffect>();
             let durations = ecs.read_storage::<Duration>();
@@ -84,9 +77,9 @@ pub fn draw_tooltips(ecs: &World, ctx : &mut Rltk) {
             }
 
             // pools
-            let stat = pools.get(entity);
-            if let Some(stat) = stat {
+            if let Some(stat) = pools.get(entity) {
                 tip.add(format!("Level: {}", stat.level));
+                tip.add(format!("HP: {}/{}", stat.hit_points.current, stat.hit_points.max));
             }
 
             tip_boxes.push(tip);
