@@ -1,9 +1,9 @@
 use specs::prelude::*;
 use rltk::prelude::*;
-use super::{item_result_menu, ItemMenuResult};
+use super::{item_entity_tooltip, item_result_menu, ItemMenuResult};
 use crate::{InBackpack, Item, State};
 
-pub fn show_inventory(gs : &mut State, ctx : &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
+pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option<Entity>) {
     let player_entity = gs.ecs.fetch::<Entity>();
     let backpacks = gs.ecs.read_storage::<InBackpack>();
     let items = gs.ecs.read_storage::<Item>();
@@ -17,12 +17,17 @@ pub fn show_inventory(gs : &mut State, ctx : &mut Rltk) -> (ItemMenuResult, Opti
         }
     }
 
-    let result = item_result_menu(
+    let (menu_result, selected_entity, tooltip) = item_result_menu(
+        ctx,
         &mut draw_batch, 
         "Inventory",
-        &inventory,
-        ctx.key
+        &inventory
     );
     draw_batch.submit(1000).expect("Draw batch submission failed");
-    result
+
+    if let Some((entity, name, y)) = tooltip {
+        item_entity_tooltip(&gs.ecs, &mut draw_batch, name, entity, y);
+    }
+
+    (menu_result, selected_entity)
 }

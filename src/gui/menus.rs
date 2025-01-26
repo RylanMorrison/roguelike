@@ -1,8 +1,8 @@
 use rltk::prelude::*;
 use specs::prelude::*;
-use super::{white, black, yellow};
-use crate::Item;
-use crate::raws;
+use super::{white, black, yellow, Tooltip};
+use crate::{Item, Weapon, Wearable, Equippable};
+use crate::raws::{self, ItemData};
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum ItemMenuResult { Cancel, NoResponse, Selected }
@@ -47,7 +47,7 @@ pub fn menu_option<T: ToString>(draw_batch: &mut DrawBatch, x: i32, y: i32, hotk
     );
 }
 
-pub fn item_result_menu<T: ToString>(draw_batch: &mut DrawBatch, title: T, items: &[(Entity, Item, String)], key: Option<VirtualKeyCode>) -> (ItemMenuResult, Option<Entity>) {
+pub fn item_result_menu<T: ToString>(ctx: &mut Rltk, draw_batch: &mut DrawBatch, title: T, items: &[(Entity, Item, String)]) -> (ItemMenuResult, Option<Entity>, Option<(Entity, String, i32)>) {
     let count = items.len();
     let mut y = (25 - (count / 2)) as i32;
     draw_batch.draw_box(
@@ -67,27 +67,81 @@ pub fn item_result_menu<T: ToString>(draw_batch: &mut DrawBatch, title: T, items
 
     let mut item_list: Vec<Entity> = Vec::new();
     let mut j = 0;
+    let mouse_pos = ctx.mouse_pos();
+    let mut tooltip: Option<(Entity, String, i32)> = None;
     for item in items {
         let colour = Some(raws::get_item_colour(&item.1, &raws::RAWS.lock().unwrap()));
         menu_option(draw_batch, 17, y, 97+j as FontCharType, &item.2, colour);
         item_list.push(item.0);
+
+        if mouse_pos.0 >= 18 && mouse_pos.0 <= 57 && mouse_pos.1 == y {
+            tooltip = Some((item.0, item.2.clone(), y));
+        }
+
         y += 1;
         j += 1;
     }
 
-    match key {
-        None => (ItemMenuResult::NoResponse, None),
+    match ctx.key {
+        None => (ItemMenuResult::NoResponse, None, tooltip),
         Some(key) => {
             match key {
-                VirtualKeyCode::Escape => { (ItemMenuResult::Cancel, None) }
+                VirtualKeyCode::Escape => { (ItemMenuResult::Cancel, None, tooltip) }
                 _ => {
                     let selection = rltk::letter_to_option(key);
                     if selection > -1 && selection < count as i32 {
-                        return (ItemMenuResult::Selected, Some(item_list[selection as usize]));
+                        return (ItemMenuResult::Selected, Some(item_list[selection as usize]), tooltip);
                     }
-                    (ItemMenuResult::NoResponse, None)
+                    (ItemMenuResult::NoResponse, None, tooltip)
                 }
             }
         }
     }
+}
+
+pub fn item_entity_tooltip<T: ToString>(ecs: &World, draw_batch: &mut DrawBatch, name: T, entity: Entity, y: i32) {
+    let weapons = ecs.read_storage::<Weapon>();
+    let wearables = ecs.read_storage::<Wearable>();
+    let equippables = ecs.read_storage::<Equippable>();
+
+    let mut tooltip = Tooltip::new();
+    tooltip.add(name);
+
+    if let Some(weapon) = weapons.get(entity) {
+        tooltip.add(format!("Attribute: {:?}", weapon.attribute));
+        tooltip.add(format!("Damage: {}", weapon.damage()));
+        tooltip.add(format!("Hit bonus: {}", weapon.hit_bonus));
+
+        let range = if let Some(range) = weapon.range { range.to_string() } else { "melee".to_string() };
+        tooltip.add(format!("Range: {}", range));
+    }
+    if let Some(wearable) = wearables.get(entity) {
+        tooltip.add(format!("Armour class: {}", wearable.armour_class));
+    }
+    if let Some(equippable) = equippables.get(entity) {
+        tooltip.add(format!("Slot: {:?}", equippable.slot));
+    }
+
+    tooltip.render(draw_batch, 30, y);
+    draw_batch.submit(1100).expect("Draw batch submission failed");
+}
+
+pub fn item_tooltip<T: ToString>(draw_batch: &mut DrawBatch, name: T, item: ItemData, y: i32) {
+    let mut tooltip = Tooltip::new();
+    tooltip.add(name);
+
+    if let Some(weapon) = item.weapon {
+        tooltip.add(format!("Attribute: {}", weapon.attribute));
+        tooltip.add(format!("Damage: {}", weapon.base_damage));
+        tooltip.add(format!("Hit bonus: {}", weapon.hit_bonus));
+        tooltip.add(format!("Range: {}", weapon.range));
+        tooltip.add(format!("Slot: {}", weapon.slot));
+    }
+    if let Some(wearable) = item.wearable {
+        tooltip.add(format!("Armour class: {}", wearable.armour_class));
+        tooltip.add(format!("Slot: {}", wearable.slot));
+    }
+
+    tooltip.render(draw_batch, 30, y);
+    draw_batch.submit(1100).expect("Draw batch submission failed");
 }

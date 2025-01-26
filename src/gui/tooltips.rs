@@ -1,19 +1,19 @@
 use specs::prelude::*;
 use rltk::prelude::*;
 use super::{box_gray, light_gray, white, black};
-use crate::{Map, Name, Position, Pools, StatusEffect, Duration, Item, Attributes};
+use crate::{Map, Name, Position, Pools, StatusEffect, Duration, Item};
 use crate::camera;
 
-struct Tooltip {
+pub struct Tooltip {
     lines: Vec<String>
 }
 
 impl Tooltip {
-    fn new() -> Tooltip {
+    pub fn new() -> Tooltip {
         Tooltip { lines: Vec::new() }
     }
 
-    fn add<S: ToString>(&mut self, line: S) {
+    pub fn add<S: ToString>(&mut self, line: S) {
         self.lines.push(line.to_string());
     }
 
@@ -29,7 +29,7 @@ impl Tooltip {
 
     fn height(&self) -> i32 { self.lines.len() as i32 + 2i32 }
 
-    fn render(&self, draw_batch: &mut DrawBatch, x: i32, y: i32) {
+    pub fn render(&self, draw_batch: &mut DrawBatch, x: i32, y: i32) {
         draw_batch.draw_box(Rect::with_size(x, y, self.width()-1, self.height()-1), ColorPair::new(white(), box_gray()));
         for (i, s) in self.lines.iter().enumerate() {
             let col = if i == 0 { white() } else { light_gray() };
@@ -44,7 +44,6 @@ pub fn draw_tooltips(ecs: &World, ctx : &mut Rltk) {
     let names = ecs.read_storage::<Name>();
     let items = ecs.read_storage::<Item>();
     let positions = ecs.read_storage::<Position>();
-    // let attributes = ecs.read_storage::<Attributes>();
     let pools = ecs.read_storage::<Pools>();
     let entities = ecs.entities();
     let mut draw_batch = DrawBatch::new();

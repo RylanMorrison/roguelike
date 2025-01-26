@@ -341,7 +341,7 @@ where
     }
 }
 
-#[derive(PartialEq, Copy, Clone, Serialize, Deserialize)]
+#[derive(PartialEq, Copy, Clone, Serialize, Deserialize, Debug)]
 pub enum WeaponAttribute { Strength, Dexterity }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
@@ -354,6 +354,18 @@ pub struct Weapon {
     pub hit_bonus: i32,
     pub proc_chance: Option<f32>,
     pub proc_target: Option<String>
+}
+
+impl Weapon {
+    pub fn damage(&self) -> String {
+        if self.damage_bonus > 0 {
+            format!("{}d{}+{}", self.damage_n_dice, self.damage_die_type, self.damage_bonus)
+        } else if self.damage_bonus < 0 {
+            format!("{}d{}{}", self.damage_n_dice, self.damage_die_type, self.damage_bonus)
+        } else {
+            format!("{}d{}", self.damage_n_dice, self.damage_die_type)
+        }
+    }
 }
 
 #[derive(Component, Serialize, Deserialize, Clone)]

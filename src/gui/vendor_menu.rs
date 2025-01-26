@@ -1,8 +1,8 @@
 use specs::prelude::*;
 use rltk::prelude::*;
-use super::{black, menu_box, white, yellow};
+use super::{black, item_entity_tooltip, item_tooltip, menu_box, white, yellow};
 use crate::{Consumable, InBackpack, Item, ItemClass, ItemQuality, State, Vendor};
-use crate::raws;
+use crate::raws::{self, get_item_class_colour, ItemData};
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum VendorMode { Buy, Sell, Improve }
@@ -40,6 +40,8 @@ fn vendor_sell_menu(gs: &mut State, ctx: &mut Rltk) -> (VendorResult, Option<Ent
 
     let mut inventory: Vec<Entity> = Vec::new();
     let mut j = 0;
+    let mouse_pos = ctx.mouse_pos();
+    let mut tooltip: Option<(Entity, String, i32)> = None;
     for (entity, item, backpack) in (&entities, &items, &backpacks).join() {
         if backpack.owner == *player_entity {
             draw_batch.set(Point::new(13, y), ColorPair::new(white(), black()), rltk::to_cp437('('));
@@ -49,6 +51,10 @@ fn vendor_sell_menu(gs: &mut State, ctx: &mut Rltk) -> (VendorResult, Option<Ent
             draw_batch.print_color(Point::new(18, y), item.full_name(), ColorPair::new(raws::get_item_colour(&item, &raws::RAWS.lock().unwrap()), black()));
             draw_batch.print(Point::new(57, y), &format!("{:.0} gp", item.base_value as f32 * 0.8));
 
+            if mouse_pos.0 >= 18 && mouse_pos.0 <= 57 && mouse_pos.1 == y {
+                tooltip = Some((entity, item.full_name(), y));
+            }
+
             inventory.push(entity);
             y += 2;
             j += 1;
@@ -56,6 +62,10 @@ fn vendor_sell_menu(gs: &mut State, ctx: &mut Rltk) -> (VendorResult, Option<Ent
     }
 
     draw_batch.submit(1000).expect("Draw batch submission failed");
+
+    if let Some((entity, name, y)) = tooltip {
+        item_entity_tooltip(&gs.ecs, &mut draw_batch, name, entity, y);
+    }
 
     match ctx.key {
         None => (VendorResult::NoResponse, None, None, None),
@@ -83,20 +93,32 @@ fn vendor_buy_menu(gs: &mut State, ctx: &mut Rltk, vendor: Entity) -> (VendorRes
     let count = inventory.len();
 
     let mut y = (25 - (count / 2)) as i32;
-
     menu_box(&mut draw_batch, 10, y, (count*2+3) as i32, "Buy which item? (SPACE to switch to improve mode)");
 
-    for (j, sale) in inventory.iter().enumerate() {
+    let mouse_pos = ctx.mouse_pos();
+    let mut tooltip: Option<(ItemData, i32)> = None;
+    for (j, item) in inventory.iter().enumerate() {
         draw_batch.set(Point::new(13, y), ColorPair::new(white(), black()), rltk::to_cp437('('));
         draw_batch.set(Point::new(14, y), ColorPair::new(yellow(), black()), 97+j as rltk::FontCharType);
         draw_batch.set(Point::new(15, y), ColorPair::new(white(), black()), rltk::to_cp437(')'));
 
-        draw_batch.print_color(Point::new(18, y), &sale.0, ColorPair::new(*&sale.2, black()));
-        draw_batch.print(Point::new(57, y), &format!("{:.0} gp", sale.1 as f32 * 1.2));
+        let item_class_colour = get_item_class_colour(item.class.as_str(), &raws::RAWS.lock().unwrap());
+
+        draw_batch.print_color(Point::new(18, y), &item.name, ColorPair::new(item_class_colour, black()));
+        draw_batch.print(Point::new(57, y), &format!("{:.0} gp", item.base_value as f32 * 1.2));
+
+        if mouse_pos.0 >= 18 && mouse_pos.0 <= 57 && mouse_pos.1 == y {
+            tooltip = Some((item.clone(), y));
+        }
+
         y += 2;
     }
 
     draw_batch.submit(1000).expect("Draw batch submission failed");
+
+    if let Some((item, y)) = tooltip {
+        item_tooltip(&mut draw_batch, item.name.clone(), item.clone(), y);
+    }
 
     match ctx.key {
         None => (VendorResult::NoResponse, None, None, None),
@@ -107,7 +129,7 @@ fn vendor_buy_menu(gs: &mut State, ctx: &mut Rltk, vendor: Entity) -> (VendorRes
                 _ => {
                     let selection = rltk::letter_to_option(key);
                     if selection > -1 && selection < count as i32 {
-                        return (VendorResult::Buy, None, Some(inventory[selection as usize].0.clone()), Some(inventory[selection as usize].1));
+                        return (VendorResult::Buy, None, Some(inventory[selection as usize].name.clone()), Some(inventory[selection as usize].base_value));
                     }
                     (VendorResult::NoResponse, None, None, None)
                 }
@@ -141,7 +163,9 @@ fn vendor_improve_menu(gs: &mut State, ctx: &mut Rltk, vendor_entity: Entity) ->
     menu_box(&mut draw_batch, 10, y, (count*2+3) as i32, "Improve which item? (SPACE to switch to sell mode)");
 
     let mut j = 0;
-    for (_entity, item, name, cost) in inventory.iter() {
+    let mouse_pos = ctx.mouse_pos();
+    let mut tooltip: Option<(Entity, String, i32)> = None;
+    for (entity, item, name, cost) in inventory.iter() {
         draw_batch.set(Point::new(13, y), ColorPair::new(white(), black()), rltk::to_cp437('('));
         draw_batch.set(Point::new(14, y), ColorPair::new(yellow(), black()), 97+j as rltk::FontCharType);
         draw_batch.set(Point::new(15, y), ColorPair::new(white(), black()), rltk::to_cp437(')'));
@@ -149,11 +173,19 @@ fn vendor_improve_menu(gs: &mut State, ctx: &mut Rltk, vendor_entity: Entity) ->
         draw_batch.print_color(Point::new(18, y), name, ColorPair::new(raws::get_item_colour(item, &raws::RAWS.lock().unwrap()), black()));
         draw_batch.print(Point::new(57, y), format!("{} gp", cost));
 
+        if mouse_pos.0 >= 18 && mouse_pos.0 <= 57 && mouse_pos.1 == y {
+            tooltip = Some((*entity, item.full_name(), y));
+        }
+
         y += 2;
         j += 1;
     }
 
     draw_batch.submit(1000).expect("Draw batch submission failed");
+
+    if let Some((entity, name, y)) = tooltip {
+        item_entity_tooltip(&gs.ecs, &mut draw_batch, name, entity, y);
+    }
 
     match ctx.key {
         None => (VendorResult::NoResponse, None, None, None),
@@ -178,9 +210,7 @@ fn item_can_be_improved(item: &Item, vendor_category: &String) -> bool {
 
     if let Some(category) = &item.vendor_category {
         if category.as_str() == vendor_category.as_str() {
-            if item.quality.as_ref() != Some(&ItemQuality::Exceptional) {
-                return true;
-            }
+            return item.quality.as_ref() != Some(&ItemQuality::Exceptional);
         }
     }
     

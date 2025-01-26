@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet, BTreeMap};
 use specs::prelude::*;
 use rltk::RGB;
 use crate::components::*;
-use super::{Raws, Reaction, RenderableData, SpawnTableEntry, MapMarkerData};
+use super::{Raws, Reaction, RenderableData, SpawnTableEntry, MapMarkerData, ItemData};
 use crate::{attr_bonus, hp_at_level, mana_at_level, parse_dice_string, determine_roll};
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use crate::rng;
@@ -379,7 +379,7 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         name: item_template.name.clone(),
         initiative_penalty: item_template.initiative_penalty.unwrap_or(0.0),
         weight_lbs: item_template.weight_lbs.unwrap_or(0.0),
-        base_value: get_item_value(&item_quality, item_template.base_value.unwrap_or(0)),
+        base_value: get_item_value(&item_quality, item_template.base_value),
         class: {
             let class_name = item_template.class.as_str();
             match class_name {
@@ -976,20 +976,16 @@ pub fn faction_reaction(my_faction: &str, their_faction: &str, raws: &RawMaster)
     Reaction::Ignore
 }
 
-pub fn get_vendor_items(category: &String, raws: &RawMaster) -> Vec<(String, i32, RGB)> {
-    let mut result: Vec<(String, i32, RGB)> = Vec::new();
+pub fn get_vendor_items(category: &String, raws: &RawMaster) -> Vec<ItemData> {
+    let mut result: Vec<ItemData> = Vec::new();
     for item in raws.raws.items.iter() {
         if let Some(cat) = &item.vendor_category {
-            if category == cat && item.base_value.is_some() {
-                result.push((
-                    item.name.clone(),
-                    item.base_value.unwrap(),
-                    get_item_class_colour(item.class.as_str(), raws)
-                ));
+            if category == cat {
+                result.push(item.clone());
             }
         }
     }
-    result.sort_by(|a,b| a.1.partial_cmp(&b.1).unwrap());
+    result.sort_by(|a,b| a.base_value.partial_cmp(&b.base_value).unwrap());
     result
 }
 
@@ -1004,7 +1000,7 @@ pub fn get_item_colour(item: &Item, raws: &RawMaster) -> RGB {
     get_item_class_colour(class_string, raws)
 }
 
-fn get_item_class_colour(class_string: &str, raws: &RawMaster) -> RGB {
+pub fn get_item_class_colour(class_string: &str, raws: &RawMaster) -> RGB {
     let colour = raws.raws.item_class_colours.get(class_string);
     RGB::from_hex(colour.unwrap()).expect("Invalid RGB")
 }

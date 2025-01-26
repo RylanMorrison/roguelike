@@ -2,7 +2,7 @@ use serde::Deserialize;
 use std::collections::HashMap;
 use super::{RenderableData, AttributeBonusData, SkillBonusData};
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct ItemData {
     pub name: String,
     pub renderable:  Option<RenderableData>,
@@ -11,7 +11,7 @@ pub struct ItemData {
     pub wearable: Option<WearableData>,
     pub initiative_penalty: Option<f32>,
     pub weight_lbs: Option<f32>,
-    pub base_value: Option<i32>,
+    pub base_value: i32,
     pub vendor_category: Option<String>,
     pub class: String,
     pub attribute_bonuses: Option<AttributeBonusData>,
@@ -19,13 +19,13 @@ pub struct ItemData {
     pub set_name: Option<String>
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct ConsumableData {
     pub effects: HashMap<String, String>,
     pub charges: Option<i32>
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct WeaponData {
     pub range: String,
     pub attribute: String,
@@ -37,7 +37,7 @@ pub struct WeaponData {
     pub proc_effects: Option<HashMap<String, String>>
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct WearableData {
     pub armour_class: f32,
     pub slot: String

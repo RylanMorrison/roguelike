@@ -12,7 +12,7 @@ mod quest_structs;
 mod species_structs;
 mod rawmaster;
 
-use item_structs::*;
+pub use item_structs::*;
 use item_set_structs::*;
 use mob_structs::*;
 use prop_structs::*;
@@ -36,7 +36,7 @@ lazy_static! {
     pub static ref RAWS: Mutex<RawMaster> = Mutex::new(RawMaster::empty());
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct RenderableData {
     pub glyph: String,
     pub fg: Option<String>,
@@ -53,7 +53,7 @@ pub struct MapMarkerData {
     pub bg: Option<String>
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct AttributeBonusData {
     pub strength: Option<i32>,
     pub dexterity: Option<i32>,
@@ -61,7 +61,7 @@ pub struct AttributeBonusData {
     pub intelligence: Option<i32>
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct SkillBonusData {
     pub melee: Option<i32>,
     pub defence: Option<i32>,
