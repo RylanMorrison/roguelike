@@ -1,5 +1,5 @@
 use specs::prelude::*;
-use crate::{State, Item, Pools, EquipmentChanged, ItemQuality};
+use crate::{EquipmentChanged, InBackpack, Item, ItemQuality, Pools, State};
 use crate::raws;
 use crate::gamelog;
 
@@ -14,10 +14,16 @@ pub fn sell_item(gs: &mut State, item_entity: Entity) {
 pub fn buy_item(gs: &mut State, item_name: String, item_price: i32) {
     let mut pools = gs.ecs.write_storage::<Pools>();
     let player_pools = pools.get_mut(*gs.ecs.fetch::<Entity>()).unwrap();
+    let backpack = gs.ecs.read_storage::<InBackpack>();
 
-    if player_pools.gold >= item_price {
+    if backpack.count() >= 26 {
+        gamelog::Logger::new().inventory_full().log();
+    } else if player_pools.gold >= item_price {
+        std::mem::drop(backpack);
+
         player_pools.gold -= item_price;
         std::mem::drop(pools);
+
         let player_entity = *gs.ecs.fetch::<Entity>();
         raws::spawn_named_item(&raws::RAWS.lock().unwrap(), &mut gs.ecs, &item_name, raws::SpawnType::Carried{ by: player_entity });
         gs.ecs.write_storage::<EquipmentChanged>().insert(*gs.ecs.fetch::<Entity>(), EquipmentChanged{}).expect("Unable to insert");

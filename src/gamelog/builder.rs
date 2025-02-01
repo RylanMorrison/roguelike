@@ -95,6 +95,16 @@ impl Logger {
         self
     }
 
+    pub fn inventory_full(mut self) -> Self {
+        self.fragments.push(
+            LogFragment{
+                colour: RGB::named(rltk::ORANGE),
+                text: "Your inventory is full!".to_string()
+            }
+        );
+        self
+    }
+
     pub fn log(self) {
         append_entry(self.fragments);
     }

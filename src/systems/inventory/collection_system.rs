@@ -21,7 +21,7 @@ impl<'a> System<'a> for ItemCollectionSystem {
         for pickup in wants_pickup.join() {
             // consecutive letters of the alphabet are used for inventory entries so need to limit inventory size
             if backpack.count() >= 26 {
-                gamelog::Logger::new().append("You inventory is full.").log();
+                gamelog::Logger::new().inventory_full().log();
             } else {
                 positions.remove(pickup.item);
                 backpack.insert(pickup.item, InBackpack{ owner: pickup.collected_by }).expect("Unable to insert backpack entry");
