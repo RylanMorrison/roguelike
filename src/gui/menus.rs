@@ -7,9 +7,9 @@ use crate::raws::{self, ItemData};
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum ItemMenuResult { Cancel, NoResponse, Selected }
 
-pub fn menu_box<T: ToString>(draw_batch: &mut DrawBatch, x: i32, y: i32, height: i32, title: T) {
+pub fn menu_box<T: ToString>(draw_batch: &mut DrawBatch, x: i32, y: i32, width: i32, height: i32, title: T) {
     draw_batch.draw_box(
-        Rect::with_size(x, y - 2, 55, height),
+        Rect::with_size(x, y - 2, width, height+1),
         ColorPair::new(white(), black())
     );
     draw_batch.print_color(
@@ -18,7 +18,7 @@ pub fn menu_box<T: ToString>(draw_batch: &mut DrawBatch, x: i32, y: i32, height:
         ColorPair::new(yellow(), black())
     );
     draw_batch.print_color(
-        Point::new(x + 3, y + height - 2), 
+        Point::new(x + 3, y + height - 1),
         "ESCAPE to cancel",
         ColorPair::new(yellow(), black())
     );
@@ -49,9 +49,10 @@ pub fn menu_option<T: ToString>(draw_batch: &mut DrawBatch, x: i32, y: i32, hotk
 
 pub fn item_result_menu<T: ToString>(ctx: &mut Rltk, draw_batch: &mut DrawBatch, title: T, items: &[(Entity, Item, String)]) -> (ItemMenuResult, Option<Entity>, Option<(Entity, String, i32, i32)>) {
     let count = items.len();
-    let mut y = (25 - (count / 2)) as i32;
+    let mut y = y_start(count);
+    let height = box_height(count);
     draw_batch.draw_box(
-        Rect::with_size(15, y - 2, 35, (count+3) as i32),
+        Rect::with_size(15, y - 2, 35, height + 1),
         ColorPair::new(RGB::named(rltk::WHITE), RGB::named(rltk::BLACK))
     );
     draw_batch.print_color(
@@ -60,7 +61,7 @@ pub fn item_result_menu<T: ToString>(ctx: &mut Rltk, draw_batch: &mut DrawBatch,
         ColorPair::new(RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK))
     );
     draw_batch.print_color(
-        Point::new(18, y + count as i32 + 1),
+        Point::new(18, y + height - 1),
         "ESCAPE to cancel",
         ColorPair::new(RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK))
     );
@@ -69,16 +70,17 @@ pub fn item_result_menu<T: ToString>(ctx: &mut Rltk, draw_batch: &mut DrawBatch,
     let mut j = 0;
     let mouse_pos = ctx.mouse_pos();
     let mut tooltip: Option<(Entity, String, i32, i32)> = None;
+    y += 1;
     for item in items {
         let colour = Some(raws::get_item_colour(&item.1, &raws::RAWS.lock().unwrap()));
         menu_option(draw_batch, 17, y, 97+j as FontCharType, &item.2, colour);
         item_list.push(item.0);
 
-        if tooltip.is_none() && mouse_pos.0 >= 18 && mouse_pos.0 <= 57 && mouse_pos.1 == y {
+        if tooltip.is_none() && mouse_pos.0 >= 18 && mouse_pos.0 <= 50 && mouse_pos.1 == y {
             tooltip = Some((item.0, item.2.clone(), 30, y));
         }
 
-        y += 1;
+        y += 2;
         j += 1;
     }
 
@@ -125,9 +127,9 @@ pub fn item_entity_tooltip<T: ToString>(ecs: &World, name: T, entity: Entity) ->
     tooltip
 }
 
-pub fn item_tooltip<T: ToString>(name: T, item: ItemData) -> Tooltip {
+pub fn item_tooltip(item: ItemData) -> Tooltip {
     let mut tooltip = Tooltip::new();
-    tooltip.add(name);
+    tooltip.add(item.name);
 
     if let Some(weapon) = item.weapon {
         tooltip.add(format!("Attribute: {}", weapon.attribute));
@@ -142,4 +144,12 @@ pub fn item_tooltip<T: ToString>(name: T, item: ItemData) -> Tooltip {
     }
 
     tooltip
+}
+
+pub fn y_start(item_count: usize) -> i32 {
+    (20 - (item_count / 2)) as i32
+}
+
+pub fn box_height(item_count: usize) -> i32 {
+    (item_count*2+3) as i32
 }

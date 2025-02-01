@@ -1,10 +1,9 @@
 use specs::{prelude::*, saveload::SimpleMarker, saveload::MarkedBuilder};
 use super::*;
 use crate::{player_xp_for_level, CharacterClass, DamageOverTime, Duration, Map, Name, Player, Pools, ProgressSource, QuestProgress,
-    RunState, SerializeMe,StatusEffect, StatusEffectChanged, WantsToLevelUp, Species};
+    RunState, SerializeMe,StatusEffect, StatusEffectChanged, WantsToLevelUp};
 use crate::gamelog;
 use crate::spatial;
-use crate::player;
 
 pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
     let mut pools = ecs.write_storage::<Pools>();
@@ -80,8 +79,6 @@ pub fn death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     let mut gold_gain = 0;
 
     let mut pools = ecs.write_storage::<Pools>();
-    let names = ecs.read_storage::<Name>();
-    let all_species = ecs.read_storage::<Species>();
     let mut quest_progress = ecs.write_storage::<QuestProgress>();
 
     if let Some(pos) = entity_position(ecs, target) {

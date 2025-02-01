@@ -27,13 +27,16 @@ impl Tooltip {
         max as i32 + 2i32
     }
 
-    fn height(&self) -> i32 { self.lines.len() as i32 + 2i32 }
+    fn height(&self) -> i32 { self.lines.len() as i32 * 2 + 2i32 }
 
     pub fn render(&self, draw_batch: &mut DrawBatch, x: i32, y: i32) {
-        draw_batch.draw_box(Rect::with_size(x, y, self.width()-1, self.height()-1), ColorPair::new(white(), box_gray()));
+        let mut t_y = y.clone();
+        draw_batch.draw_box(Rect::with_size(x, y, self.width()+1, self.height()), ColorPair::new(white(), box_gray()));
+        t_y += 1;
         for (i, s) in self.lines.iter().enumerate() {
             let col = if i == 0 { white() } else { light_gray() };
-            draw_batch.print_color(Point::new(x+1, y+i as i32 + 1), &s, ColorPair::new(col, black()));
+            draw_batch.print_color(Point::new(x+2, t_y+i as i32 + 1), &s, ColorPair::new(col, black()));
+            t_y += 1;
         }
     }
 }
