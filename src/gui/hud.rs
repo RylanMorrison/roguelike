@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use rltk::prelude::*;
-use super::{black, blue, box_gray, cyan, draw_requirement, draw_tooltips, gold, green, light_gray, orange, red, white, yellow};
+use super::{black, blue, box_gray, cyan, draw_requirement, draw_map_tooltips, gold, green, light_gray, orange, red, white, yellow};
 use crate::{Map, Entity, Pools, Attributes, Attribute, Skills, Skill, Equipped, Item, Name, Consumable, InBackpack, AbilityType,
     KnownAbilities, KnownAbility, HungerClock, StatusEffect, Duration, HungerState, Quest, ActiveQuests,
     player_xp_for_level, carry_capacity_lbs};
@@ -36,15 +36,33 @@ fn draw_stats(draw_batch: &mut DrawBatch, player_pools: &Pools) {
     let level = format!("Level: {}", player_pools.level);
 
     draw_batch.print_color(Point::new(70, 1), "Health: ", ColorPair::new(white(), black()));
-    draw_batch.bar_horizontal(Point::new(80, 1), 18, player_pools.hit_points.current, player_pools.hit_points.max, ColorPair::new(red(), black()));
+    draw_batch.bar_horizontal(
+        Point::new(80, 1),
+        18,
+        player_pools.hit_points.current,
+        player_pools.hit_points.max,
+        ColorPair::new(red(), black())
+    );
     draw_batch.print_color(Point::new(87, 1), &health, ColorPair::new(white(), black()));
 
     draw_batch.print_color(Point::new(70, 2), "Mana: ", ColorPair::new(white(), black()));
-    draw_batch.bar_horizontal(Point::new(80, 2), 18, player_pools.mana.current, player_pools.mana.max, ColorPair::new(blue(), black()));
+    draw_batch.bar_horizontal(
+        Point::new(80, 2),
+        18,
+        player_pools.mana.current,
+        player_pools.mana.max,
+        ColorPair::new(blue(), black())
+    );
     draw_batch.print_color(Point::new(87, 2), &mana, ColorPair::new(white(), black()));
 
     draw_batch.print_color(Point::new(70, 3), &level, ColorPair::new(white(), black()));
-    draw_batch.bar_horizontal(Point::new(80, 3), 18, player_pools.xp, player_xp_for_level(player_pools.level), ColorPair::new(gold(), black()));
+    draw_batch.bar_horizontal(
+        Point::new(80, 3),
+        18,
+        player_pools.xp,
+        player_xp_for_level(player_pools.level),
+        ColorPair::new(gold(), black())
+    );
 
     draw_batch.print_color(Point::new(70, 15), "Armour Class:", ColorPair::new(light_gray(), black()));
     draw_batch.print_color(Point::new(87, 15), player_pools.total_armour_class, ColorPair::new(white(), black()));
@@ -52,9 +70,17 @@ fn draw_stats(draw_batch: &mut DrawBatch, player_pools: &Pools) {
     draw_batch.print_color(Point::new(70, 16), "Base Damage:", ColorPair::new(light_gray(), black()));
     draw_batch.print_color(Point::new(87, 16), player_pools.base_damage.clone(), ColorPair::new(white(), black()));
 
-    draw_batch.print_color(Point::new(70, 19), &format!("Initiative Penalty: {:.0}", player_pools.initiative_penalty.total()), ColorPair::new(white(), black()));
+    draw_batch.print_color(
+        Point::new(70, 19),
+        &format!("Initiative Penalty: {:.0}", player_pools.initiative_penalty.total()),
+        ColorPair::new(white(), black())
+    );
     
-    draw_batch.print_color(Point::new(70, 20), &format!("Gold: {}", player_pools.gold), ColorPair::new(gold(), black()));
+    draw_batch.print_color(
+        Point::new(70, 20),
+        &format!("Gold: {}", player_pools.gold),
+        ColorPair::new(gold(), black())
+    );
 }
 
 fn draw_attributes(ecs: &World, draw_batch: &mut DrawBatch, player_pools: &Pools, player_entity: &Entity) {
@@ -132,7 +158,11 @@ fn draw_equipment(ecs: &World, draw_batch: &mut DrawBatch, player: &Entity) -> i
     let items = ecs.read_storage::<Item>();
     for (item, equipment) in (&items, &equipped).join() {
         if equipment.owner == *player {
-            draw_batch.print_color(Point::new(70, y), item.full_name(), ColorPair::new(raws::get_item_colour(&item, &raws::RAWS.lock().unwrap()), black()));
+            draw_batch.print_color(
+                Point::new(70, y),
+                item.full_name(),
+                ColorPair::new(raws::get_item_colour(&item, &raws::RAWS.lock().unwrap()), black())
+            );
             y += 1;
         }
     }
@@ -153,7 +183,11 @@ fn draw_consumables(ecs: &World, draw_batch: &mut DrawBatch, player: &Entity, y:
             if consumable.max_charges > 1 {
                 display_name = format!("{} ({})", item.full_name(), consumable.charges);
             }
-            draw_batch.print_color(Point::new(73, *y), display_name, ColorPair::new(raws::get_item_colour(&item, &raws::RAWS.lock().unwrap()), black()));
+            draw_batch.print_color(
+                Point::new(73, *y),
+                display_name,
+                ColorPair::new(raws::get_item_colour(&item, &raws::RAWS.lock().unwrap()), black())
+            );
             *y += 1;
             index += 1;
         }
@@ -171,7 +205,11 @@ fn draw_abilities(ecs: &World, draw_batch: &mut DrawBatch, player: &Entity, y: &
         let known_ability = all_known_abilities.get(*ability_entity).unwrap();
         if known_ability.ability_type == AbilityType::Active {
             draw_batch.print_color(Point::new(70, *y), &format!("^{}", index), ColorPair::new(cyan(), black()));
-            draw_batch.print_color(Point::new(73, *y), &format!("{} ({})", known_ability.name, known_ability.mana_cost), ColorPair::new(cyan(), black()));
+            draw_batch.print_color(
+                Point::new(73, *y),
+                &format!("{} ({})", known_ability.name, known_ability.mana_cost),
+                ColorPair::new(cyan(), black())
+            );
             index += 1;
             *y += 1;
         }
@@ -203,7 +241,11 @@ fn draw_status_effects(ecs: &World, draw_batch: &mut DrawBatch, player: &Entity)
     for (status, duration, name) in (&statuses, &durations, &names).join() {
         let fg = if status.is_debuff { red() } else { green() };
         if status.target == *player {
-            draw_batch.print_color(Point::new(70, y), &format!("{} ({})", name.name, duration.turns), ColorPair::new(fg, black()));
+            draw_batch.print_color(
+                Point::new(70, y),
+                &format!("{} ({})", name.name, duration.turns),
+                ColorPair::new(fg, black())
+            );
             y -= 1;
         }
     }
@@ -222,7 +264,11 @@ fn draw_quests(ecs: &World, draw_batch: &mut DrawBatch) {
     if active_quests.len() < 1 { return; }
 
     let mut y = 2;
-    draw_batch.draw_box(Rect::with_size(0, 0, 40, quest_box_height(active_quests)), ColorPair::new(box_gray(), black()));
+    draw_batch.draw_box(
+        Rect::with_size(0, 0, 40,
+            quest_box_height(active_quests)),
+            ColorPair::new(box_gray(), black())
+        );
     for quest in active_quests.iter() {
         draw_batch.print_color(
             Point::new(2, y),
@@ -261,7 +307,7 @@ pub fn draw_ui(ecs: &World, ctx: &mut Rltk) {
     draw_quests(ecs, &mut draw_batch);
 
     gamelog::print_log(&mut rltk::BACKEND_INTERNAL.lock().consoles[1].console, Point::new(1, 33));
-    draw_tooltips(ecs, ctx);
+    draw_map_tooltips(ecs, ctx);
 
     draw_batch.submit(3000).expect("Draw batch submission failed");
 }

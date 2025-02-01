@@ -38,7 +38,7 @@ impl Tooltip {
     }
 }
 
-pub fn draw_tooltips(ecs: &World, ctx : &mut Rltk) {
+pub fn draw_map_tooltips(ecs: &World, ctx : &mut Rltk) {
     let (min_x, _max_x, min_y, _max_y) = camera::get_screen_bounds(ecs, ctx);
     let map = ecs.fetch::<Map>();
     let names = ecs.read_storage::<Name>();

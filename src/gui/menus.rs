@@ -47,7 +47,7 @@ pub fn menu_option<T: ToString>(draw_batch: &mut DrawBatch, x: i32, y: i32, hotk
     );
 }
 
-pub fn item_result_menu<T: ToString>(ctx: &mut Rltk, draw_batch: &mut DrawBatch, title: T, items: &[(Entity, Item, String)]) -> (ItemMenuResult, Option<Entity>, Option<(Entity, String, i32)>) {
+pub fn item_result_menu<T: ToString>(ctx: &mut Rltk, draw_batch: &mut DrawBatch, title: T, items: &[(Entity, Item, String)]) -> (ItemMenuResult, Option<Entity>, Option<(Entity, String, i32, i32)>) {
     let count = items.len();
     let mut y = (25 - (count / 2)) as i32;
     draw_batch.draw_box(
@@ -68,14 +68,14 @@ pub fn item_result_menu<T: ToString>(ctx: &mut Rltk, draw_batch: &mut DrawBatch,
     let mut item_list: Vec<Entity> = Vec::new();
     let mut j = 0;
     let mouse_pos = ctx.mouse_pos();
-    let mut tooltip: Option<(Entity, String, i32)> = None;
+    let mut tooltip: Option<(Entity, String, i32, i32)> = None;
     for item in items {
         let colour = Some(raws::get_item_colour(&item.1, &raws::RAWS.lock().unwrap()));
         menu_option(draw_batch, 17, y, 97+j as FontCharType, &item.2, colour);
         item_list.push(item.0);
 
-        if mouse_pos.0 >= 18 && mouse_pos.0 <= 57 && mouse_pos.1 == y {
-            tooltip = Some((item.0, item.2.clone(), y));
+        if tooltip.is_none() && mouse_pos.0 >= 18 && mouse_pos.0 <= 57 && mouse_pos.1 == y {
+            tooltip = Some((item.0, item.2.clone(), 30, y));
         }
 
         y += 1;
@@ -99,7 +99,7 @@ pub fn item_result_menu<T: ToString>(ctx: &mut Rltk, draw_batch: &mut DrawBatch,
     }
 }
 
-pub fn item_entity_tooltip<T: ToString>(ecs: &World, draw_batch: &mut DrawBatch, name: T, entity: Entity, y: i32) {
+pub fn item_entity_tooltip<T: ToString>(ecs: &World, name: T, entity: Entity) -> Tooltip {
     let weapons = ecs.read_storage::<Weapon>();
     let wearables = ecs.read_storage::<Wearable>();
     let equippables = ecs.read_storage::<Equippable>();
@@ -122,11 +122,10 @@ pub fn item_entity_tooltip<T: ToString>(ecs: &World, draw_batch: &mut DrawBatch,
         tooltip.add(format!("Slot: {:?}", equippable.slot));
     }
 
-    tooltip.render(draw_batch, 30, y);
-    draw_batch.submit(1100).expect("Draw batch submission failed");
+    tooltip
 }
 
-pub fn item_tooltip<T: ToString>(draw_batch: &mut DrawBatch, name: T, item: ItemData, y: i32) {
+pub fn item_tooltip<T: ToString>(name: T, item: ItemData) -> Tooltip {
     let mut tooltip = Tooltip::new();
     tooltip.add(name);
 
@@ -142,6 +141,5 @@ pub fn item_tooltip<T: ToString>(draw_batch: &mut DrawBatch, name: T, item: Item
         tooltip.add(format!("Slot: {}", wearable.slot));
     }
 
-    tooltip.render(draw_batch, 30, y);
-    draw_batch.submit(1100).expect("Draw batch submission failed");
+    tooltip
 }

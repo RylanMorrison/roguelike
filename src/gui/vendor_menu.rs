@@ -48,7 +48,11 @@ fn vendor_sell_menu(gs: &mut State, ctx: &mut Rltk) -> (VendorResult, Option<Ent
             draw_batch.set(Point::new(14, y), ColorPair::new(yellow(), black()), 97+j as rltk::FontCharType);
             draw_batch.set(Point::new(15, y), ColorPair::new(white(), black()), rltk::to_cp437(')'));
 
-            draw_batch.print_color(Point::new(18, y), item.full_name(), ColorPair::new(raws::get_item_colour(&item, &raws::RAWS.lock().unwrap()), black()));
+            draw_batch.print_color(
+                Point::new(18, y),
+                item.full_name(),
+                ColorPair::new(raws::get_item_colour(&item, &raws::RAWS.lock().unwrap()), black())
+            );
             draw_batch.print(Point::new(57, y), &format!("{:.0} gp", item.base_value as f32 * 0.8));
 
             if mouse_pos.0 >= 18 && mouse_pos.0 <= 57 && mouse_pos.1 == y {
@@ -64,7 +68,9 @@ fn vendor_sell_menu(gs: &mut State, ctx: &mut Rltk) -> (VendorResult, Option<Ent
     draw_batch.submit(1000).expect("Draw batch submission failed");
 
     if let Some((entity, name, y)) = tooltip {
-        item_entity_tooltip(&gs.ecs, &mut draw_batch, name, entity, y);
+        let tooltip_box = item_entity_tooltip(&gs.ecs, name, entity);
+        tooltip_box.render(&mut draw_batch, 30, y);
+        draw_batch.submit(1100).expect("Draw batch submission failed");
     }
 
     match ctx.key {
@@ -117,7 +123,9 @@ fn vendor_buy_menu(gs: &mut State, ctx: &mut Rltk, vendor: Entity) -> (VendorRes
     draw_batch.submit(1000).expect("Draw batch submission failed");
 
     if let Some((item, y)) = tooltip {
-        item_tooltip(&mut draw_batch, item.name.clone(), item.clone(), y);
+        let tooltip_box = item_tooltip(item.name.clone(), item.clone());
+        tooltip_box.render(&mut draw_batch, 30, y);
+        draw_batch.submit(1100).expect("Draw batch submission failed");
     }
 
     match ctx.key {
@@ -129,7 +137,12 @@ fn vendor_buy_menu(gs: &mut State, ctx: &mut Rltk, vendor: Entity) -> (VendorRes
                 _ => {
                     let selection = rltk::letter_to_option(key);
                     if selection > -1 && selection < count as i32 {
-                        return (VendorResult::Buy, None, Some(inventory[selection as usize].name.clone()), Some(inventory[selection as usize].base_value));
+                        return (
+                            VendorResult::Buy,
+                            None,
+                            Some(inventory[selection as usize].name.clone()),
+                            Some(inventory[selection as usize].base_value)
+                        );
                     }
                     (VendorResult::NoResponse, None, None, None)
                 }
@@ -164,17 +177,21 @@ fn vendor_improve_menu(gs: &mut State, ctx: &mut Rltk, vendor_entity: Entity) ->
 
     let mut j = 0;
     let mouse_pos = ctx.mouse_pos();
-    let mut tooltip: Option<(Entity, String, i32)> = None;
+    let mut tooltip: Option<(Entity, String, i32, i32)> = None;
     for (entity, item, name, cost) in inventory.iter() {
         draw_batch.set(Point::new(13, y), ColorPair::new(white(), black()), rltk::to_cp437('('));
         draw_batch.set(Point::new(14, y), ColorPair::new(yellow(), black()), 97+j as rltk::FontCharType);
         draw_batch.set(Point::new(15, y), ColorPair::new(white(), black()), rltk::to_cp437(')'));
 
-        draw_batch.print_color(Point::new(18, y), name, ColorPair::new(raws::get_item_colour(item, &raws::RAWS.lock().unwrap()), black()));
+        draw_batch.print_color(
+            Point::new(18, y),
+            name,
+            ColorPair::new(raws::get_item_colour(item, &raws::RAWS.lock().unwrap()), black())
+        );
         draw_batch.print(Point::new(57, y), format!("{} gp", cost));
 
-        if mouse_pos.0 >= 18 && mouse_pos.0 <= 57 && mouse_pos.1 == y {
-            tooltip = Some((*entity, item.full_name(), y));
+        if tooltip.is_none() && mouse_pos.0 >= 18&& mouse_pos.0 <= 57 && mouse_pos.1 == y {
+            tooltip = Some((*entity, item.full_name(), 30, y));
         }
 
         y += 2;
@@ -183,8 +200,9 @@ fn vendor_improve_menu(gs: &mut State, ctx: &mut Rltk, vendor_entity: Entity) ->
 
     draw_batch.submit(1000).expect("Draw batch submission failed");
 
-    if let Some((entity, name, y)) = tooltip {
-        item_entity_tooltip(&gs.ecs, &mut draw_batch, name, entity, y);
+    if let Some((entity, name, x, y)) = tooltip {
+        item_entity_tooltip(&gs.ecs, name, entity).render(&mut draw_batch, x, y);
+        draw_batch.submit(1100).expect("Draw batch submission failed");
     }
 
     match ctx.key {

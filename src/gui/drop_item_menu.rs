@@ -25,8 +25,9 @@ pub fn drop_item_menu(gs : &mut State, ctx : &mut Rltk) -> (ItemMenuResult, Opti
     );
     draw_batch.submit(1000).expect("Draw batch submission failed");
 
-    if let Some((entity, name, y)) = tooltip {
-        item_entity_tooltip(&gs.ecs, &mut draw_batch, name, entity, y);
+    if let Some((entity, name, x, y)) = tooltip {
+        item_entity_tooltip(&gs.ecs, name, entity).render(&mut draw_batch, x, y);
+        draw_batch.submit(1100).expect("Draw batch submission failed");
     }
 
     (menu_result, selected_entity)

@@ -19,7 +19,9 @@ pub fn character_class_select_menu(gs: &mut State, ctx: &mut Rltk) -> CharacterC
     if let RunState::CharacterClassSelectMenu{ menu_selection: selection } = *runstate {
         if selection == CharacterClassSelection::Warrior {
             draw_batch.print_color_centered(25, "Warrior", ColorPair::new(red(), black()));
-            draw_batch.print_color_centered(26, raws::get_character_class_description(&raws::RAWS.lock().unwrap(), "Warrior").unwrap(), 
+            draw_batch.print_color_centered(
+                26,
+                raws::get_character_class_description(&raws::RAWS.lock().unwrap(), "Warrior").unwrap(),
                 ColorPair::new(red(), black())
             );
         } else {
@@ -28,7 +30,10 @@ pub fn character_class_select_menu(gs: &mut State, ctx: &mut Rltk) -> CharacterC
 
         if selection == CharacterClassSelection::Sorceror {
             draw_batch.print_color_centered(28, "Sorceror", ColorPair::new(cyan(), black()));
-            draw_batch.print_color_centered(29, raws::get_character_class_description(&raws::RAWS.lock().unwrap(), "Sorceror").unwrap(),
+            draw_batch.print_color_centered(
+                29,
+                raws::get_character_class_description(&raws::RAWS.lock().unwrap(),
+                "Sorceror").unwrap(),
                 ColorPair::new(cyan(), black())
             );
         } else {
@@ -37,7 +42,10 @@ pub fn character_class_select_menu(gs: &mut State, ctx: &mut Rltk) -> CharacterC
 
         if selection == CharacterClassSelection::Ranger {
             draw_batch.print_color_centered(31, "Ranger", ColorPair::new(green(), black()));
-            draw_batch.print_color_centered(32, raws::get_character_class_description(&raws::RAWS.lock().unwrap(), "Ranger").unwrap(),
+            draw_batch.print_color_centered(
+                32,
+                raws::get_character_class_description(&raws::RAWS.lock().unwrap(),
+                "Ranger").unwrap(),
                 ColorPair::new(green(), black())
             );
         } else {
