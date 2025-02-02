@@ -105,8 +105,12 @@ pub fn item_entity_tooltip<T: ToString>(ecs: &World, name: T, entity: Entity) ->
     let weapons = ecs.read_storage::<Weapon>();
     let wearables = ecs.read_storage::<Wearable>();
     let equippables = ecs.read_storage::<Equippable>();
+    let items = ecs.read_storage::<Item>();
 
     let mut tooltip = Tooltip::new();
+    if let Some(item) = items.get(entity) {
+        tooltip.set_color(raws::get_item_colour(item, &raws::RAWS.lock().unwrap()));
+    }
     tooltip.add(name);
 
     if let Some(weapon) = weapons.get(entity) {
@@ -129,6 +133,7 @@ pub fn item_entity_tooltip<T: ToString>(ecs: &World, name: T, entity: Entity) ->
 
 pub fn item_tooltip(item: ItemData) -> Tooltip {
     let mut tooltip = Tooltip::new();
+    tooltip.set_color(raws::get_item_class_colour(&item.class, &raws::RAWS.lock().unwrap()));
     tooltip.add(item.name);
 
     if let Some(weapon) = item.weapon {

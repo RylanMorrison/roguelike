@@ -5,16 +5,24 @@ use crate::{Map, Name, Position, Pools, StatusEffect, Duration, Item};
 use crate::camera;
 
 pub struct Tooltip {
-    lines: Vec<String>
+    lines: Vec<String>,
+    color: Option<rltk::RGB>
 }
 
 impl Tooltip {
     pub fn new() -> Tooltip {
-        Tooltip { lines: Vec::new() }
+        Tooltip {
+            lines: Vec::new(),
+            color: None
+        }
     }
 
     pub fn add<S: ToString>(&mut self, line: S) {
         self.lines.push(line.to_string());
+    }
+
+    pub fn set_color(&mut self, color: rltk::RGB) {
+        self.color = Some(color);
     }
 
     fn width(&self) -> i32 {
@@ -30,12 +38,22 @@ impl Tooltip {
     fn height(&self) -> i32 { self.lines.len() as i32 * 2 + 2i32 }
 
     pub fn render(&self, draw_batch: &mut DrawBatch, x: i32, y: i32) {
+        if self.lines.len() < 1 { return; }
+
         let mut t_y = y.clone();
-        draw_batch.draw_box(Rect::with_size(x, y, self.width()+1, self.height()), ColorPair::new(white(), box_gray()));
+        let color = self.color.unwrap_or(white());
+        draw_batch.draw_box(Rect::with_size(x, y, self.width()+1, self.height()), ColorPair::new(color, box_gray()));
         t_y += 1;
-        for (i, s) in self.lines.iter().enumerate() {
-            let col = if i == 0 { white() } else { light_gray() };
-            draw_batch.print_color(Point::new(x+2, t_y+i as i32 + 1), &s, ColorPair::new(col, black()));
+
+        // heading
+        draw_batch.print_color(
+            Point::new(x+2, t_y as i32 + 1),
+            self.lines.first().unwrap(),
+            ColorPair::new(color, black()));
+
+        t_y += 2;
+        for (i, s) in self.lines.iter().skip(1).enumerate() {
+            draw_batch.print_color(Point::new(x+2, t_y+i as i32 + 1), &s, ColorPair::new(light_gray(), black()));
             t_y += 1;
         }
     }
