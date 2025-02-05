@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet, BTreeMap};
 use specs::prelude::*;
 use rltk::RGB;
 use crate::components::*;
-use super::{Raws, Reaction, RenderableData, SpawnTableEntry, MapMarkerData, ItemData};
+use super::{Raws, Reaction, RenderableData, SpawnTableEntry, MapMarkerData, ItemData, SkillBonusData};
 use crate::{attr_bonus, hp_at_level, mana_at_level, parse_dice_string, determine_roll};
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use crate::rng;
@@ -357,6 +357,7 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
 
     // spawn in the specified location
     eb = spawn_position(&pos, eb, key, raws);
+    eb = eb.with(Name{ name: key.to_string() });
 
     // renderable
     if let Some(renderable) = &item_template.renderable {

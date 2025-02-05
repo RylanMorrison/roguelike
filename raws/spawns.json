@@ -210,7 +210,11 @@
             "drops": [
                 { "name": "Hide", "weight": 3 },
                 { "name": "Health Potion", "weight": 3 },
-                { "name": "Greater Health Potion", "weight": 5 },
+                { "name": "Greater Health Potion", "weight": 3 },
+                { "name": "Potion of Strength", "weight": 3 },
+                { "name": "Potion of Dexterity", "weight": 3 },
+                { "name": "Potion of Intelligence", "weight": 3 },
+                { "name": "Potion of Constitution", "weight": 3 },
                 { "name": "Magic Mapping Scroll", "weight": 5 },
                 { "name": "Iron Helmet", "weight": 5 },
                 { "name": "Iron Breastplate", "weight": 5 },
@@ -230,6 +234,10 @@
         {
             "name": "Epic Chest",
             "drops": [
+                { "name": "Potion of Strength", "weight": 5 },
+                { "name": "Potion of Dexterity", "weight": 5 },
+                { "name": "Potion of Intelligence", "weight": 5 },
+                { "name": "Potion of Constitution", "weight": 5 },
                 { "name": "Mithril Helmet", "weight": 5 },
                 { "name": "Mithril Plate", "weight": 5 },
                 { "name": "Mithril Greaves", "weight": 5 },
@@ -1041,7 +1049,7 @@
             "consumable": {
                 "effects": {
                     "particle": "!;#FF0000;200.0",
-                    "duration": "15"
+                    "duration": "60"
                 }
             },
             "weight_lbs": 0.5,
@@ -1062,7 +1070,7 @@
             "consumable": {
                 "effects": {
                     "particle": "!;#FF0000;200.0",
-                    "duration": "15"
+                    "duration": "60"
                 }
             },
             "weight_lbs": 0.5,
@@ -1083,7 +1091,7 @@
             "consumable": {
                 "effects": {
                     "particle": "!;#FF0000;200.0",
-                    "duration": "15"
+                    "duration": "60"
                 }
             },
             "weight_lbs": 0.5,
@@ -1091,7 +1099,7 @@
             "vendor_category": "alchemy",
             "class": "common",
             "attribute_bonuses": {
-                "constitution": 5
+                "constitution": 10
             }
         },
         {
@@ -1104,7 +1112,7 @@
             "consumable": {
                 "effects": {
                     "particle": "!;#FF0000;200.0",
-                    "duration": "15"
+                    "duration": "60"
                 }
             },
             "weight_lbs": 0.5,
@@ -2009,14 +2017,17 @@
                 "order": 2
             },
             "wearable": {
-                "armour_class": 2.0,
+                "armour_class": 2.5,
                 "slot": "Off Hand"
             },
             "weight_lbs": 8.0,
             "base_value": 250,
             "initiative_penalty": 0.3,
             "class": "rare",
-            "vendor_category": "wearables"
+            "vendor_category": "wearables",
+            "skill_bonuses": {
+                "defence": 1
+            }
         },
         {
             "name": "Mithril Shield",
@@ -2636,7 +2647,7 @@
             "attributes": {
                 "strength": 3,
                 "dexterity": 3,
-                "constitution": 3
+                "constitution": 1
             },
             "natural" : {
                 "attacks" : [
@@ -2744,13 +2755,15 @@
                 "Stand and deliver!",
                 "Your belongings or your life!"
             ],
-            "attributes": {},
+            "attributes": {
+                "constitution": 9
+            },
             "equipped": [ 
                 "Dagger", 
-                "Leather Armour", 
+                "Leather Armour",
                 "Leather Boots",
-                "Leather Gloves",
-                "Leather Helmet"],
+                "Leather Gloves"
+            ],
             "loot_table": "Lesser Monster",
             "light": {
                 "range": 6,

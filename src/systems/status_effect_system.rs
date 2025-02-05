@@ -116,11 +116,13 @@ impl<'a> System<'a> for StatusEffectSystem {
                         attr.constitution.base + attr.constitution.total_modifiers(),
                         pool.level
                     );
+                    if pool.hit_points.current > pool.hit_points.max { pool.hit_points.current = pool.hit_points.max; }
+
                     pool.mana.max = mana_at_level(
                         attr.intelligence.base + attr.intelligence.total_modifiers(),
                         pool.level
                     );
-                    
+
                     if pool.total_weight > carry_capacity_lbs(&attr.strength) {
                         // overburdened
                         pool.initiative_penalty.status_effect_penalty += 4.0;
