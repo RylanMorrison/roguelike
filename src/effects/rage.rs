@@ -1,6 +1,6 @@
 use specs::{prelude::*, saveload::SimpleMarker, saveload::MarkedBuilder};
 use super::*;
-use crate::components::{StatusEffect, StatusEffectChanged, Duration, Name, SerializeMe, AttributeBonus, SkillBonus, Faction};
+use crate::components::{StatusEffect, StatusEffectChanged, Duration, Name, SerializeMe, AttributeBonus, SkillBonus, Faction, Rage};
 use crate::raws::{RAWS, faction_reaction, Reaction};
 
 pub fn apply_rage(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
@@ -20,6 +20,8 @@ pub fn apply_rage(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
             }
         }
 
+        delete_duplicate_effect(ecs, target);
+
         ecs.create_entity()
             .with(StatusEffect{ target, is_debuff: false })
             .with(AttributeBonus{
@@ -36,8 +38,21 @@ pub fn apply_rage(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
             })
             .with(Duration{ turns: *duration })
             .with(Name{ name: "Rage".to_string() })
+            .with(Rage{})
             .marked::<SimpleMarker<SerializeMe>>()
             .build();
         ecs.write_storage::<StatusEffectChanged>().insert(target, StatusEffectChanged{}).expect("Insert failed");
+    }
+}
+
+fn delete_duplicate_effect(ecs: &mut World, target: Entity) {
+    let entities = ecs.entities();
+    let status_effects = ecs.read_storage::<StatusEffect>();
+    let rages = ecs.read_storage::<Rage>();
+
+    for (entity, status_effect, _rage) in (&entities, &status_effects, &rages).join() {
+        if status_effect.target == target {
+            entities.delete(entity).expect("Unable to delete entity");
+        }
     }
 }
