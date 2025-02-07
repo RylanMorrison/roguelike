@@ -124,7 +124,7 @@ fn vendor_buy_menu(gs: &mut State, ctx: &mut Rltk, vendor: Entity) -> (VendorRes
 
     if let Some((item, x, y)) = tooltip {
         item_tooltip(item.clone()).render(&mut draw_batch, x, y);
-        draw_batch.submit(1100).expect("Draw batch submission failed");
+        draw_batch.submit(3500).expect("Draw batch submission failed");
     }
 
     match ctx.key {
@@ -200,7 +200,7 @@ fn vendor_improve_menu(gs: &mut State, ctx: &mut Rltk, vendor_entity: Entity) ->
 
     if let Some((entity, name, x, y)) = tooltip {
         item_entity_tooltip(&gs.ecs, name, entity).render(&mut draw_batch, x, y);
-        draw_batch.submit(1100).expect("Draw batch submission failed");
+        draw_batch.submit(3500).expect("Draw batch submission failed");
     }
 
     match ctx.key {
@@ -226,7 +226,7 @@ fn item_can_be_improved(item: &Item, vendor_category: &String) -> bool {
 
     if let Some(category) = &item.vendor_category {
         if category.as_str() == vendor_category.as_str() {
-            return item.quality.as_ref() != Some(&ItemQuality::Exceptional);
+            return item.quality != ItemQuality::Exceptional;
         }
     }
     

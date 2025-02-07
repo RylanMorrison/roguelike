@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use std::collections::HashMap;
-use crate::{Pools, Player, Name, RunState, Position, LootTable, Boss};
+use crate::{Pools, Player, Name, RunState, Position, LootTable, Boss, ItemQuality};
 use crate::raws;
 use crate::gamelog;
 use crate::rng;
@@ -73,7 +73,8 @@ pub fn delete_the_dead(ecs : &mut World) {
                 &raws::RAWS.lock().unwrap(),
                 ecs,
                 &drop.0,
-                raws::SpawnType::AtPosition{ x: drop.1.x, y: drop.1.y }
+                raws::SpawnType::AtPosition{ x: drop.1.x, y: drop.1.y },
+                ItemQuality::Random
             );
         }
     }

@@ -3,7 +3,7 @@ use specs::prelude::*;
 use super::*;
 use crate::{determine_roll, gamelog, raws, Attributes, Chest, Confusion, Consumable, Damage, DamageOverTime, Duration, Food, Fortress, 
     FrostShield, Healing, Item, KnownAbility, LootTable, MagicMapping, Map, Name, Pools, Rage, RestoresMana, RunState, SelfDamage, 
-    SingleActivation, Skills, Slow, SpawnParticleBurst, SpawnParticleLine, Stun, TeleportTo, TownPortal};
+    SingleActivation, Skills, Slow, SpawnParticleBurst, SpawnParticleLine, Stun, TeleportTo, TownPortal, ItemQuality};
 
 pub fn item_trigger(ecs: &mut World, creator: Option<Entity>, item_entity: Entity, targets: &Targets) {
     // check charges
@@ -327,7 +327,8 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
             &raws::RAWS.lock().unwrap(),
             ecs,
             &loot.0,
-            raws::SpawnType::AtPosition { x: loot.1, y: loot.2 }
+            raws::SpawnType::AtPosition { x: loot.1, y: loot.2 },
+            ItemQuality::Random
         );
         did_something = true;
     }

@@ -152,5 +152,5 @@ pub fn draw_map_tooltips(ecs: &World, ctx : &mut Rltk) {
         y += tt.height();
     }
 
-    draw_batch.submit(500).expect("Draw batch submission failed");
+    draw_batch.submit(3500).expect("Draw batch submission failed");
 }

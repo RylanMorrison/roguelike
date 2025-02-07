@@ -267,7 +267,7 @@ fn get_map_marker_component(map_marker: &MapMarkerData) -> MapMarker {
 
 pub fn spawn_named_entity(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnType) -> Option<Entity> {
     if raws.item_index.contains_key(key) {
-        return spawn_named_item(raws, ecs, key, pos);
+        return spawn_named_item(raws, ecs, key, pos, ItemQuality::Standard);
     }
     if raws.mob_index.contains_key(key) {
         return spawn_named_mob(raws, ecs, key, pos);
@@ -350,7 +350,7 @@ macro_rules! apply_effects {
     };
 }
 
-pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnType) -> Option<Entity> {
+pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnType, quality: ItemQuality) -> Option<Entity> {
     let item_template = &raws.raws.items[raws.item_index[key]];
     let item_class_colours = &raws.raws.item_class_colours;
     let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
@@ -364,18 +364,21 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         eb = eb.with(get_renderable_component(renderable, item_class_colours.get(&item_template.class)));
     }
 
-    let item_quality = match pos {
-        SpawnType::AtPosition {..} => {
-            if item_template.consumable.is_none() {
-                roll_item_quality(item_template.class.as_str())
-            } else {
-                // don't add quality to consumable items
-                None
-            }
+    let item_quality = match quality {
+        ItemQuality::Random => {
+            roll_item_quality(
+                item_template.class.as_str(),
+                item_template.consumable.is_some()
+            )
         }
-        // default to no quality for items not dropped as loot
-        _ => None
+        _ => quality
     };
+
+    // skill bonuses
+    if let Some(skill_bonus) = item_skill_bonus(&item_quality, &item_template) {
+        eb = eb.with(skill_bonus);
+    }
+
     eb = eb.with(Item{
         name: item_template.name.clone(),
         initiative_penalty: item_template.initiative_penalty.unwrap_or(0.0),
@@ -442,16 +445,6 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
             dexterity: bonus.dexterity,
             constitution: bonus.constitution,
             intelligence: bonus.intelligence
-        });
-    }
-
-    // skill bonuses
-    if let Some(bonus) = &item_template.skill_bonuses {
-        eb = eb.with(SkillBonus{
-            melee: bonus.melee,
-            defence: bonus.defence,
-            ranged: bonus.ranged,
-            magic: bonus.magic
         });
     }
 
@@ -529,11 +522,7 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
     eb = eb.with(attr);
 
     // pools
-    let mob_level = if mob_template.level.is_some() {
-        mob_template.level.unwrap()
-    } else {
-        1
-    };
+    let mob_level = mob_template.level.unwrap_or(1);
     let mob_hp = hp_at_level(mob_constitution, mob_level);
     let mob_mana = mana_at_level(mob_intelligence, mob_level);
     let pools = Pools{
@@ -549,8 +538,8 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
         } else {
             0
         },
-        total_armour_class: 10, // only used by player for now
-        base_damage: "1d4".to_string(), // only used by player for now
+        total_armour_class: 10,
+        base_damage: "1d4".to_string(),
         god_mode: false
     };
     eb = eb.with(pools);
@@ -563,6 +552,7 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
                 "melee" => { skills.melee.base = *sk.1; }
                 "defence" => { skills.defence.base = *sk.1; }
                 "magic" => { skills.magic.base = *sk.1; }
+                "ranged" => { skills.ranged.base = *sk.1; }
                 _ => { rltk::console::log(format!("Unknown skill referenced: [{}]", sk.0)); }
             }
         }
@@ -1024,63 +1014,99 @@ pub fn parse_particle(token_string: &str) -> SpawnParticleBurst {
     }
 }
 
-fn roll_item_quality(item_class: &str) -> Option<ItemQuality> {
-    if item_class == "unique" || item_class == "set" { return None; }
+fn roll_item_quality(item_class: &str, is_consumable: bool) -> ItemQuality {
+    if is_consumable || item_class == "unique" || item_class == "set" { return ItemQuality::Standard; }
 
     match rng::roll_dice(1, 10) {
-        1 | 2 => Some(ItemQuality::Damaged),
-        3 | 4 | 5 => Some(ItemQuality::Worn),
-        6 | 7 | 8 => None,
+        1 | 2 => ItemQuality::Damaged,
+        3 | 4 | 5 => ItemQuality::Worn,
+        6 | 7 | 8 => ItemQuality::Standard,
         // exceptional items cannot drop
-        _ => Some(ItemQuality::Improved)
+        _ => ItemQuality::Improved
     }
 }
 
-fn quality_weapon_stats(quality: &Option<ItemQuality>, base_damage: &str, base_hit_bonus: i32) -> (i32, i32, i32, i32) {
+fn quality_weapon_stats(quality: &ItemQuality, base_damage: &str, base_hit_bonus: i32) -> (i32, i32, i32, i32) {
     let (n_dice, mut die_type, mut die_bonus) = parse_dice_string(base_damage);
     let mut hit_bonus = base_hit_bonus;
     match quality {
-        None => {},
-        Some(ItemQuality::Damaged) => {
+        ItemQuality::Damaged => {
             die_type -= 1;
             die_bonus -= 2;
             hit_bonus -= 1;
         }
-        Some(ItemQuality::Worn) => {
+        ItemQuality::Worn => {
             die_bonus -= 1;
             hit_bonus -= 1;
         }
-        Some(ItemQuality::Improved) => {
+        ItemQuality::Improved => {
             die_bonus += 1;
             hit_bonus += 1;
         }
-        Some(ItemQuality::Exceptional) => {
+        ItemQuality::Exceptional => {
             die_type += 1;
             die_bonus += 2;
             hit_bonus += 1;
         }
+        _ => {}
     }
     (n_dice, die_type, die_bonus, hit_bonus)
 }
 
-fn quality_armour_class(quality: &Option<ItemQuality>, base_armour_class: f32) -> f32 {
+fn quality_armour_class(quality: &ItemQuality, base_armour_class: f32) -> f32 {
     match quality {
-        None => base_armour_class,
-        Some(ItemQuality::Damaged) => base_armour_class * 0.5,
-        Some(ItemQuality::Worn) => base_armour_class * 0.75,
-        Some(ItemQuality::Improved) => base_armour_class * 1.25,
-        Some(ItemQuality::Exceptional) => base_armour_class * 1.5
+        ItemQuality::Damaged => base_armour_class * 0.5,
+        ItemQuality::Worn => base_armour_class * 0.75,
+        ItemQuality::Improved => base_armour_class * 1.25,
+        ItemQuality::Exceptional => base_armour_class * 1.5,
+        _ => base_armour_class
     }
 }
 
-pub fn get_item_value(quality: &Option<ItemQuality>, base_value: i32) -> i32 {
+pub fn get_item_value(quality: &ItemQuality, base_value: i32) -> i32 {
     let mut value = base_value as f32;
     match quality {
-        None => {},
-        Some(ItemQuality::Damaged) => value *= 0.25,
-        Some(ItemQuality::Worn) => value *= 0.5,
-        Some(ItemQuality::Improved) => value *= 1.5,
-        Some(ItemQuality::Exceptional) => value *= 2.0
+        ItemQuality::Damaged => value *= 0.25,
+        ItemQuality::Worn => value *= 0.5,
+        ItemQuality::Improved => value *= 1.5,
+        ItemQuality::Exceptional => value *= 2.0,
+        _ => {}
     }
     value as i32
+}
+
+
+
+fn item_skill_bonus(item_quality: &ItemQuality, item_template: &ItemData) -> Option<SkillBonus> {
+    let (mut melee, mut defence, mut ranged, mut magic) = (None, None, None, None);
+
+    if let Some(bonus) = &item_template.skill_bonuses {
+        (melee, defence, ranged, magic) = (bonus.melee, bonus.defence, bonus.ranged, bonus.magic);
+    }
+
+    let modifier = match item_quality {
+        ItemQuality::Damaged => -2,
+        ItemQuality::Worn => -1,
+        ItemQuality::Improved => 1,
+        ItemQuality::Exceptional => 2,
+        _ => 0
+    };
+
+    if let Some(weapon) = &item_template.weapon {
+        if weapon.range == "melee" {
+            melee = Some(melee.unwrap_or(0) + modifier);
+        } else {
+            ranged = Some(ranged.unwrap_or(0) + modifier);
+        }
+    }
+
+    if item_template.wearable.is_some() {
+        defence = Some(defence.unwrap_or(0) + modifier);
+    }
+
+    if (melee, defence, ranged, magic) == (None, None, None, None) {
+        return None;
+    }
+
+    Some(SkillBonus { melee, defence, ranged, magic })
 }
