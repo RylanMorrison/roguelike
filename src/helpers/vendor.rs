@@ -1,12 +1,17 @@
 use specs::prelude::*;
-use crate::{EquipmentChanged, InBackpack, Item, ItemQuality, Pools, State, Name};
+use crate::{EquipmentChanged, InBackpack, Item, ItemQuality, Pools, State};
 use crate::raws::{self, SpawnType};
 use crate::gamelog;
 
 pub fn sell_item(gs: &mut State, item_entity: Entity) {
-    let price = gs.ecs.read_storage::<Item>().get(item_entity).unwrap().base_value as f32 * 0.8;
+    let items = gs.ecs.read_storage::<Item>();
+    let item = items.get(item_entity).unwrap();
+    let price = item.base_value as f32 * 0.8;
 
     gs.ecs.write_storage::<Pools>().get_mut(*gs.ecs.fetch::<Entity>()).unwrap().gold += price as i32;
+    gamelog::Logger::new().append("You sell").item_name(item).append(format!("for {} gold", price)).log();
+    std::mem::drop(items);
+
     gs.ecs.delete_entity(item_entity).expect("Unable to delete");
     gs.ecs.write_storage::<EquipmentChanged>().insert(*gs.ecs.fetch::<Entity>(), EquipmentChanged{}).expect("Unable to insert");
 }
@@ -25,13 +30,18 @@ pub fn buy_item(gs: &mut State, item_name: String, item_price: i32) {
         std::mem::drop(pools);
 
         let player_entity = *gs.ecs.fetch::<Entity>();
-        raws::spawn_named_item(
+        let item_entity = raws::spawn_named_item(
             &raws::RAWS.lock().unwrap(),
             &mut gs.ecs,
             &item_name,
             raws::SpawnType::Carried{ by: player_entity },
             ItemQuality::Standard
         );
+        gamelog::Logger::new()
+            .append("You buy")
+            .item_name(gs.ecs.read_storage::<Item>().get(item_entity.unwrap()).unwrap())
+            .append(format!("for {} gold", item_price))
+            .log();
         gs.ecs.write_storage::<EquipmentChanged>().insert(*gs.ecs.fetch::<Entity>(), EquipmentChanged{}).expect("Unable to insert");
     } else {
         gamelog::Logger::new().append("You cannot afford that.").log();
@@ -67,7 +77,7 @@ pub fn improve_item(gs: &mut State, item_entity: Entity, improve_cost: i32) {
             new_item_quality
         );
 
-        gamelog::Logger::new().append("Quality of").item_name(&item).append("improved.").log();
+        gamelog::Logger::new().append("Quality of").item_name(&item).append("improved").log();
         gs.ecs.write_storage::<EquipmentChanged>().insert(player_entity, EquipmentChanged{}).expect("Unable to insert");
     } else {
         gamelog::Logger::new().append("You cannot afford that.").log();

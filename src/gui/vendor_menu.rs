@@ -140,7 +140,7 @@ fn vendor_buy_menu(gs: &mut State, ctx: &mut Rltk, vendor: Entity) -> (VendorRes
                             VendorResult::Buy,
                             None,
                             Some(inventory[selection as usize].name.clone()),
-                            Some(inventory[selection as usize].base_value)
+                            Some((inventory[selection as usize].base_value as f32 * 1.2) as i32)
                         );
                     }
                     (VendorResult::NoResponse, None, None, None)
