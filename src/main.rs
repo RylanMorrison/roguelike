@@ -325,13 +325,14 @@ impl GameState for State {
                 }
             }
             RunState::ShowCheatMenu => {
-                let result = gui::show_cheat_mode(ctx);
+                let result = gui::show_cheat_menu(ctx);
                 match result {
                     gui::CheatMenuResult::Cancel => newrunstate = RunState::AwaitingInput,
                     gui::CheatMenuResult::NoResponse => {}
                     gui::CheatMenuResult::TeleportToExit => {
                         self.change_level(1);
                         self.mapgen_next_state = Some(RunState::PreRun);
+                        gamelog::Logger::new().append("You teleport to the next level").log();
                         newrunstate = RunState::MapGeneration;
                     }
                     gui::CheatMenuResult::FullHeal => {
@@ -339,6 +340,7 @@ impl GameState for State {
                         let mut pools = self.ecs.write_storage::<Pools>();
                         let player_pools = pools.get_mut(*player).unwrap();
                         player_pools.hit_points.current = player_pools.hit_points.max;
+                        gamelog::Logger::new().append("Your wounds are fully healed").log();
                         newrunstate = RunState::AwaitingInput;
                     }
                     gui::CheatMenuResult::RevealMap => {
@@ -346,13 +348,20 @@ impl GameState for State {
                         for tile in map.revealed_tiles.iter_mut() {
                             *tile = true;
                         }
+                        gamelog::Logger::new().append("The layout of the current map is revealed to you").log();
                         newrunstate = RunState::AwaitingInput;
                     }
                     gui::CheatMenuResult::GodMode => {
                         let player = self.ecs.fetch::<Entity>();
                         let mut pools = self.ecs.write_storage::<Pools>();
                         let player_pools = pools.get_mut(*player).unwrap();
-                        player_pools.god_mode = if player_pools.god_mode { false } else { true };
+                        if player_pools.god_mode {
+                            player_pools.god_mode = false;
+                            gamelog::Logger::new().append("God mode deactivated").log();
+                        } else {
+                            player_pools.god_mode = true;
+                            gamelog::Logger::new().append("God mode activated").log();
+                        };
                         newrunstate = RunState::AwaitingInput;
                     }
                     gui::CheatMenuResult::LevelUp => {
@@ -361,6 +370,7 @@ impl GameState for State {
                         let player_class = character_classes.get(*player).unwrap();
                         let mut level_ups = self.ecs.write_storage::<WantsToLevelUp>();
                         level_ups.insert(*player, WantsToLevelUp{ passives: player_class.passives.clone() }).expect("Unable to insert");
+                        gamelog::Logger::new().append("You level up").log();
                         newrunstate = RunState::LevelUp;
                     }
                     gui::CheatMenuResult::MakeRich => {
@@ -368,6 +378,7 @@ impl GameState for State {
                         let mut pools = self.ecs.write_storage::<Pools>();
                         let player_pools = pools.get_mut(*player).unwrap();
                         player_pools.gold = 999999;
+                        gamelog::Logger::new().append("You are now filthy rich").log();
                         newrunstate = RunState::AwaitingInput;
                     }
                     gui::CheatMenuResult::QuestComplete => {
@@ -377,7 +388,20 @@ impl GameState for State {
                                 requirement.complete = true
                             }
                         }
+                        gamelog::Logger::new().append("All active quests are complete").log();
                         newrunstate = RunState::AwaitingInput;
+                    }
+                    gui::CheatMenuResult::IncreaseAttributes => {
+                        let player = self.ecs.fetch::<Entity>();
+                        let mut attributes = self.ecs.write_storage::<Attributes>();
+                        let player_attributes = attributes.get_mut(*player).unwrap();
+                        player_attributes.strength.base += 1;
+                        player_attributes.dexterity.base += 1;
+                        player_attributes.constitution.base += 1;
+                        player_attributes.intelligence.base += 1;
+                        self.ecs.write_storage::<EquipmentChanged>().insert(*player, EquipmentChanged {}).expect("Unable to insert");
+                        gamelog::Logger::new().append("Your attributes increase by 1").log();
+                        newrunstate = RunState::Ticking;
                     }
                 }
             }
