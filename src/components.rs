@@ -342,7 +342,7 @@ where
 }
 
 #[derive(PartialEq, Copy, Clone, Serialize, Deserialize, Debug)]
-pub enum WeaponAttribute { Strength, Dexterity }
+pub enum WeaponAttribute { Strength, Dexterity, Intelligence }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Weapon {

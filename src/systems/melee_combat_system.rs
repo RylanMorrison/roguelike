@@ -33,7 +33,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
     fn run(&mut self, data: Self::SystemData) {
         let (entities, mut wants_melees, names, attributes, 
             skills, pools, positions, hunger_clock, 
-            equipped_items, melee_weapons, wearables, natural,
+            equipped_items, weapons, wearables, natural,
             area_of_effect, dodges, blocks, map) = data;
 
         for (entity, wants_melee, name, attacker_attributes, attacker_skills, attacker_pools) in (&entities, &wants_melees, &names, &attributes, &skills, &pools).join() {
@@ -46,7 +46,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
             // default to unarmed
             let mut weapon_info = Weapon {
                 range: None,
-                attribute: crate::WeaponAttribute::Strength,
+                attribute: WeaponAttribute::Strength,
                 hit_bonus: 0,
                 damage_n_dice: 1,
                 damage_die_type: 4,
@@ -72,20 +72,20 @@ impl<'a> System<'a> for MeleeCombatSystem {
 
             // weapon attack ability of attacker
             let mut weapon_entity: Option<Entity> = None;
-            for (weapon, wielded, melee) in (&entities, &equipped_items, &melee_weapons).join() {
+            for (weapon_e, wielded, weapon) in (&entities, &equipped_items, &weapons).join() {
                 if wielded.owner == entity && (wielded.slot == EquipmentSlot::MainHand || wielded.slot == EquipmentSlot::TwoHanded) {
-                    weapon_info = melee.clone();
-                    weapon_entity = Some(weapon);
+                    weapon_info = weapon.clone();
+                    weapon_entity = Some(weapon_e);
                 }
             }
 
             // calculate attacker hit roll
             let target_name = names.get(wants_melee.target).unwrap();
             let natural_roll = rng::roll_dice(1, 20);
-            let attribute_hit_bonus = if weapon_info.attribute == WeaponAttribute::Strength {
-                attacker_attributes.strength.bonus
-            } else {
-                attacker_attributes.dexterity.bonus
+            let attribute_hit_bonus = match weapon_info.attribute {
+                WeaponAttribute::Strength => attacker_attributes.strength.bonus,
+                WeaponAttribute::Dexterity => attacker_attributes.dexterity.bonus,
+                _ => 0
             };
             let skill_hit_bonus = &attacker_skills.melee.bonus();
             let weapon_hit_bonus = weapon_info.hit_bonus;
@@ -152,10 +152,10 @@ impl<'a> System<'a> for MeleeCombatSystem {
 
                 // calculate damage
                 let base_damage = rng::roll_dice(weapon_info.damage_n_dice, weapon_info.damage_die_type);
-                let attr_damage_bonus = if weapon_info.attribute == WeaponAttribute::Strength {
-                    attacker_attributes.strength.bonus
-                } else {
-                    attacker_attributes.dexterity.bonus
+                let attr_damage_bonus = match weapon_info.attribute {
+                    WeaponAttribute::Strength => attacker_attributes.strength.bonus,
+                    WeaponAttribute::Dexterity => attacker_attributes.dexterity.bonus,
+                    _ => 0
                 };
                 let skill_damage_bonus = &attacker_skills.melee.bonus();
                 let weapon_damage_bonus = weapon_info.damage_bonus;

@@ -408,10 +408,14 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         let (n_dice, die_type, bonus, hit_bonus) = quality_weapon_stats(&item_quality, &weapon.base_damage, weapon.hit_bonus);
         let wpn = Weapon {
             range: if weapon.range == "melee" { None } else { Some(weapon.range.parse::<i32>().expect("Not a number")) },
-            attribute: if weapon.attribute.as_str() == "Strength" {
-                WeaponAttribute::Strength
-            } else {
-                WeaponAttribute::Dexterity
+            attribute: match weapon.attribute.to_lowercase().as_str() {
+                "strength" => WeaponAttribute::Strength,
+                "dexterity" => WeaponAttribute::Dexterity,
+                "intelligence" => WeaponAttribute::Intelligence,
+                _ => {
+                    rltk::console::log(format!("WARNING - Unknown weapon attribute: {}", weapon.attribute));
+                    WeaponAttribute::Strength
+                }
             },
             damage_n_dice: n_dice,
             damage_die_type: die_type,

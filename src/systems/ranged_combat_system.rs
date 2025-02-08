@@ -101,10 +101,10 @@ impl<'a> System<'a> for RangedCombatSystem {
             // calculate attacker hit roll
             let target_name = names.get(wants_shoot.target).unwrap();
             let natural_roll = rng::roll_dice(1, 20);
-            let attribute_hit_bonus = if weapon_info.attribute == WeaponAttribute::Strength {
-                attacker_attributes.strength.bonus
-            } else {
-                attacker_attributes.dexterity.bonus
+            let attribute_hit_bonus = match weapon_info.attribute {
+                WeaponAttribute::Strength => attacker_attributes.strength.bonus,
+                WeaponAttribute::Dexterity => attacker_attributes.dexterity.bonus,
+                _ => 0
             };
             let skill_hit_bonus = &attacker_skills.ranged.bonus();
             let weapon_hit_bonus = weapon_info.hit_bonus;
@@ -171,10 +171,10 @@ impl<'a> System<'a> for RangedCombatSystem {
 
                 // calculate damage
                 let base_damage = rng::roll_dice(weapon_info.damage_n_dice, weapon_info.damage_die_type);
-                let attr_damage_bonus = if weapon_info.attribute == WeaponAttribute::Strength {
-                    attacker_attributes.strength.bonus
-                } else {
-                    attacker_attributes.dexterity.bonus
+                let attr_damage_bonus = match weapon_info.attribute {
+                    WeaponAttribute::Strength => attacker_attributes.strength.bonus,
+                    WeaponAttribute::Dexterity => attacker_attributes.dexterity.bonus,
+                    _ => 0
                 };
                 let skill_damage_bonus = &attacker_skills.ranged.bonus();
                 let weapon_damage_bonus = weapon_info.damage_bonus;

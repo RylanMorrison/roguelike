@@ -11,7 +11,8 @@ use crate::{Position, Player, Viewshed, State, Map, RunState, Item, InBackpack, 
     TileType, particle_system::ParticleBuilder, Pools, WantsToMelee, WantsToPickupItem,
     HungerState, HungerClock, Door, BlocksVisibility, BlocksTile, Renderable, EntityMoved,
     Consumable, Ranged, Faction, Vendor, gui::VendorMode, KnownAbilities, WantsToUseAbility,
-    Equipped, Weapon, Target, WantsToShoot, Name, Chest, KnownAbility, AbilityType, QuestGiver};
+    Equipped, Weapon, Target, WantsToShoot, Name, Chest, KnownAbility, AbilityType, QuestGiver,
+    Attributes};
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState {
     let mut result = RunState::AwaitingInput;
@@ -346,8 +347,12 @@ pub fn skip_turn(ecs: &mut World) -> RunState {
             }
         }
         // sometimes restore mana
+        let attributes = ecs.read_storage::<Attributes>();
+        let player_attributes = attributes.get(*player_entity).unwrap();
         if player_pool.mana.current < player_pool.mana.max {
-            if rng::roll_dice(1, 6) == 1 {
+            // intelligence increases the chance of restoring mana up to 100%
+            let die_type = i32::max(1, 6 - (player_attributes.intelligence.bonus / 2));
+            if rng::roll_dice(1, die_type) == 1 {
                 player_pool.mana.current = i32::min(player_pool.mana.current + 1, player_pool.mana.max);
             }
         }

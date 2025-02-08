@@ -1431,7 +1431,7 @@
             },
             "weapon": {
                 "range": "melee",
-                "attribute": "Dexterity",
+                "attribute": "Intelligence",
                 "base_damage": "1d6",
                 "hit_bonus": 0,
                 "slot": "Two Handed"
@@ -1458,7 +1458,7 @@
             },
             "weapon": {
                 "range": "melee",
-                "attribute": "Dexterity",
+                "attribute": "Intelligence",
                 "base_damage": "1d6",
                 "hit_bonus": 0,
                 "slot": "Two Handed"
@@ -1484,7 +1484,7 @@
             },
             "weapon": {
                 "range": "melee",
-                "attribute": "Dexterity",
+                "attribute": "Intelligence",
                 "base_damage": "1d6",
                 "hit_bonus": 0,
                 "slot": "Two Handed"
@@ -1510,7 +1510,7 @@
             },
             "weapon": {
                 "range": "melee",
-                "attribute": "Dexterity",
+                "attribute": "Intelligence",
                 "base_damage": "1d6",
                 "hit_bonus": 0,
                 "slot": "Two Handed"
@@ -1536,7 +1536,7 @@
             },
             "weapon": {
                 "range": "melee",
-                "attribute": "Dexterity",
+                "attribute": "Intelligence",
                 "base_damage": "1d6",
                 "hit_bonus": 0,
                 "slot": "Two Handed"
@@ -1564,7 +1564,7 @@
             },
             "weapon": {
                 "range": "melee",
-                "attribute": "Dexterity",
+                "attribute": "Intelligence",
                 "base_damage": "1d6",
                 "hit_bonus": 0,
                 "slot": "Two Handed"
@@ -2605,7 +2605,7 @@
             },
             "weapon": {
                 "range": "melee",
-                "attribute": "Dexterity",
+                "attribute": "Intelligence",
                 "base_damage": "1d6",
                 "hit_bonus": -1,
                 "slot": "Two Handed"
