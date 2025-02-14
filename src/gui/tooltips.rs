@@ -1,35 +1,46 @@
+use std::fmt::Display;
 use specs::prelude::*;
 use rltk::prelude::*;
 use super::{box_gray, light_gray, white, black};
 use crate::{Map, Name, Position, Pools, StatusEffect, Duration, Item};
 use crate::camera;
 
-pub struct Tooltip {
-    lines: Vec<String>,
-    color: Option<rltk::RGB>
+struct Line<S> {
+    text: S,
+    color: RGB
 }
 
-impl Tooltip {
-    pub fn new() -> Tooltip {
+pub struct Tooltip<S> {
+    lines: Vec<Line<S>>,
+    color: Option<RGB>
+}
+
+impl<S> Tooltip<S> where S: ToString + Display {
+    pub fn new() -> Tooltip<S> {
         Tooltip {
             lines: Vec::new(),
             color: None
         }
     }
 
-    pub fn add<S: ToString>(&mut self, line: S) {
-        self.lines.push(line.to_string());
+    pub fn add(&mut self, text: S) {
+        self.lines.push(Line{ text, color: light_gray() });
     }
 
-    pub fn set_color(&mut self, color: rltk::RGB) {
+    pub fn add_colored(&mut self, text: S, color: RGB) {
+        self.lines.push(Line{ text, color });
+    }
+
+    pub fn set_color(&mut self, color: RGB) {
         self.color = Some(color);
     }
 
     fn width(&self) -> i32 {
         let mut max = 0;
         for s in self.lines.iter() {
-            if s.len() > max {
-                max = s.len();
+            let text = s.text.to_string();
+            if text.len() > max {
+                max = text.len();
             }
         }
         max as i32 + 2i32
@@ -48,12 +59,12 @@ impl Tooltip {
         // heading
         draw_batch.print_color(
             Point::new(x+2, t_y as i32 + 1),
-            self.lines.first().unwrap(),
+            &self.lines.first().unwrap().text,
             ColorPair::new(color, black()));
 
         t_y += 2;
-        for (i, s) in self.lines.iter().skip(1).enumerate() {
-            draw_batch.print_color(Point::new(x+2, t_y+i as i32 + 1), &s, ColorPair::new(light_gray(), black()));
+        for (i, line) in self.lines.iter().skip(1).enumerate() {
+            draw_batch.print_color(Point::new(x+2, t_y+i as i32 + 1), &line.text, ColorPair::new(line.color, black()));
             t_y += 1;
         }
     }
@@ -80,7 +91,7 @@ pub fn draw_map_tooltips(ecs: &World, ctx : &mut Rltk) {
     }
     if !map.visible_tiles[map.xy_idx(mouse_map_pos.0, mouse_map_pos.1)] { return; }
 
-    let mut tip_boxes: Vec<Tooltip> = Vec::new();
+    let mut tip_boxes: Vec<Tooltip<String>> = Vec::new();
     for (entity, name, position) in (&entities, &names, &positions).join() {
         if position.x == mouse_map_pos.0 && position.y == mouse_map_pos.1 {
             let mut tip = Tooltip::new();
