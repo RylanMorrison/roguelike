@@ -1079,8 +1079,6 @@ pub fn get_item_value(quality: &ItemQuality, base_value: i32) -> i32 {
     value as i32
 }
 
-
-
 fn item_skill_bonus(item_quality: &ItemQuality, item_template: &ItemData) -> Option<SkillBonus> {
     let (mut melee, mut defence, mut ranged, mut magic) = (None, None, None, None);
 
@@ -1098,7 +1096,10 @@ fn item_skill_bonus(item_quality: &ItemQuality, item_template: &ItemData) -> Opt
 
     if let Some(weapon) = &item_template.weapon {
         if weapon.range == "melee" {
-            melee = Some(melee.unwrap_or(0) + modifier);
+            match weapon.attribute.to_lowercase().as_str() {
+                "intelligence" => magic = Some(magic.unwrap_or(0) + modifier),
+                _ => melee = Some(melee.unwrap_or(0) + modifier)
+            }
         } else {
             ranged = Some(ranged.unwrap_or(0) + modifier);
         }

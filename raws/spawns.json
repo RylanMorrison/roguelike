@@ -1140,6 +1140,23 @@
             "vendor_category": "magic",
             "class": "common"
         },
+        {
+            "name": "Greater Mana Potion",
+            "renderable": {
+                "glyph" : "!",
+                "bg" : "#000000",
+                "order" : 2
+            },
+            "consumable": {
+                "effects": {
+                    "mana": "12"
+                }
+            },
+            "weight_lbs": 0.5,
+            "base_value": 200,
+            "vendor_category": "magic",
+            "class": "common"
+        },
         
         {
             "name": "Magic Mapping Scroll",
