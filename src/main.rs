@@ -39,8 +39,8 @@ pub enum RunState {
     ShowInventory,
     ShowUnequipItem,
     ShowDropItem,
-    ShowTargeting { min_range : f32, max_range: f32, source : Entity},
-    MainMenu { menu_selection : gui::MainMenuSelection },
+    ShowTargeting { min_range: f32, max_range: f32, source : Entity},
+    MainMenu { menu_selection: gui::MainMenuSelection },
     CharacterClassSelectMenu { menu_selection: gui::CharacterClassSelection },
     SaveGame,
     MagicMapReveal { row: i32 },
@@ -104,7 +104,9 @@ impl State {
 
         let mut dungeon_master = self.ecs.write_resource::<MasterDungeonMap>();
         dungeon_master.reset();
+        std::mem::drop(dungeon_master);
         gamelog::clear_events();
+        initialise_resources(&mut self.ecs);
     }
 }
 
@@ -629,21 +631,26 @@ fn main() -> rltk::BError {
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     raws::load_raws();
-
-    // store global resources
-    gs.ecs.insert(map::MasterDungeonMap::new());
-    gs.ecs.insert(Map::new("New Map", 0, 64, 64)); // w & h don't matter here
-    gs.ecs.insert(Point::new(0, 0));
-    gs.ecs.insert(particle_system::ParticleBuilder::new());
-    gs.ecs.insert(RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame });
-    let player_entity = spawner::player(&mut gs.ecs, 0, 0);
-    gs.ecs.insert(player_entity);
-
-    raws::spawn_all_abilities(&mut gs.ecs);
-    gs.ecs.insert(ItemSets{ item_sets: HashMap::new() });
-    raws::store_all_item_sets(&mut gs.ecs);
-    gs.ecs.insert(Quests{ quests: Vec::new() });
-    gs.ecs.insert(ActiveQuests{ quests: Vec::new() });
-    raws::store_all_quests(&mut gs.ecs);
+    initialise_resources(&mut gs.ecs);
     rltk::main_loop(context, gs)
+}
+
+fn initialise_resources(ecs: &mut World) {
+    // store global resources
+    ecs.insert(map::MasterDungeonMap::new());
+    ecs.insert(Map::new("New Map", 0, 64, 64)); // w & h don't matter here
+    ecs.insert(Point::new(0, 0));
+    ecs.insert(particle_system::ParticleBuilder::new());
+    ecs.insert(RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame });
+
+    let player_entity = spawner::player(ecs, 0, 0);
+    ecs.insert(player_entity);
+    raws::spawn_all_abilities(ecs);
+
+    ecs.insert(ItemSets{ item_sets: HashMap::new() });
+    raws::store_all_item_sets(ecs);
+
+    ecs.insert(Quests{ quests: Vec::new() });
+    ecs.insert(ActiveQuests{ quests: Vec::new() });
+    raws::store_all_quests(ecs);
 }

@@ -15,7 +15,7 @@ pub fn main_menu(gs : &mut State, ctx : &mut Rltk) -> MainMenuResult {
 
     draw_batch.print_color_centered(15, "Roguelike", ColorPair::new(yellow(), black()));
 
-    if let RunState::MainMenu{ menu_selection : selection } = *runstate {
+    if let RunState::MainMenu{menu_selection: selection} = *runstate {
         // menu items and selection highlighting
         if selection == MainMenuSelection::NewGame {
             draw_batch.print_color_centered(24, "Begin New Game", ColorPair::new(magenta(), black()));

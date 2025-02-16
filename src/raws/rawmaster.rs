@@ -664,6 +664,7 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
 
     // spawn in the specified location
     eb = spawn_position(&pos, eb, key, raws);
+    eb = eb.with(Name{ name: key.to_string() });
 
     // renderable
     if let Some(renderable) = &prop_template.renderable {
