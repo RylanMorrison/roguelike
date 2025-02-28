@@ -1,7 +1,7 @@
 use rltk::prelude::*;
 use specs::prelude::*;
 use super::{white, black, yellow, green, red, Tooltip};
-use crate::{AttributeBonus, Equippable, Item, Skill, SkillBonus, Weapon, Wearable};
+use crate::{AttributeBonus, Equippable, Item, SkillBonus, Weapon, Wearable};
 use crate::raws::{self, ItemData};
 
 #[derive(PartialEq, Copy, Clone, Debug)]

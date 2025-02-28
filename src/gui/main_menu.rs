@@ -6,9 +6,9 @@ use crate::{saveload_system, State, RunState};
 pub enum MainMenuSelection { NewGame, LoadGame, Quit }
 
 #[derive(PartialEq, Copy, Clone)]
-pub enum MainMenuResult { NoSelection{ selected : MainMenuSelection }, Selected{ selected: MainMenuSelection } }
+pub enum MainMenuResult { NoSelection{ selected: MainMenuSelection }, Selected{ selected: MainMenuSelection } }
 
-pub fn main_menu(gs : &mut State, ctx : &mut Rltk) -> MainMenuResult {
+pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
     let save_exists = saveload_system::does_save_exist();
     let runstate = gs.ecs.fetch::<RunState>();
     let mut draw_batch = DrawBatch::new();

@@ -41,6 +41,7 @@ pub enum RunState {
     ShowDropItem,
     ShowTargeting { min_range: f32, max_range: f32, source : Entity},
     MainMenu { menu_selection: gui::MainMenuSelection },
+    InGameMenu { menu_selection: gui::InGameMenuSelection },
     CharacterClassSelectMenu { menu_selection: gui::CharacterClassSelection },
     SaveGame,
     MagicMapReveal { row: i32 },
@@ -106,6 +107,7 @@ impl State {
         dungeon_master.reset();
         std::mem::drop(dungeon_master);
         gamelog::clear_events();
+        saveload_system::delete_save();
         initialise_resources(&mut self.ecs);
     }
 }
@@ -126,6 +128,7 @@ impl GameState for State {
 
         match newrunstate {
             RunState::MainMenu{..} => {}
+            RunState::InGameMenu{..} => {}
             RunState::CharacterClassSelectMenu{..} => {}
             RunState::GameOver{..} => {}
             _ => {
@@ -272,7 +275,20 @@ impl GameState for State {
                                 // delete save file after loading from it
                                 saveload_system::delete_save();
                             }
-                            gui::MainMenuSelection::Quit => { ::std::process::exit(0); }
+                            gui::MainMenuSelection::Quit => ::std::process::exit(0)
+                        }
+                    }
+                }
+            }
+            RunState::InGameMenu { .. } => {
+                let result = gui::in_game_menu(self, ctx);
+                match result {
+                    gui::InGameMenuResult::NoSelection{ selected } => newrunstate = RunState::InGameMenu{ menu_selection: selected },
+                    gui::InGameMenuResult::Selected{ selected } => {
+                        match selected {
+                            gui::InGameMenuSelection::Continue => { newrunstate = RunState::AwaitingInput }
+                            gui::InGameMenuSelection::NewGame => { newrunstate = RunState::GameOver }
+                            gui::InGameMenuSelection::Quit => ::std::process::exit(0)
                         }
                     }
                 }
@@ -304,7 +320,7 @@ impl GameState for State {
             }
             RunState::SaveGame => {
                 saveload_system::save_game(&mut self.ecs);
-                newrunstate = RunState::MainMenu{ menu_selection : gui::MainMenuSelection::Quit };
+                newrunstate = RunState::InGameMenu{ menu_selection : gui::InGameMenuSelection::Continue };
             }
             RunState::NextLevel => {
                 self.change_level(1);
