@@ -8,7 +8,7 @@ use specs::{Entity, saveload::{ConvertSaveload, Marker}, error::NoError};
 use serde::{Serialize, Deserialize};
 use rltk::{RGB, Point, FontCharType};
 use crate::gamelog::LogFragment;
-use super::attr_bonus;
+use super::{attr_bonus, Map, MasterDungeonMap};
 use std::{collections::{BTreeMap, HashMap}, convert::Infallible};
 
 #[derive(Component, Serialize, Deserialize, Clone)]
@@ -281,12 +281,14 @@ pub struct SerializeMe {}
 // Used to help serialize the game data
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct SerializationHelper {
-    pub map: super::map::Map
+    pub map: Map,
+    pub quests: Quests,
+    pub active_quests: ActiveQuests,
 }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct DMSerializationHelper {
-    pub map: super::map::MasterDungeonMap,
+    pub map: MasterDungeonMap,
     pub log: Vec<Vec<LogFragment>>,
     pub events: HashMap<String, i32>
 }
@@ -337,7 +339,7 @@ where
         F: FnMut(M) -> Option<Entity>,
     {
         let entity = ids(data.0).unwrap();
-        Ok(Equipped{owner: entity, slot : data.1})
+        Ok(Equipped{owner: entity, slot: data.1})
     }
 }
 

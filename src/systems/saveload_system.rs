@@ -1,14 +1,14 @@
 use std::convert::Infallible;
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator, SerializeComponents, DeserializeComponents, MarkedBuilder};
-use crate::components::*;
+use crate::{components::*, MasterDungeonMap};
 use std::fs::File;
 use std::path::Path;
 use std::fs;
-use crate::{gamelog, spatial};
+use crate::{gamelog, spatial, Map};
 
 macro_rules! serialize_individually {
-    ($ecs:expr, $ser:expr, $data:expr, $( $type:ty),*) => {
+    ($ecs:expr, $ser:expr, $data:expr, $($type:ty), *) => {
         $(
         SerializeComponents::<Infallible, SimpleMarker<SerializeMe>>::serialize(
             &( $ecs.read_storage::<$type>(), ),
@@ -28,19 +28,24 @@ pub fn save_game(_ecs : &mut World) {
 
 #[cfg(not(target_arch = "wasm32"))]
 pub fn save_game(ecs : &mut World) {
-    // Create helper
-
-    let mapcopy = ecs.get_mut::<crate::map::Map>().unwrap().clone();
-    let dungeon_master = ecs.get_mut::<crate::map::MasterDungeonMap>().unwrap().clone();
-    let savehelper = ecs
+    // wrap resources in Entity for serializing
+    let map_copy = ecs.get_mut::<Map>().unwrap().clone();
+    let quests_copy = ecs.get_mut::<Quests>().unwrap().clone();
+    let activequests_copy = ecs.get_mut::<ActiveQuests>().unwrap().clone();
+    let dungeonmaster_copy = ecs.get_mut::<MasterDungeonMap>().unwrap().clone();
+    let save_helper = ecs
         .create_entity()
-        .with(SerializationHelper{ map : mapcopy })
+        .with(SerializationHelper{
+            map: map_copy,
+            quests: quests_copy,
+            active_quests: activequests_copy
+        })
         .marked::<SimpleMarker<SerializeMe>>()
         .build();
-    let dm_savehelper = ecs
+    let dm_save_helper = ecs
         .create_entity()
         .with(DMSerializationHelper{
-            map: dungeon_master,
+            map: dungeonmaster_copy,
             log: gamelog::clone_log(),
             events: gamelog::clone_events()
         })
@@ -53,28 +58,26 @@ pub fn save_game(ecs : &mut World) {
 
         let writer = File::create("./savegame.json").unwrap();
         let mut serializer = serde_json::Serializer::new(writer);
-        serialize_individually!(ecs, serializer, data, Position, Renderable, Player, Viewshed, Name,
-            BlocksTile, Pools, WantsToMelee, Item, Consumable, Ranged, Damage, AreaOfEffect,
-            Confusion, Healing, InBackpack, WantsToPickupItem, WantsToUseItem, SingleActivation,
-            WantsToDropItem, SerializationHelper, Equippable, Weapon, Wearable, WantsToUnequipItem,
-            ParticleLifetime, MagicMapping, HungerClock, BlocksVisibility, Door, EntityMoved, Quips,
-            Attributes, Skills, NaturalAttackDefence, LootTable, OtherLevelPosition, DMSerializationHelper,
-            LightSource, Initiative, MyTurn, Faction, WantsToApproach, MoveMode, Chasing, EquipmentChanged,
-            Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport, Food, SpawnParticleLine,
-            SpawnParticleBurst, AttributeBonus, Duration, StatusEffect, KnownAbilities, KnownAbility, AttributeBonus,
-            WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime, TileSize, WantsToLevelUp,
-            SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot, Stun, StatusEffectChanged, Boss, Chest, CharacterClass,
-            SelfDamage, Rage, Block, Fortress, FrostShield, Dodge, WantsToLearnAbility, WantsToLevelAbility,
-            Quests, ActiveQuests, QuestProgress, QuestGiver, WantsToTurnInQuest, MapMarker, Species
+        serialize_individually!(ecs, serializer, data, SerializationHelper, DMSerializationHelper, Position, Renderable, Player,
+            Viewshed, Name, BlocksTile, Pools, WantsToMelee, Item, Consumable, Ranged, Damage, AreaOfEffect, Confusion, Healing,
+            InBackpack, WantsToPickupItem, WantsToUseItem, SingleActivation, WantsToDropItem, Equippable, Weapon, Wearable,
+            WantsToUnequipItem, ParticleLifetime, MagicMapping, HungerClock, BlocksVisibility, Door, EntityMoved, Quips,
+            Attributes, Skills, NaturalAttackDefence, LootTable, OtherLevelPosition, LightSource, Initiative, MyTurn, Faction,
+            WantsToApproach, MoveMode, Chasing, EquipmentChanged, Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove,
+            ApplyTeleport, Food, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, Duration, StatusEffect, KnownAbilities,
+            KnownAbility, AttributeBonus, WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime, TileSize,
+            WantsToLevelUp, SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot, Stun, StatusEffectChanged, Boss, Chest,
+            CharacterClass, SelfDamage, Rage, Block, Fortress, FrostShield, Dodge, WantsToLearnAbility, WantsToLevelAbility,
+            QuestProgress, QuestGiver, WantsToTurnInQuest, MapMarker, Species, Equipped
         );
     }
 
     // Clean up
-    ecs.delete_entity(savehelper).expect("Crash on cleanup");
-    ecs.delete_entity(dm_savehelper).expect("Crash on cleanup");
+    ecs.delete_entity(save_helper).expect("Crash on cleanup");
+    ecs.delete_entity(dm_save_helper).expect("Crash on cleanup");
 }
 
-pub fn does_save_exist() -> bool {
+pub fn save_exists() -> bool {
     Path::new("./savegame.json").exists()
 }
 
@@ -105,31 +108,29 @@ pub fn load_game(ecs: &mut World) {
         }
     }
 
-    let data = fs::read_to_string("./savegame.json").unwrap();
-    let mut de = serde_json::Deserializer::from_str(&data);
-
+    let save_data = fs::read_to_string("./savegame.json").unwrap();
+    let mut deserializer = serde_json::Deserializer::from_str(&save_data);
     {
-        let mut d = (
+        let mut current_data = (
             &mut ecs.entities(),
             &mut ecs.write_storage::<SimpleMarker<SerializeMe>>(),
             &mut ecs.write_resource::<SimpleMarkerAllocator<SerializeMe>>()
         );
-        deserialize_individually!(ecs, de, d, Position, Renderable, Player, Viewshed, Name,
-            BlocksTile, Pools, WantsToMelee, Item, Consumable, Ranged, Damage, AreaOfEffect,
-            Confusion, Healing, InBackpack, WantsToPickupItem, WantsToUseItem, SingleActivation,
-            WantsToDropItem, SerializationHelper, Equippable, Weapon, Wearable, WantsToUnequipItem,
-            ParticleLifetime, MagicMapping, HungerClock, BlocksVisibility, Door, EntityMoved, Quips,
-            Attributes, Skills, NaturalAttackDefence, LootTable, OtherLevelPosition, DMSerializationHelper,
-            LightSource, Initiative, MyTurn, Faction, WantsToApproach, MoveMode, Chasing, EquipmentChanged,
-            Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport, Food, SpawnParticleLine,
-            SpawnParticleBurst, AttributeBonus, Duration, StatusEffect, KnownAbilities, KnownAbility, Ability,
-            WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime, TileSize, WantsToLevelUp,
-            SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot, Stun, StatusEffectChanged, Boss, Chest, CharacterClass,
-            SelfDamage, Rage, Block, Fortress, FrostShield, Dodge, WantsToLearnAbility, WantsToLevelAbility,
-            Quests, ActiveQuests, QuestProgress, QuestGiver, WantsToTurnInQuest, MapMarker, Species
+        deserialize_individually!(ecs, deserializer, current_data, SerializationHelper, DMSerializationHelper, Position, Renderable, Player,
+            Viewshed, Name, BlocksTile, Pools, WantsToMelee, Item, Consumable, Ranged, Damage, AreaOfEffect, Confusion, Healing,
+            InBackpack, WantsToPickupItem, WantsToUseItem, SingleActivation, WantsToDropItem, Equippable, Weapon, Wearable,
+            WantsToUnequipItem, ParticleLifetime, MagicMapping, HungerClock, BlocksVisibility, Door, EntityMoved, Quips,
+            Attributes, Skills, NaturalAttackDefence, LootTable, OtherLevelPosition, LightSource, Initiative, MyTurn, Faction,
+            WantsToApproach, MoveMode, Chasing, EquipmentChanged, Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove,
+            ApplyTeleport, Food, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, Duration, StatusEffect, KnownAbilities,
+            KnownAbility, AttributeBonus, WantsToUseAbility, RestoresMana, TeachesAbility, Slow, DamageOverTime, TileSize,
+            WantsToLevelUp, SkillBonus, ItemSets, PartOfSet, Target, WantsToShoot, Stun, StatusEffectChanged, Boss, Chest,
+            CharacterClass, SelfDamage, Rage, Block, Fortress, FrostShield, Dodge, WantsToLearnAbility, WantsToLevelAbility,
+            QuestProgress, QuestGiver, WantsToTurnInQuest, MapMarker, Species, Equipped
         );
     }
 
+    // Unwrap resources from helper Entity's and update them
     let mut deleteme: Option<Entity> = None;
     let mut dm_deleteme: Option<Entity> = None;
     {
@@ -139,8 +140,12 @@ pub fn load_game(ecs: &mut World) {
         let player = ecs.read_storage::<Player>();
         let position = ecs.read_storage::<Position>();
         for (e, h) in (&entities, &helper).join() {
-            let mut worldmap = ecs.write_resource::<crate::map::Map>();
+            let mut worldmap = ecs.write_resource::<Map>();
             *worldmap = h.map.clone();
+            let mut quests = ecs.write_resource::<Quests>();
+            *quests = h.quests.clone();
+            let mut activequests = ecs.write_resource::<ActiveQuests>();
+            *activequests = h.active_quests.clone();
             spatial::set_size((worldmap.height * worldmap.width) as usize);
             deleteme = Some(e);
         }
@@ -158,10 +163,12 @@ pub fn load_game(ecs: &mut World) {
             *player_resource = e;
         }
     }
+
+    // Clean up
     ecs.delete_entity(deleteme.unwrap()).expect("Unable to delete helper");
     ecs.delete_entity(dm_deleteme.unwrap()).expect("Unable to delete helper");
 }
 
 pub fn delete_save() {
-    if does_save_exist() { std::fs::remove_file("./savegame.json").expect("Unable to delete file"); }
+    if save_exists() { std::fs::remove_file("./savegame.json").expect("Unable to delete file"); }
 }

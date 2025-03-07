@@ -30,7 +30,7 @@ const SHOW_MAPGEN_VISUALIZER: bool = true;
 const SHOW_FPS: bool = true;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
-pub enum RunState { 
+pub enum RunState {
     PreRun,
     AwaitingInput,
     Ticking,
