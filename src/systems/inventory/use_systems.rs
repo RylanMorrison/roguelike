@@ -1,5 +1,6 @@
 use specs::prelude::*;
-use super::{Map, WantsToUseItem, WantsToUseAbility, AreaOfEffect, EquipmentChanged};
+use rltk::Point;
+use super::{Map, WantsToUseItem, WantsToUseAbility, AreaOfEffect, EquipmentChanged, Position};
 use crate::effects::*;
 
 pub struct ItemUseSystem {}
@@ -44,17 +45,17 @@ pub struct AbilityUseSystem {}
 
 impl<'a> System<'a> for AbilityUseSystem {
     type SystemData = (
-        ReadExpect<'a, Entity>,
         WriteExpect<'a, Map>,
         Entities<'a>,
-        WriteStorage<'a, WantsToUseAbility>,
+        ReadStorage<'a, Position>,
         ReadStorage<'a, AreaOfEffect>,
+        WriteStorage<'a, WantsToUseAbility>,
         WriteStorage<'a, EquipmentChanged>
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (player_entity, map, entities, mut wants_cast,
-            aoe, mut dirty) = data;
+        let (map, entities, positions,
+            aoe, mut wants_cast, mut dirty) = data;
 
         if wants_cast.is_empty() { return; }
 
@@ -65,7 +66,14 @@ impl<'a> System<'a> for AbilityUseSystem {
                 Some(entity),
                 EffectType::AbilityUse{ ability: use_ability.ability },
                 match use_ability.target {
-                    None => Targets::Single{ target: *player_entity },
+                    None => {
+                        let pos = positions.get(entity).unwrap();
+                        if let Some(aoe) = aoe.get(use_ability.ability) {
+                            Targets::Tiles { tiles: aoe_tiles(&*map, Point::new(pos.x, pos.y), aoe.radius) }
+                        } else {
+                            Targets::Tile { tile_idx: map.xy_idx(pos.x, pos.y) as i32 }
+                        }
+                    }
                     Some(target) => {
                         if let Some(aoe) = aoe.get(use_ability.ability) {
                             Targets::Tiles{ tiles: aoe_tiles(&*map, target, aoe.radius) }
