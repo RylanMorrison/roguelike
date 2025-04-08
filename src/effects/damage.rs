@@ -8,6 +8,7 @@ use crate::spatial;
 pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
     let mut pools = ecs.write_storage::<Pools>();
     let player_entity = ecs.fetch::<Entity>();
+    let names = ecs.read_storage::<Name>();
 
     if let Some(pool) = pools.get_mut(target) {
         if !pool.god_mode {
@@ -17,6 +18,13 @@ pub fn inflict_damage(ecs: &mut World, damage: &EffectSpawner, target: Entity) {
                     if creator == *player_entity {
                         gamelog::record_event("Damage Dealt", amount);
                     }
+                    gamelog::Logger::new()
+                        .character_name(&names.get(creator).unwrap().name)
+                        .append("deals")
+                        .damage(amount)
+                        .append("damage to")
+                        .character_name(&names.get(target).unwrap().name)
+                        .log();
                 }
                 pool.hit_points.current -= amount;
                 add_effect(
