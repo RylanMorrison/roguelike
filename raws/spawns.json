@@ -429,6 +429,21 @@
             "ability_type": "active"
         },
         {
+            "name": "Magic Bolt",
+            "description": "Throw a bolt of magic that damages enemies",
+            "levels": {
+                "1": {
+                    "mana_cost": 1,
+                    "effects": {
+                        "ranged": "6",
+                        "damage": "2d5+1",
+                        "particle_line": "*;#c800ff;400.0"
+                    }
+                }
+            },
+            "ability_type": "active"
+        },
+        {
             "name": "Fireball",
             "description": "Throw a ball of explosive flames dealing area damage and setting enemies that survive the blast on fire.",
             "levels": {
@@ -3789,7 +3804,10 @@
                         }
                     }
                 }
-            ]
+            ],
+            "starting_equipment": [ "Family Longsword", "Wooden Shield", "Leather Boots" ],
+            "starting_items": [ "Food Ration", "Town Portal Scroll"],
+            "starting_abilities": []
         },
         {
             "name": "Sorceror",
@@ -4014,7 +4032,10 @@
                         }
                     }
                 }
-            ]
+            ],
+            "starting_equipment": [ "Family Staff", "Initiate Robe" ],
+            "starting_items": [ "Food Ration", "Town Portal Scroll"],
+            "starting_abilities": [ "Magic Bolt" ]
         },
         {
             "name": "Ranger",
@@ -4177,7 +4198,10 @@
                         }
                     }
                 }
-            ]
+            ],
+            "starting_equipment": [ "Family Dagger", "Leather Gloves" ],
+            "starting_items": [ "Food Ration", "Town Portal Scroll"],
+            "starting_abilities": []
         }
     ]
 }

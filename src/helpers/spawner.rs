@@ -78,25 +78,14 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
     player
 }
 
-pub fn spawn_starting_items(ecs: &mut World, class_name: &str) {
+pub fn spawn_starting_gear(ecs: &mut World, raws: &RawMaster, equipment: &Vec<String>, items: &Vec<String>) {
     let player = *ecs.read_resource::<Entity>();
-    match class_name {
-        "Warrior" => {
-            spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Family Longsword", SpawnType::Equipped{ by: player });
-            spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Wooden Shield", SpawnType::Equipped { by: player });
-            spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Leather Boots", SpawnType::Equipped { by: player });
-        }
-        "Sorceror" => {
-            spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Family Staff", SpawnType::Equipped{ by: player });
-            spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Initiate Robe", SpawnType::Equipped{ by: player });
-        }
-        _ => {
-            spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Family Dagger", SpawnType::Equipped { by: player });
-            spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Leather Gloves", SpawnType::Equipped { by: player });
-        }
+    for item in equipment.iter() {
+        spawn_named_entity(raws, ecs, item.as_str(), SpawnType::Equipped{ by: player });
     }
-    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Food Ration", SpawnType::Carried { by: player });
-    spawn_named_entity(&RAWS.lock().unwrap(), ecs, "Town Portal Scroll", SpawnType::Carried { by: player });
+    for item in items.iter() {
+        spawn_named_entity(raws, ecs, item.as_str(), SpawnType::Carried { by: player });
+    }
 }
 
 pub fn spawn_room(map: &Map, room: &Rect, map_depth: i32, spawn_list: &mut Vec<(usize, String)>) {

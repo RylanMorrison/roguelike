@@ -301,15 +301,12 @@ impl GameState for State {
                         match selected {
                             gui::CharacterClassSelection::Warrior => {
                                 raws::spawn_named_character_class(&raws::RAWS.lock().unwrap(), &mut self.ecs, "Warrior");
-                                spawner::spawn_starting_items(&mut self.ecs, "Warrior");
                             }
                             gui::CharacterClassSelection::Sorceror => {
                                 raws::spawn_named_character_class(&raws::RAWS.lock().unwrap(), &mut self.ecs, "Sorceror");
-                                spawner::spawn_starting_items(&mut self.ecs, "Sorceror");
                             }
                             gui::CharacterClassSelection::Ranger => {
                                 raws::spawn_named_character_class(&raws::RAWS.lock().unwrap(), &mut self.ecs, "Ranger");
-                                spawner::spawn_starting_items(&mut self.ecs, "Ranger");
                             }
                         }
                         self.mapgen_next_state = Some(RunState::PreRun);

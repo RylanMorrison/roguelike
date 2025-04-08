@@ -24,7 +24,12 @@ impl<'a> System<'a> for LearnAbilitySystem {
             mut wants_learn, runstate, mut dodges, mut blocks) = data;
 
         if wants_learn.count() < 1 { return; }
-        if *runstate != RunState::Ticking { return; }
+        if *runstate != RunState::Ticking {
+            // entities can start with abilities
+            if *runstate != RunState::PreRun {
+                return;
+            }
+        }
 
         for (entity, learn) in (&entities, &wants_learn).join() {
             let ability_entity = find_ability_entity_by_name(&learn.ability_name, &abilities, &entities).unwrap();

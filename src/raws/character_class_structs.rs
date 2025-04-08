@@ -6,7 +6,10 @@ use super::{AttributeBonusData, SkillBonusData};
 pub struct CharacterClassData {
     pub name: String,
     pub description: String,
-    pub passives: Vec<CharacterClassPassiveData>
+    pub passives: Vec<CharacterClassPassiveData>,
+    pub starting_equipment: Vec<String>,
+    pub starting_items: Vec<String>,
+    pub starting_abilities: Vec<String>
 }
 
 #[derive(Deserialize, Debug)]

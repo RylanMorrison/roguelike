@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet, BTreeMap};
 use specs::prelude::*;
 use rltk::RGB;
 use crate::components::*;
-use super::{Raws, Reaction, RenderableData, SpawnTableEntry, MapMarkerData, ItemData, SkillBonusData};
+use super::{Raws, Reaction, RenderableData, SpawnTableEntry, MapMarkerData, ItemData};
 use crate::{attr_bonus, hp_at_level, mana_at_level, parse_dice_string, determine_roll};
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use crate::rng;
@@ -762,55 +762,79 @@ pub fn get_character_class_description(raws: &RawMaster, key: &str) -> Option<St
     None
 }
 
-pub fn spawn_named_character_class(raws: &RawMaster, ecs: &mut World, key: &str) -> Option<Entity> {
-    let player = ecs.read_resource::<Entity>();
-
+pub fn spawn_named_character_class(raws: &RawMaster, ecs: &mut World, key: &str) {
     if raws.character_class_index.contains_key(key) {
         let character_class_template = &raws.raws.character_classes[raws.character_class_index[key]];
-        let mut character_classes = ecs.write_storage::<CharacterClass>();
-        character_classes.clear();
+        {
+            let player = ecs.read_resource::<Entity>();
+            let mut character_classes = ecs.write_storage::<CharacterClass>();
+            character_classes.clear();
 
-        let mut passives: BTreeMap<String,ClassPassive> = BTreeMap::new();
-        for passive_data in character_class_template.passives.iter() {
-            let mut levels: HashMap<i32, ClassPassiveLevel> = HashMap::new();
-            for level in passive_data.levels.iter() {
-                let passive_level = ClassPassiveLevel{
-                    attribute_bonus: if let Some(attribute_bonus) = &level.1.attribute_bonus {
-                        Some(AttributeBonus {
-                            strength: attribute_bonus.strength,
-                            dexterity: attribute_bonus.dexterity,
-                            constitution: attribute_bonus.constitution,
-                            intelligence: attribute_bonus.intelligence
-                        })
-                    } else { None },
-                    skill_bonus: if let Some(skill_bonus) = &level.1.skill_bonus {
-                        Some(SkillBonus {
-                            melee: skill_bonus.melee,
-                            defence: skill_bonus.defence,
-                            ranged: skill_bonus.ranged,
-                            magic: skill_bonus.magic
-                        })
-                    } else { None },
-                    learn_ability: level.1.teaches_ability.clone(),
-                    level_ability: level.1.levels_ability.clone()
+            let mut passives: BTreeMap<String,ClassPassive> = BTreeMap::new();
+            for passive_data in character_class_template.passives.iter() {
+                let mut levels: HashMap<i32, ClassPassiveLevel> = HashMap::new();
+                for level in passive_data.levels.iter() {
+                    let passive_level = ClassPassiveLevel{
+                        attribute_bonus: if let Some(attribute_bonus) = &level.1.attribute_bonus {
+                            Some(AttributeBonus {
+                                strength: attribute_bonus.strength,
+                                dexterity: attribute_bonus.dexterity,
+                                constitution: attribute_bonus.constitution,
+                                intelligence: attribute_bonus.intelligence
+                            })
+                        } else { None },
+                        skill_bonus: if let Some(skill_bonus) = &level.1.skill_bonus {
+                            Some(SkillBonus {
+                                melee: skill_bonus.melee,
+                                defence: skill_bonus.defence,
+                                ranged: skill_bonus.ranged,
+                                magic: skill_bonus.magic
+                            })
+                        } else { None },
+                        learn_ability: level.1.teaches_ability.clone(),
+                        level_ability: level.1.levels_ability.clone()
+                    };
+                    levels.insert(level.0.parse::<i32>().unwrap(), passive_level);
+                }
+                let passive = ClassPassive{
+                    name: passive_data.name.clone(),
+                    description: passive_data.description.clone(),
+                    current_level: 0,
+                    levels
                 };
-                levels.insert(level.0.parse::<i32>().unwrap(), passive_level);
+                passives.insert(passive.name.clone(), passive);
             }
-            let passive = ClassPassive{
-                name: passive_data.name.clone(),
-                description: passive_data.description.clone(),
-                current_level: 0,
-                levels
-            };
-            passives.insert(passive.name.clone(), passive);
-        }
-        character_classes.insert(*player, CharacterClass {
-            name: character_class_template.name.clone(),
-            passives
-        }).expect("Unable to insert");
-    }
 
-    None
+            character_classes.insert(*player, CharacterClass {
+                name: character_class_template.name.clone(),
+                passives
+            }).expect("Unable to insert");
+        }
+
+        initialise_character_class(
+            ecs,
+            raws,
+            &character_class_template.starting_equipment,
+            &character_class_template.starting_items,
+            &character_class_template.starting_abilities
+        );
+    } else {
+        rltk::console::log(format!("WARNING - Unknown character class: {}", key));
+    }
+}
+
+fn initialise_character_class(ecs: &mut World, raws: &RawMaster, equipment: &Vec<String>, items: &Vec<String>, abilities: &Vec<String>) {
+    spawner::spawn_starting_gear(ecs, raws, equipment, items);
+
+    // learn starting abilities
+    let player = ecs.read_resource::<Entity>();
+    let mut wants_learn = ecs.write_storage::<WantsToLearnAbility>();
+    for ability_name in abilities.iter() {
+        wants_learn.insert(
+            *player,
+            WantsToLearnAbility{ ability_name: ability_name.clone(), level: 1 }
+        ).expect("Unable to insert");
+    }
 }
 
 pub fn store_all_quests(ecs: &mut World) {
