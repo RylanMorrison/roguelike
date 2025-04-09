@@ -363,7 +363,7 @@
         },
         {
             "name": "Rage",
-            "description": "A mighty battlecry dealing damage to yourself. Your melee capabilities are boosted for a short duration ",
+            "description": "A mighty battlecry that hurts you but temporarily boosts your melee capabilities.",
             "levels": {
                 "1": {
                     "mana_cost": 10,
@@ -377,7 +377,7 @@
         },
         {
             "name": "Shield Bash",
-            "description": "Hit an enemy with your shield dealing damage and stunning it.",
+            "description": "Hit an enemy with your shield dealing damage and stunning them.",
             "levels": {
                 "1": {
                     "mana_cost": 2,
@@ -400,7 +400,7 @@
         },
         {
             "name": "Bulwark",
-            "description": "You have a chance to block all damage from enemy attacks while holding a shield.",
+            "description": "You have a chance to block all damage from enemy attacks.",
             "levels": {
                 "1": {
                     "effects": {
@@ -417,7 +417,7 @@
         },
         {
             "name": "Walking Fortress",
-            "description": "Steel yourself against enemy blows, reducing your initiative and damage but boosting your defences.",
+            "description": "Temporarily trade speed and damage for greatly improved defences.",
             "levels": {
                 "1": {
                     "mana_cost": 8,
@@ -430,7 +430,7 @@
         },
         {
             "name": "Magic Bolt",
-            "description": "Throw a bolt of magic that damages enemies",
+            "description": "Throw a bolt of magic that damages a single enemy.",
             "levels": {
                 "1": {
                     "mana_cost": 1,
@@ -445,7 +445,7 @@
         },
         {
             "name": "Fireball",
-            "description": "Throw a ball of explosive flames dealing area damage and setting enemies that survive the blast on fire.",
+            "description": "Throw a ball of explosive flames dealing area damage and inflicting burn.",
             "levels": {
                 "1": {
                     "mana_cost": 4,
@@ -474,7 +474,7 @@
         },
         {
             "name": "Flame Nova",
-            "description": "Engulf enemies around you in a burst of flames setting survivors on fire.",
+            "description": "Engulf enemies around you in fire dealing damage and inflicting moderate burn.",
             "levels": {
                 "1": {
                     "mana_cost": 10,
@@ -516,7 +516,7 @@
         },
         {
             "name": "Zap",
-            "description": "Zap an enemy with electricity stunning them.",
+            "description": "Zap an enemy with electricity dealing damage and stunning them.",
             "levels": {
                 "1": {
                     "mana_cost": 2,
@@ -541,7 +541,7 @@
         },
         {
             "name": "Lightning Bolt",
-            "description": "Blast an enemy with a powerful bolt of lightning, dealing damage in a small area around them.",
+            "description": "Blast an enemy with a bolt of lightning, dealing damage in a small area around them.",
             "levels": {
                 "1": {
                     "mana_cost": 8,
@@ -566,7 +566,7 @@
         },
         {
             "name": "Lightning Storm",
-            "description": "Strike a large area with lightning dealing heavy damage and stunning all foes.",
+            "description": "Strike a large area with lightning dealing heavy damage and stunning all caught in the area.",
             "levels": {
                 "1": {
                     "mana_cost": 20,
@@ -610,7 +610,7 @@
         },
         {
             "name": "Frost Shield",
-            "description": "Coat yourself in ice, reducing your initiative but increasing your defences and mana regen.",
+            "description": "Coat yourself in ice, slowing your actions but greatly increasing your defences.",
             "levels": {
                 "1": {
                     "mana_cost": 10,
@@ -629,7 +629,7 @@
         },
         {
             "name": "Blizzard",
-            "description": "Pelt an area with ice dealing heavy damage, briefly stunning and then slowing enemies.",
+            "description": "Pelt an area with ice dealing heavy damage. All in the area are briefly stunned and slowed.",
             "levels": {
                 "1": {
                     "mana_cost": 20,
@@ -670,7 +670,7 @@
         },
         {
             "name": "Confusion",
-            "description": "Curse an enemy confusing them and causing them to take damage over time.",
+            "description": "Curse an enemy, confusing them and causing them to take damage over time.",
             "levels": {
                 "1": {
                     "mana_cost": 4,
@@ -697,7 +697,7 @@
         },
         {
             "name": "Mayhem",
-            "description": "Curse a group of enemies confusing them and causing them to take damage over time.",
+            "description": "Curse a group of enemies, confusing them and causing them to take damage over time.",
             "levels": {
                 "1": {
                     "mana_cost": 20,

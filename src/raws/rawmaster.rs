@@ -938,20 +938,13 @@ pub fn spawn_all_abilities(ecs: &mut World) {
     }
 }
 
-pub fn find_ability_entity_by_name(name: &str, abilities: &ReadStorage::<Ability>, entities: &Entities) -> Option<Entity> {
-    for (entity, ability) in (entities, abilities).join() {
+pub fn find_ability_by_name<'a>(name: &str, abilities: &'a ReadStorage::<Ability>, entities: &Entities) -> Option<&'a Ability> {
+    for (_entity, ability) in (entities, abilities).join() {
         if name == ability.name {
-            return Some(entity);
+            return Some(ability);
         }
     }
     None
-}
-
-pub fn find_ability_entity(ecs: &World, name: &str) -> Option<Entity> {
-    let abilities = ecs.read_storage::<Ability>();
-    let entities = ecs.entities();
-
-    find_ability_entity_by_name(name, &abilities, &entities)
 }
 
 pub fn get_spawn_table_for_depth(raws: &RawMaster, depth: i32) -> RandomTable {

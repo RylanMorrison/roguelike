@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use crate::raws;
-use crate::raws::{find_ability_entity_by_name, parse_particle, parse_particle_line, parse_ranged_string};
+use crate::raws::{find_ability_by_name, parse_particle, parse_particle_line, parse_ranged_string};
 use crate::{apply_effects, Ability, AbilityType, AreaOfEffect, Block, Confusion, Damage, DamageOverTime, Dodge, Duration, Food, Fortress, 
     FrostShield, Healing, KnownAbilities, KnownAbility, MagicMapping, Rage, Ranged, RestoresMana, RunState, SelfDamage, SingleActivation, 
     Slow, SpawnParticleBurst, SpawnParticleLine, Stun, TeachesAbility, TownPortal, WantsToLearnAbility, WantsToLevelAbility};
@@ -32,8 +32,7 @@ impl<'a> System<'a> for LearnAbilitySystem {
         }
 
         for (entity, learn) in (&entities, &wants_learn).join() {
-            let ability_entity = find_ability_entity_by_name(&learn.ability_name, &abilities, &entities).unwrap();
-            let ability = abilities.get(ability_entity).unwrap();
+            let ability = find_ability_by_name(&learn.ability_name, &abilities, &entities).unwrap();
             let effects = &ability.levels[&learn.level].effects;
 
             let mut lb = lazy.create_entity(&entities);
@@ -103,8 +102,7 @@ impl<'a> System<'a> for LevelAbilitySystem {
         if *runstate != RunState::Ticking { return; }
 
         for (entity, want_level) in (&entities, &wants_level).join() {
-            let ability_entity = find_ability_entity_by_name(&want_level.ability_name, &abilities, &entities).unwrap();
-            let ability = abilities.get(ability_entity).unwrap();
+            let ability = find_ability_by_name(&want_level.ability_name, &abilities, &entities).unwrap();
 
             let entity_known_ability_list = &known_ability_lists.get_mut(entity).unwrap().abilities;
             for ability_entity in entity_known_ability_list.iter() {

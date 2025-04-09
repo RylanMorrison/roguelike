@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use rltk::prelude::*;
 use super::{green, white, black, magenta, yellow, gold};
-use crate::{CharacterClass, ClassPassive, ClassPassiveLevel, WantsToLevelUp, State, AttributeBonus, SkillBonus};
+use crate::{raws::find_ability_by_name, AttributeBonus, CharacterClass, ClassPassive, ClassPassiveLevel, SkillBonus, State, WantsToLevelUp, Ability};
 use std::collections::{BTreeMap, HashMap};
 
 pub enum LevelUpMenuResult {
@@ -34,7 +34,7 @@ pub fn show_levelup_menu(gs: &mut State, ctx: &mut Rltk) -> LevelUpMenuResult {
         let selection = rltk::to_char(97 + j);
         passive_selections.insert(selection.to_string(), name.clone());
 
-        draw_passive_choice(&mut draw_batch, &mut y, passive, format!("({})", selection), passive_selected(level_up, passive));
+        draw_passive_choice(&mut draw_batch, &gs.ecs, &mut y, passive, format!("({})", selection), passive_selected(level_up, passive));
         j += 1;
     }
     draw_batch.print_color(Point::new(82, 77), "ENTER when done", ColorPair::new(yellow(), black()));
@@ -79,7 +79,7 @@ pub fn show_levelup_menu(gs: &mut State, ctx: &mut Rltk) -> LevelUpMenuResult {
     LevelUpMenuResult::NoResponse
 }
 
-fn draw_passive_choice(draw_batch: &mut DrawBatch, y: &mut i32, passive: &ClassPassive, selection: String, selected: bool) {
+fn draw_passive_choice(draw_batch: &mut DrawBatch, ecs: &World, y: &mut i32, passive: &ClassPassive, selection: String, selected: bool) {
     let colour = if selected { green() } else if passive.is_max_level() { magenta() } else { white() };
     let display_level_int = if selected { passive.current_level + 1 } else { passive.current_level };
 
@@ -163,18 +163,42 @@ fn draw_passive_choice(draw_batch: &mut DrawBatch, y: &mut i32, passive: &ClassP
             *y += 1;
         }
         if let Some(learn_ability) = &display_level.learn_ability {
-            draw_batch.print_color(
-                Point::new(4, *y),
-                format!("Learn ability: {}", learn_ability),
-                ColorPair::new(colour, black())
-            ); *y += 1;
+            if let Some(ability) = find_ability_by_name(&learn_ability, &ecs.read_storage::<Ability>(), &ecs.entities()) {
+                draw_batch.print_color(
+                    Point::new(4, *y),
+                    format!("Learn ability: {}", learn_ability),
+                    ColorPair::new(colour, black())
+                );
+                *y += 1;
+
+                draw_batch.print_color(
+                    Point::new(4, *y),
+                    ability.description.clone(),
+                    ColorPair::new(colour, black())
+                );
+                *y += 1;
+            } else {
+                rltk::console::log(format!("WARNING - Unknown learn ability: {}", learn_ability));
+            }
         }
         if let Some(level_ability) = &display_level.level_ability {
-            draw_batch.print_color(
-                Point::new(4, *y),
-                format!("Improve ability: {}", level_ability),
-                ColorPair::new(colour, black())
-            ); *y += 1;
+            if let Some(ability) = find_ability_by_name(&level_ability, &ecs.read_storage::<Ability>(), &ecs.entities()) {
+                draw_batch.print_color(
+                    Point::new(4, *y),
+                    format!("Improve ability: {}", level_ability),
+                    ColorPair::new(colour, black())
+                );
+                *y += 1;
+
+                draw_batch.print_color(
+                    Point::new(4, *y),
+                    ability.description.clone(),
+                    ColorPair::new(colour, black())
+                );
+                *y += 1;
+            } else {
+                rltk::console::log(format!("WARNING - Unknown level ability: {}", level_ability));
+            }
         }
     }
     *y += 2;
