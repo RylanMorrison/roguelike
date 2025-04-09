@@ -124,6 +124,8 @@ pub fn death(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
 
 pub fn damage_over_time(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     if let EffectType::DamageOverTime{damage, duration} = &effect.effect_type {
+        if let Some(creator) = effect.creator { if creator == target { return; } }
+
         ecs.create_entity()
             .with(StatusEffect{ target, is_debuff: true })
             .with(DamageOverTime{ damage: *damage })

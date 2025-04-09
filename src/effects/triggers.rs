@@ -190,10 +190,6 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
         if let Some(duration) = ecs.read_storage::<Duration>().get(entity) {
             // TODO: damage over time damage should be a dice roll?
             add_effect(creator, EffectType::DamageOverTime{ damage: damage.damage, duration: duration.turns }, targets.clone());
-            gamelog::Logger::new()
-                .append("Damage over time deals")
-                .damage(damage.damage)
-                .log();
             did_something = true;
         }
     }

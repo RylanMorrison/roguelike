@@ -2,6 +2,7 @@ use specs::prelude::*;
 use crate::{Attributes, Duration, StatusEffectChanged, Initiative, MyTurn, Pools, Position, RunState, StatusEffect, DamageOverTime};
 use crate::effects::{add_effect, EffectType, Targets};
 use crate::rng;
+use crate::gamelog;
 use rltk::Point;
 
 pub struct InitiativeSystem {}
@@ -79,6 +80,10 @@ impl<'a> System<'a> for InitiativeSystem {
                             EffectType::Damage{ amount: dot.damage, hits_self: false },
                             Targets::Single{ target: status.target }
                         );
+                        gamelog::Logger::new()
+                            .append("Damage over time deals")
+                            .damage(dot.damage)
+                            .log();
                     }
                     if duration.turns < 1 {
                         dirty.insert(status.target, StatusEffectChanged{}).expect("Unable to insert");
