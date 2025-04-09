@@ -507,10 +507,8 @@ impl GameState for State {
             RunState::LevelUp => {
                 let result = gui::show_levelup_menu(self, ctx);
                 match result {
-                    LevelUpMenuResult::NoResponse => {},
-                    LevelUpMenuResult::SelectedPassive => newrunstate = RunState::LevelUp,
-                    LevelUpMenuResult::DeselectedPassive => newrunstate = RunState::LevelUp,
-                    LevelUpMenuResult::Done => newrunstate = RunState::Ticking
+                    LevelUpMenuResult::Done => newrunstate = RunState::Ticking,
+                    _ => newrunstate = RunState::LevelUp
                 }
             }
         }
