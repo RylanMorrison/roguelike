@@ -1,4 +1,5 @@
 use specs::prelude::*;
+use rltk::Point;
 use crate::components::{Position, InBackpack, Equipped};
 use crate::map::Map;
 
@@ -10,7 +11,7 @@ pub fn entity_position(ecs: &World, target: Entity) -> Option<i32> {
     None
 }
 
-pub fn aoe_tiles(map: &Map, target: rltk::Point, radius: i32) -> Vec<i32> {
+pub fn aoe_tiles(map: &Map, target: Point, radius: i32) -> Vec<i32> {
     let mut blast_tiles = rltk::field_of_view(target, radius, &*map);
     blast_tiles.retain(|p| p.x > 0 && p.x < map.width - 1 && p.y > 0 && p.y < map.height - 1);
     let mut result = Vec::new();
@@ -18,6 +19,12 @@ pub fn aoe_tiles(map: &Map, target: rltk::Point, radius: i32) -> Vec<i32> {
         result.push(map.xy_idx(t.x, t.y) as i32);
     }
     result
+}
+
+pub fn aoe_points(map: &Map, target: Point, radius: i32) -> Vec<Point> {
+    let mut points = rltk::field_of_view(target, radius, &*map);
+    points.retain(|p| p.x > 0 && p.x < map.width - 1 && p.y > 0 && p.y < map.height - 1);
+    points
 }
 
 pub fn find_item_position(ecs: &World, target: Entity, creator: Option<Entity>) -> Option<i32> {

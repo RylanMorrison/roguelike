@@ -1,10 +1,11 @@
 use specs::prelude::*;
 use rltk::prelude::*;
-use super::{ItemMenuResult, yellow, black, blue, cyan, red};
-use crate::{State, Viewshed};
+use super::{ItemMenuResult, yellow, black, blue, cyan, red, light_gray};
+use crate::{AreaOfEffect, State, Viewshed, Map};
 use crate::camera;
+use crate::effects::aoe_points;
 
-pub fn ranged_target(gs : &mut State, ctx : &mut Rltk, min_range : f32, max_range: f32) -> (ItemMenuResult, Option<Point>) {
+pub fn ranged_target(gs: &mut State, ctx: &mut Rltk, min_range: f32, max_range: f32, source: Entity) -> (ItemMenuResult, Option<Point>) {
     let (min_x, max_x, min_y, max_y) = camera::get_screen_bounds(&gs.ecs, ctx);
     let player_entity = gs.ecs.fetch::<Entity>();
     let player_pos = gs.ecs.fetch::<Point>();
@@ -35,8 +36,8 @@ pub fn ranged_target(gs : &mut State, ctx : &mut Rltk, min_range : f32, max_rang
     }
 
     // Draw mouse cursor
-    let mouse_pos = ctx.mouse_pos();
-    let mut mouse_map_pos = mouse_pos;
+    let mouse_pos = ctx.mouse_pos(); // position on the screen
+    let mut mouse_map_pos = mouse_pos; // position on the map
     mouse_map_pos.0 += min_x - 1;
     mouse_map_pos.1 += min_y - 1;
     let mut valid_target = false;
@@ -45,7 +46,19 @@ pub fn ranged_target(gs : &mut State, ctx : &mut Rltk, min_range : f32, max_rang
             valid_target = true; 
         } 
     }
+
     if valid_target {
+        let aoe = gs.ecs.read_storage::<AreaOfEffect>();
+        if let Some(ability_aoe) = aoe.get(source) {
+            // display projected area of effect
+            let map = gs.ecs.fetch::<Map>();
+            // use the position of the mouse on the map for calculation
+            let points = aoe_points(&*map, Point::new(mouse_map_pos.0, mouse_map_pos.1), ability_aoe.radius);
+            for point in points.iter() {
+                // use the position of the mouse on the screen for display
+                draw_batch.set_bg(Point::new(point.x - min_x + 1, point.y - min_y + 1), cyan());
+            }
+        }
         draw_batch.set_bg(Point::new(mouse_pos.0, mouse_pos.1), cyan());
         if ctx.left_click {
             return (ItemMenuResult::Selected, Some(Point::new(mouse_map_pos.0, mouse_map_pos.1)));

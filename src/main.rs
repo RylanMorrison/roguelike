@@ -233,7 +233,7 @@ impl GameState for State {
                 } 
             }
             RunState::ShowTargeting{min_range, max_range, source} => {
-                let result = gui::ranged_target(self, ctx, min_range, max_range);
+                let result = gui::ranged_target(self, ctx, min_range, max_range, source);
                 match result.0 {
                     gui::ItemMenuResult::Cancel => newrunstate = RunState::AwaitingInput,
                     gui::ItemMenuResult::NoResponse => {}
