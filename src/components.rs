@@ -550,7 +550,7 @@ pub struct InitiativePenalty {
 }
 
 impl InitiativePenalty {
-    pub fn initiale() -> InitiativePenalty {
+    pub fn initial() -> InitiativePenalty {
         InitiativePenalty { gear_effect_penalty: 0.0, status_effect_penalty: 0.0 }
     }
 

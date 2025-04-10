@@ -47,7 +47,7 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
             xp: 0,
             level: 1,
             total_weight: 0.0,
-            initiative_penalty: InitiativePenalty::initiale(),
+            initiative_penalty: InitiativePenalty::initial(),
             gold: 0,
             total_armour_class: 10,
             base_damage: "1d4".to_string(),

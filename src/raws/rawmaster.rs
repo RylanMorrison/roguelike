@@ -535,7 +535,7 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
         hit_points: Pool{ current: mob_hp, max: mob_hp },
         mana: Pool{ current: mob_mana, max: mob_mana },
         total_weight: 0.0,
-        initiative_penalty: InitiativePenalty::initiale(),
+        initiative_penalty: InitiativePenalty::initial(),
         gold: 
         if let Some(gold) = &mob_template.gold {
             determine_roll(&gold)

@@ -122,14 +122,6 @@ impl<'a> System<'a> for GearEffectSystem {
             }
         }
 
-        // total up haste/slow
-        for (status, slow) in (&statuses, &slowed).join() {
-            if to_update.contains_key(&status.target) {
-                let totals = to_update.get_mut(&status.target).unwrap();
-                totals.initiative += slow.initiative_penalty;
-            }
-        }
-
         // item set bonuses
         // determine equipped set piece count for each item set
         let mut set_counts: HashMap<String, i32> = HashMap::new();
