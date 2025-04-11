@@ -1,6 +1,7 @@
 use specs::prelude::*;
-use crate::{spatial, MyTurn, MoveMode, Movement, Position, Map, ApplyMove, RunState, tile_walkable};
+use crate::{MyTurn, MoveMode, Movement, Position, Map, ApplyMove, RunState, tile_walkable};
 use crate::rng;
+use crate::spatial::is_blocked;
 
 pub struct DefaultMoveAI {}
 
@@ -41,7 +42,7 @@ impl<'a> System<'a> for DefaultMoveAI {
                     if x > 0 && x < map.width - 1
                     && y > 0 && y < map.height - 1 {
                         let dest_idx = map.xy_idx(x, y);
-                        if !spatial::is_blocked(dest_idx) {
+                        if !is_blocked(dest_idx) {
                             apply_move.insert(entity, ApplyMove{ dest_idx }).expect("Unable to insert");
                         }
                     }
@@ -50,7 +51,7 @@ impl<'a> System<'a> for DefaultMoveAI {
                     if let Some(path) = path {
                         // there is a path to follow
                         if path.len() > 1 {
-                            if !spatial::is_blocked(path[1] as usize) {
+                            if !is_blocked(path[1]) {
                                 // follow the path
                                 apply_move.insert(entity, ApplyMove{ dest_idx: path[1] }).expect("Unable to insert");
                                 path.remove(0); // remove the first step in the path

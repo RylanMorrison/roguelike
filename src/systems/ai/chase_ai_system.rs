@@ -1,6 +1,7 @@
 use specs::prelude::*;
 use crate::{Chasing, Map, MyTurn, Position, ApplyMove, TileSize, RunState};
 use std::collections::HashMap;
+use crate::spatial::is_blocked;
 
 pub struct ChaseAI {}
 
@@ -59,7 +60,7 @@ impl<'a> System<'a> for ChaseAI {
                     &mut *map
                 );
             }
-            if path.success && path.steps.len() > 1 && path.steps.len() < 15 {
+            if path.success && path.steps.len() > 1 && path.steps.len() < 15 && !is_blocked(path.steps[1]) {
                 apply_move.insert(entity, ApplyMove{ dest_idx: path.steps[1] }).expect("Unable to insert");
             } else {
                 end_chase.push(entity);

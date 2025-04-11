@@ -1,5 +1,6 @@
 use specs::prelude::*;
 use crate::{MyTurn, WantsToApproach, Position, Map, ApplyMove, RunState};
+use crate::spatial::is_blocked;
 
 pub struct ApproachAI {}
 
@@ -28,7 +29,7 @@ impl<'a> System<'a> for ApproachAI {
                 map.xy_idx(approach.idx % map.width, approach.idx / map.width) as i32,
                 &mut *map
             );
-            if path.success && path.steps.len() > 1 {
+            if path.success && path.steps.len() > 1 && !is_blocked(path.steps[1]) {
                 // make the entity approach one step
                 apply_move.insert(entity, ApplyMove{ dest_idx: path.steps[1] }).expect("Unable to insert");
             }
