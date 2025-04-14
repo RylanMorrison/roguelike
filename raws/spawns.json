@@ -3805,8 +3805,8 @@
                     }
                 }
             ],
-            "starting_equipment": [ "Family Longsword", "Wooden Shield", "Leather Boots" ],
-            "starting_items": [ "Food Ration", "Town Portal Scroll"],
+            "starting_equipment": [ "Family Longsword", "Wooden Shield", "Leather Boots", "Leather Gloves" ],
+            "starting_items": [ "Food Ration", "Town Portal Scroll", "Health Potion" ],
             "starting_abilities": []
         },
         {
@@ -4033,8 +4033,8 @@
                     }
                 }
             ],
-            "starting_equipment": [ "Family Staff", "Initiate Robe" ],
-            "starting_items": [ "Food Ration", "Town Portal Scroll"],
+            "starting_equipment": [ "Family Staff", "Initiate Robe", "Leather Boots", "Leather Helmet" ],
+            "starting_items": [ "Food Ration", "Town Portal Scroll", "Mana Potion", "Health Potion" ],
             "starting_abilities": [ "Magic Bolt" ]
         },
         {
@@ -4199,8 +4199,8 @@
                     }
                 }
             ],
-            "starting_equipment": [ "Family Dagger", "Leather Gloves" ],
-            "starting_items": [ "Food Ration", "Town Portal Scroll"],
+            "starting_equipment": [ "Shortbow", "Leather Gloves", "Leather Boots" ],
+            "starting_items": [ "Food Ration", "Family Dagger", "Town Portal Scroll", "Health Potion" ],
             "starting_abilities": []
         }
     ]
