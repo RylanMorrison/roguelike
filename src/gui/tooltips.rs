@@ -1,7 +1,7 @@
 use std::fmt::Display;
 use specs::prelude::*;
 use rltk::prelude::*;
-use super::{box_gray, light_gray, white, black};
+use super::{black, box_gray, ground_item_tooltip, light_gray, white};
 use crate::{Map, Name, Position, Pools, StatusEffect, Duration, Item};
 use crate::camera;
 
@@ -94,6 +94,10 @@ pub fn draw_map_tooltips(ecs: &World, ctx : &mut Rltk) {
     let mut tip_boxes: Vec<Tooltip<String>> = Vec::new();
     for (entity, name, position) in (&entities, &names, &positions).join() {
         if position.x == mouse_map_pos.0 && position.y == mouse_map_pos.1 {
+            if let Some(item) = items.get(entity) {
+                tip_boxes.push(ground_item_tooltip(ecs, item.full_name(), entity));
+                continue;
+            }
             let mut tip = Tooltip::new();
             tip.add(name.name.to_string());
 
@@ -113,14 +117,6 @@ pub fn draw_map_tooltips(ecs: &World, ctx : &mut Rltk) {
                 tip.add(format!("HP: {}/{}", stat.hit_points.current, stat.hit_points.max));
             }
 
-            tip_boxes.push(tip);
-        }
-    }
-
-    for (item, position) in (&items, &positions).join() {
-        if position.x == mouse_map_pos.0 && position.y == mouse_map_pos.1 {
-            let mut tip = Tooltip::new();
-            tip.add(item.full_name());
             tip_boxes.push(tip);
         }
     }

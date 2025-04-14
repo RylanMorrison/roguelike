@@ -101,6 +101,17 @@ pub fn item_result_menu<T: ToString>(ctx: &mut Rltk, draw_batch: &mut DrawBatch,
     }
 }
 
+pub fn ground_item_tooltip(ecs: &World, name: String, entity: Entity) -> Tooltip<String> {
+    let items = ecs.read_storage::<Item>();
+    let mut tooltip = Tooltip::new();
+
+    if let Some(item) = items.get(entity) {
+        tooltip.set_color(raws::get_item_colour(item, &raws::RAWS.lock().unwrap()));
+    }
+    tooltip.add(name);
+    tooltip
+}
+
 pub fn item_entity_tooltip(ecs: &World, name: String, entity: Entity) -> Tooltip<String> {
     let weapons = ecs.read_storage::<Weapon>();
     let wearables = ecs.read_storage::<Wearable>();
