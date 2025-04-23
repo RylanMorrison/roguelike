@@ -344,6 +344,7 @@ macro_rules! apply_effects {
                     $eb = $eb.with(Duration{ turns: effect.1.parse::<i32>().unwrap() });
                 }
                 "dodge" => $eb = $eb.with(Dodge{ chance: effect.1.parse::<f32>().unwrap() }),
+                "repeat" => $eb = $eb.with(Repeat{ count: effect.1.parse::<i32>().unwrap() }),
                 _ => rltk::console::log(format!("WARNING - Effect not implemented: {}", effect_name))
             }
         }

@@ -44,6 +44,7 @@ construct_dispatcher!(
     (ItemEquipSystem, "item_equip", &[]),
     (ItemUseSystem, "item_use", &[]),
     (AbilityUseSystem, "ability_use", &[]),
+    (RepeatAbilitySystem, "repeat_ability", &[]),
     (ItemDropSystem, "item_drop", &[]),
     (ItemUnequipSystem, "item_unequip", &[]),
     (ParticleSpawnSystem, "particle_spawn", &[]),

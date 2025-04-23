@@ -10,6 +10,7 @@ use rltk::{RGB, Point, FontCharType};
 use crate::gamelog::LogFragment;
 use super::{attr_bonus, Map, MasterDungeonMap};
 use std::{collections::{BTreeMap, HashMap}, convert::Infallible};
+use crate::effects::{EffectType, Targets};
 
 #[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Position {
@@ -1237,4 +1238,16 @@ pub struct MapMarker {
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
 pub struct Species {
     pub name: String
+}
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct Repeat {
+    pub count: i32
+}
+
+#[derive(Component, Debug)]
+pub struct WantsToRepeatAbility { // not (de)serialized
+    pub effect_type: EffectType,
+    pub targets: Targets,
+    pub count: i32
 }

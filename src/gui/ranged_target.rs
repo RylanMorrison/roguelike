@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use rltk::prelude::*;
-use super::{ItemMenuResult, yellow, black, blue, cyan, red, light_gray};
+use super::{ItemMenuResult, yellow, black, blue, cyan, red};
 use crate::{AreaOfEffect, State, Viewshed, Map};
 use crate::camera;
 use crate::effects::aoe_points;

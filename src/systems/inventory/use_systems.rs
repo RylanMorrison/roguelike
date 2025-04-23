@@ -1,6 +1,6 @@
 use specs::prelude::*;
 use rltk::Point;
-use super::{Map, WantsToUseItem, WantsToUseAbility, AreaOfEffect, EquipmentChanged, Position};
+use crate::{Map, WantsToUseItem, WantsToUseAbility, AreaOfEffect, EquipmentChanged, Position, Repeat, WantsToRepeatAbility};
 use crate::effects::*;
 
 pub struct ItemUseSystem {}
@@ -49,40 +49,52 @@ impl<'a> System<'a> for AbilityUseSystem {
         Entities<'a>,
         ReadStorage<'a, Position>,
         ReadStorage<'a, AreaOfEffect>,
+        ReadStorage<'a, Repeat>,
         WriteStorage<'a, WantsToUseAbility>,
+        WriteStorage<'a, WantsToRepeatAbility>,
         WriteStorage<'a, EquipmentChanged>
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (map, entities, positions,
-            aoe, mut wants_cast, mut dirty) = data;
+        let (map, entities, positions, aoe, repeats,
+            mut wants_cast, mut wants_repeat, mut dirty) = data;
 
         if wants_cast.is_empty() { return; }
 
         for (entity, use_ability) in (&entities, &wants_cast).join() {
             dirty.insert(entity, EquipmentChanged{}).expect("Unable to insert");
 
-            add_effect(
-                Some(entity),
-                EffectType::AbilityUse{ ability: use_ability.ability },
-                match use_ability.target {
-                    None => {
-                        let pos = positions.get(entity).unwrap();
-                        if let Some(aoe) = aoe.get(use_ability.ability) {
-                            Targets::Tiles { tiles: aoe_tiles(&*map, Point::new(pos.x, pos.y), aoe.radius) }
-                        } else {
-                            Targets::Tile { tile_idx: map.xy_idx(pos.x, pos.y) as i32 }
-                        }
-                    }
-                    Some(target) => {
-                        if let Some(aoe) = aoe.get(use_ability.ability) {
-                            Targets::Tiles{ tiles: aoe_tiles(&*map, target, aoe.radius) }
-                        } else {
-                            Targets::Tile{ tile_idx: map.xy_idx(target.x, target.y) as i32 }
-                        }
+            let targets =  match use_ability.target {
+                None => {
+                    let pos = positions.get(entity).unwrap();
+                    if let Some(aoe) = aoe.get(use_ability.ability) {
+                        Targets::Tiles { tiles: aoe_tiles(&*map, Point::new(pos.x, pos.y), aoe.radius) }
+                    } else {
+                        Targets::Tile { tile_idx: map.xy_idx(pos.x, pos.y) as i32 }
                     }
                 }
+                Some(target) => {
+                    if let Some(aoe) = aoe.get(use_ability.ability) {
+                        Targets::Tiles{ tiles: aoe_tiles(&*map, target, aoe.radius) }
+                    } else {
+                        Targets::Tile{ tile_idx: map.xy_idx(target.x, target.y) as i32 }
+                    }
+                }
+            };
+
+            add_effect(
+                Some(entity),
+                EffectType::AbilityUse { ability: use_ability.ability, is_repeat: false },
+                targets.clone()
             );
+
+            if let Some(repeat) = repeats.get(use_ability.ability) {
+                wants_repeat.insert(entity, WantsToRepeatAbility {
+                    effect_type: EffectType::AbilityUse { ability: use_ability.ability, is_repeat: true },
+                    targets: targets.clone(),
+                    count: repeat.count
+                }).expect("Unable to insert");
+            }
         }
         wants_cast.clear();
     }

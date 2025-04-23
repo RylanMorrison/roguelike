@@ -629,7 +629,7 @@
         },
         {
             "name": "Blizzard",
-            "description": "Pelt an area with ice dealing heavy damage. All in the area are briefly stunned and slowed.",
+            "description": "Repeatedly pelt an area with ice dealing heavy damage. All in the area are briefly stunned and slowed.",
             "levels": {
                 "1": {
                     "mana_cost": 20,
@@ -639,7 +639,8 @@
                         "area_of_effect": "4",
                         "stun": "2",
                         "slow": "12",
-                        "particle" : "*;#00FFFF;400.0"
+                        "particle" : "*;#00FFFF;400.0",
+                        "repeat": "2"
                     }
                 }
             },

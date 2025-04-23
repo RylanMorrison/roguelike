@@ -40,9 +40,11 @@ pub fn environment_trigger(ecs: &mut World, creator: Option<Entity>, trigger: En
     }
 }
 
-pub fn ability_trigger(ecs: &mut World, creator: Option<Entity>, known_ability_entity: Entity, targets: &Targets) {
+pub fn ability_trigger(ecs: &mut World, creator: Option<Entity>, known_ability_entity: Entity, targets: &Targets, is_repeat: bool) {
     let mut did_something = false;
-    if let Some(caster) = creator {
+    if is_repeat {
+        did_something = true;
+    } else if let Some(caster) = creator {
         let all_known_abilities = ecs.read_storage::<KnownAbility>();
         if let Some(known_ability) = all_known_abilities.get(known_ability_entity) {
             let mut pools = ecs.write_storage::<Pools>();

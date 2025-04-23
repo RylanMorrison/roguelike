@@ -24,7 +24,7 @@ lazy_static! {
     pub static ref EFFECT_QUEUE: Mutex<VecDeque<EffectSpawner>> = Mutex::new(VecDeque::new());
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum EffectType {
     Damage { amount: i32, hits_self: bool },
     Healing { amount: i32 },
@@ -39,7 +39,7 @@ pub enum EffectType {
     TeleportTo { x: i32, y: i32, depth: i32, player_only: bool },
     TriggerFire { trigger: Entity },
     AttributeEffect { bonus: AttributeBonus, name: String, duration: i32 },
-    AbilityUse { ability: Entity },
+    AbilityUse { ability: Entity, is_repeat: bool },
     Slow { initiative_penalty: f32, duration: i32 },
     DamageOverTime { damage: i32, duration: i32 },
     Stun { duration: i32 },
@@ -92,8 +92,8 @@ fn target_applicator(ecs: &mut World, effect: &mut EffectSpawner) {
         triggers::item_trigger(ecs, effect.creator, item, &effect.targets);
     } else if let EffectType::TriggerFire{trigger} = effect.effect_type {
         triggers::environment_trigger(ecs, effect.creator, trigger, &effect.targets);
-    } else if let EffectType::AbilityUse{ability} = effect.effect_type {
-        triggers::ability_trigger(ecs, effect.creator, ability, &effect.targets);
+    } else if let EffectType::AbilityUse{ability, is_repeat} = effect.effect_type {
+        triggers::ability_trigger(ecs, effect.creator, ability, &effect.targets, is_repeat);
     } else {
         match &effect.targets.clone() {
             Targets::Tile{tile_idx} => affect_tile(ecs, effect, *tile_idx),

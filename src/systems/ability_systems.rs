@@ -3,7 +3,9 @@ use crate::raws;
 use crate::raws::{find_ability_by_name, parse_particle, parse_particle_line, parse_ranged_string};
 use crate::{apply_effects, Ability, AbilityType, AreaOfEffect, Block, Confusion, Damage, DamageOverTime, Dodge, Duration, Food, Fortress, 
     FrostShield, Healing, KnownAbilities, KnownAbility, MagicMapping, Rage, Ranged, RestoresMana, RunState, SelfDamage, SingleActivation, 
-    Slow, SpawnParticleBurst, SpawnParticleLine, Stun, TeachesAbility, TownPortal, WantsToLearnAbility, WantsToLevelAbility};
+    Slow, SpawnParticleBurst, SpawnParticleLine, Stun, TeachesAbility, TownPortal, WantsToLearnAbility, WantsToLevelAbility, Repeat,
+    WantsToRepeatAbility, MyTurn};
+use crate::effects::add_effect;
 
 pub struct LearnAbilitySystem {}
 
@@ -87,6 +89,7 @@ impl<'a> System<'a> for LevelAbilitySystem {
         WriteStorage<'a, Dodge>,
         WriteStorage<'a, Healing>,
         WriteStorage<'a, Slow>,
+        WriteStorage<'a, Repeat>,
         WriteStorage<'a, SpawnParticleLine>,
         WriteStorage<'a, SpawnParticleBurst>,
         ReadExpect<'a, RunState>
@@ -96,7 +99,7 @@ impl<'a> System<'a> for LevelAbilitySystem {
         let (entities, abilities, mut known_ability_lists, mut known_abilities, mut wants_level,
             mut ranged, mut damage, mut self_damage, mut aoe, mut confusion, mut duration,
             mut stun, mut dot, mut rage, mut blocks, mut fortress, mut frost_shield, mut dodges,
-            mut healing, mut slow, mut particle_line, mut particle_burst, runstate) = data;
+            mut healing, mut slow, mut repeat, mut particle_line, mut particle_burst, runstate) = data;
 
         if wants_level.count() < 1 { return; }
         if *runstate != RunState::Ticking { return; }
@@ -303,6 +306,16 @@ impl<'a> System<'a> for LevelAbilitySystem {
                     }
                 }
 
+                // Repeat
+                if let Some(new_repeat_string) = new_effects.get("repeat") {
+                    let new_repeat_count = new_repeat_string.parse::<i32>().unwrap();
+                    if let Some(current_repeat) = repeat.get_mut(*ability_entity) {
+                        current_repeat.count = new_repeat_count;
+                    } else {
+                        repeat.insert(*ability_entity, Repeat{ count: new_repeat_count }).expect("Unable to insert");
+                    }
+                }
+
                 // Particle Line
                 if let Some(new_particle_string) = new_effects.get("particle_line") {
                     let new_particle = raws::parse_particle_line(new_particle_string);
@@ -318,5 +331,42 @@ impl<'a> System<'a> for LevelAbilitySystem {
         }
 
         wants_level.clear();
+    }
+}
+
+pub struct RepeatAbilitySystem {}
+
+impl<'a> System<'a> for RepeatAbilitySystem {
+    type SystemData = (
+        Entities<'a>,
+        ReadStorage<'a, MyTurn>,
+        WriteStorage<'a, WantsToRepeatAbility>,
+        ReadExpect<'a, RunState>
+    );
+
+    fn run(&mut self, data: Self::SystemData) {
+        let (entities, turns, mut wants_repeat, runstate) = data;
+
+        if wants_repeat.is_empty() { return; }
+        if *runstate != RunState::Ticking { return; }
+
+        let mut to_remove: Vec<Entity> = Vec::new();
+        for (entity, repeat_ability, _my_turn) in (&entities, &mut wants_repeat, &turns).join() {
+            repeat_ability.count -= 1;
+
+            if repeat_ability.count >= 0 {
+                add_effect(
+                    Some(entity),
+                    repeat_ability.effect_type.clone(),
+                    repeat_ability.targets.clone()
+                );
+            } else {
+                to_remove.push(entity);
+            }
+        }
+
+        for entity in to_remove.iter() {
+            wants_repeat.remove(*entity);
+        }
     }
 }
