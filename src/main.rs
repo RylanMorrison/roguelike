@@ -526,6 +526,14 @@ impl GameState for State {
     }
 }
 
+macro_rules! register_components {
+    ($ecs:expr, [$($t:ty),*]) => {
+        $(
+            $ecs.register::<$t>();
+        )*
+    };
+}
+
 fn main() -> rltk::BError {
     use rltk::RltkBuilder;
     let mut context = RltkBuilder::simple(100, 80)
@@ -544,103 +552,21 @@ fn main() -> rltk::BError {
         mapgen_timer: 0.0,
         dispatcher: systems::build()
     };
-    gs.ecs.register::<Position>();
-    gs.ecs.register::<Renderable>();
-    gs.ecs.register::<Player>();
-    gs.ecs.register::<Viewshed>();
-    gs.ecs.register::<Name>();
-    gs.ecs.register::<BlocksTile>();
-    gs.ecs.register::<WantsToMelee>();
-    gs.ecs.register::<Item>();
-    gs.ecs.register::<Healing>();
-    gs.ecs.register::<Damage>();
-    gs.ecs.register::<AreaOfEffect>();
-    gs.ecs.register::<Consumable>();
-    gs.ecs.register::<Ranged>();
-    gs.ecs.register::<InBackpack>();
-    gs.ecs.register::<WantsToPickupItem>();
-    gs.ecs.register::<WantsToUseItem>();
-    gs.ecs.register::<WantsToDropItem>();
-    gs.ecs.register::<Confusion>();
-    gs.ecs.register::<SimpleMarker<SerializeMe>>();
-    gs.ecs.register::<SerializationHelper>();
-    gs.ecs.register::<DMSerializationHelper>();
-    gs.ecs.register::<Equipped>();
-    gs.ecs.register::<Equippable>();
-    gs.ecs.register::<Weapon>();
-    gs.ecs.register::<Wearable>();
-    gs.ecs.register::<WantsToUnequipItem>();
-    gs.ecs.register::<ParticleLifetime>();
-    gs.ecs.register::<MagicMapping>();
-    gs.ecs.register::<HungerClock>();
-    gs.ecs.register::<Food>();
-    gs.ecs.register::<BlocksVisibility>();
-    gs.ecs.register::<Door>();
-    gs.ecs.register::<EntityMoved>();
-    gs.ecs.register::<Quips>();
-    gs.ecs.register::<Attributes>();
-    gs.ecs.register::<Skills>();
-    gs.ecs.register::<Pools>();
-    gs.ecs.register::<NaturalAttackDefence>();
-    gs.ecs.register::<LootTable>();
-    gs.ecs.register::<OtherLevelPosition>();
-    gs.ecs.register::<LightSource>();
-    gs.ecs.register::<Initiative>();
-    gs.ecs.register::<MyTurn>();
-    gs.ecs.register::<Faction>();
-    gs.ecs.register::<WantsToApproach>();
-    gs.ecs.register::<MoveMode>();
-    gs.ecs.register::<Chasing>();
-    gs.ecs.register::<EquipmentChanged>();
-    gs.ecs.register::<Vendor>();
-    gs.ecs.register::<TownPortal>();
-    gs.ecs.register::<EntryTrigger>();
-    gs.ecs.register::<TeleportTo>();
-    gs.ecs.register::<ApplyMove>();
-    gs.ecs.register::<ApplyTeleport>();
-    gs.ecs.register::<SingleActivation>();
-    gs.ecs.register::<SpawnParticleLine>();
-    gs.ecs.register::<SpawnParticleBurst>();
-    gs.ecs.register::<AttributeBonus>();
-    gs.ecs.register::<SkillBonus>();
-    gs.ecs.register::<Duration>();
-    gs.ecs.register::<StatusEffect>();
-    gs.ecs.register::<RestoresMana>();
-    gs.ecs.register::<TeachesAbility>();
-    gs.ecs.register::<Slow>();
-    gs.ecs.register::<DamageOverTime>();
-    gs.ecs.register::<TileSize>();
-    gs.ecs.register::<WantsToLevelUp>();
-    gs.ecs.register::<ItemSets>();
-    gs.ecs.register::<PartOfSet>();
-    gs.ecs.register::<Target>();
-    gs.ecs.register::<WantsToShoot>();
-    gs.ecs.register::<Stun>();
-    gs.ecs.register::<StatusEffectChanged>();
-    gs.ecs.register::<Boss>();
-    gs.ecs.register::<Chest>();
-    gs.ecs.register::<CharacterClass>();
-    gs.ecs.register::<Ability>();
-    gs.ecs.register::<KnownAbility>();
-    gs.ecs.register::<KnownAbilities>();
-    gs.ecs.register::<WantsToUseAbility>();
-    gs.ecs.register::<SelfDamage>();
-    gs.ecs.register::<Rage>();
-    gs.ecs.register::<Block>();
-    gs.ecs.register::<Fortress>();
-    gs.ecs.register::<FrostShield>();
-    gs.ecs.register::<Dodge>();
-    gs.ecs.register::<WantsToLearnAbility>();
-    gs.ecs.register::<WantsToLevelAbility>();
-    gs.ecs.register::<Quests>();
-    gs.ecs.register::<ActiveQuests>();
-    gs.ecs.register::<QuestProgress>();
-    gs.ecs.register::<QuestGiver>();
-    gs.ecs.register::<WantsToTurnInQuest>();
-    gs.ecs.register::<MapMarker>();
-    gs.ecs.register::<Species>();
-    gs.ecs.register::<Repeat>();
-    gs.ecs.register::<WantsToRepeatAbility>();
+    register_components!(&mut gs.ecs, [
+        SimpleMarker<SerializeMe>, SerializationHelper, DMSerializationHelper, Position, Renderable, Player,
+        Viewshed, Name, BlocksTile, WantsToMelee, Item, Healing, Damage, AreaOfEffect, Consumable, Ranged,
+        InBackpack, WantsToPickupItem, WantsToUseItem, WantsToDropItem, Confusion, Equipped, Equippable,
+        Weapon, Wearable, WantsToUnequipItem, ParticleLifetime, MagicMapping, HungerClock, Food,
+        BlocksVisibility, Door, EntityMoved, Quips, Attributes, Skills, Pools, NaturalAttackDefence,
+        LootTable, OtherLevelPosition, LightSource, Initiative, Faction, WantsToApproach, MoveMode, Chasing,
+        EquipmentChanged, Vendor, TownPortal, EntryTrigger, TeleportTo, ApplyMove, ApplyTeleport,
+        SingleActivation, SpawnParticleLine, SpawnParticleBurst, AttributeBonus, SkillBonus, Duration,
+        StatusEffect, RestoresMana, TeachesAbility, Slow, DamageOverTime, TileSize, WantsToLevelUp, ItemSets,
+        PartOfSet, Target, WantsToShoot, Stun, StatusEffectChanged, Boss, Chest, CharacterClass, Ability,
+        KnownAbility, MyTurn, KnownAbilities, WantsToUseAbility, SelfDamage, Rage, Block, Fortress, FrostShield,
+        Dodge, WantsToLearnAbility, WantsToLevelAbility, Quests, ActiveQuests, QuestProgress, QuestGiver,
+        WantsToTurnInQuest, MapMarker, Species, Repeat, WantsToRepeatAbility, RegenBonus
+    ]);
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
 
     raws::load_raws();
