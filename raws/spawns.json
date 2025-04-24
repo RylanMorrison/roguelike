@@ -2427,6 +2427,9 @@
                 "strength": 2,
                 "dexterity": -5,
                 "intelligence": -2
+            },
+            "regen_bonuses": {
+                "health": 2
             }
         },
         {

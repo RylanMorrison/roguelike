@@ -69,6 +69,12 @@ pub struct SkillBonusData {
     pub magic: Option<i32>
 }
 
+#[derive(Deserialize, Debug, Clone)]
+pub struct RegenBonusData {
+    pub health: Option<i32>,
+    pub mana: Option<i32>
+}
+
 #[derive(Deserialize, Debug)]
 pub struct Raws {
     pub items: Vec<ItemData>,

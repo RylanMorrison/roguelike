@@ -375,11 +375,6 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         _ => quality
     };
 
-    // skill bonuses
-    if let Some(skill_bonus) = item_skill_bonus(&item_quality, &item_template) {
-        eb = eb.with(skill_bonus);
-    }
-
     eb = eb.with(Item{
         name: item_template.name.clone(),
         initiative_penalty: item_template.initiative_penalty.unwrap_or(0.0),
@@ -443,6 +438,11 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         apply_effects!(self, consumable.effects, eb);
     }
 
+    // skill bonuses
+    if let Some(skill_bonus) = item_skill_bonus(&item_quality, &item_template) {
+        eb = eb.with(skill_bonus);
+    }
+
     // attribute bonuses
     if let Some(bonus) = &item_template.attribute_bonuses {
         eb = eb.with(AttributeBonus{
@@ -450,6 +450,14 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
             dexterity: bonus.dexterity,
             constitution: bonus.constitution,
             intelligence: bonus.intelligence
+        });
+    }
+
+    // regen bonuses
+    if let Some(regen_bonus) = &item_template.regen_bonuses {
+        eb = eb.with(RegenBonus{
+            health: regen_bonus.health,
+            mana: regen_bonus.mana
         });
     }
 

@@ -1251,3 +1251,9 @@ pub struct WantsToRepeatAbility { // not (de)serialized
     pub targets: Targets,
     pub count: i32
 }
+
+#[derive(Component, Debug, Serialize, Deserialize, Clone)]
+pub struct RegenBonus {
+    pub health: Option<i32>,
+    pub mana: Option<i32>
+}

@@ -1,6 +1,6 @@
 use serde::Deserialize;
 use std::collections::HashMap;
-use super::{RenderableData, AttributeBonusData, SkillBonusData};
+use super::{RenderableData, AttributeBonusData, SkillBonusData, RegenBonusData};
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct ItemData {
@@ -16,7 +16,8 @@ pub struct ItemData {
     pub class: String,
     pub attribute_bonuses: Option<AttributeBonusData>,
     pub skill_bonuses: Option<SkillBonusData>,
-    pub set_name: Option<String>
+    pub set_name: Option<String>,
+    pub regen_bonuses: Option<RegenBonusData>
 }
 
 #[derive(Deserialize, Debug, Clone)]

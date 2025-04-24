@@ -2,7 +2,7 @@ use rltk::{Point, Rltk, VirtualKeyCode};
 use specs::prelude::*;
 use std::cmp::{max, min};
 
-use crate::{spatial, gamelog};
+use crate::{gamelog, spatial, RegenBonus};
 use crate::raws::{faction_reaction, Reaction, RAWS};
 use crate::effects::{add_effect, EffectType, Targets};
 use crate::rng;
@@ -339,11 +339,23 @@ pub fn skip_turn(ecs: &mut World) -> RunState {
     if can_heal {
         let mut pools = ecs.write_storage::<Pools>();
         let player_pool = pools.get_mut(*player_entity).unwrap();
+        let (health_modifier, mana_modifier) = regen_bonus_modifiers(ecs, *player_entity);
+
         if player_pool.hit_points.current < player_pool.hit_points.max {
-            player_pool.hit_points.current = i32::min(player_pool.hit_points.current + 1, player_pool.hit_points.max);
+            player_pool.hit_points.current = i32::min(
+                player_pool.hit_points.current + 1 + health_modifier,
+                player_pool.hit_points.max
+            );
             let pos = positions.get(*player_entity);
             if let Some(pos) = pos {
-                particle_builder.add_request(pos.x, pos.y, rltk::RGB::named(rltk::GREEN), rltk::RGB::named(rltk::BLACK), rltk::to_cp437('♥'), 200.0);
+                particle_builder.add_request(
+                    pos.x,
+                    pos.y,
+                    rltk::RGB::named(rltk::GREEN),
+                    rltk::RGB::named(rltk::BLACK),
+                    rltk::to_cp437('♥'),
+                    200.0
+                );
             }
         }
         // sometimes restore mana
@@ -353,12 +365,25 @@ pub fn skip_turn(ecs: &mut World) -> RunState {
             // intelligence increases the chance of restoring mana up to 100%
             let die_type = i32::max(1, 6 - (player_attributes.intelligence.bonus / 2));
             if rng::roll_dice(1, die_type) == 1 {
-                player_pool.mana.current = i32::min(player_pool.mana.current + 1, player_pool.mana.max);
+                player_pool.mana.current = i32::min(
+                    player_pool.mana.current + 1 + mana_modifier,
+                    player_pool.mana.max
+                );
             }
         }
     }
 
     RunState::Ticking
+}
+
+fn regen_bonus_modifiers(ecs: &World, player: Entity) -> (i32, i32) {
+    let (mut health_modifier, mut mana_modifier) = (0, 0);
+    let regen_bonuses = ecs.read_storage::<RegenBonus>();
+    if let Some(player_regen_bonus) = regen_bonuses.get(player) {
+        health_modifier = player_regen_bonus.health.unwrap_or(0);
+        mana_modifier = player_regen_bonus.mana.unwrap_or(0);
+    }
+    (health_modifier, mana_modifier)
 }
 
 fn get_target_list(ecs: &mut World) -> Vec<(f32, Entity)> {

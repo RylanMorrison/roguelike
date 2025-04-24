@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use crate::{attr_bonus, gamelog, AttributeBonus, Attributes, EquipmentChanged, Equipped, InBackpack, Item, Weapon, 
-    Pools, Wearable, Skills, SkillBonus, hp_at_level, mana_at_level, carry_capacity_lbs,
-    ItemSets, PartOfSet, StatusEffectChanged};
+    Pools, Wearable, Skills, SkillBonus, hp_at_level, mana_at_level, carry_capacity_lbs, ItemSets, PartOfSet,
+    StatusEffectChanged, RegenBonus};
 use std::collections::HashMap;
 use rltk::RGB;
 
@@ -17,6 +17,8 @@ struct ItemUpdate {
     defence: i32,
     ranged: i32,
     magic: i32,
+    health_regen: i32,
+    mana_regen: i32,
     total_armour_class: f32,
     base_damage: String
 }
@@ -25,29 +27,31 @@ pub struct GearEffectSystem {}
 
 impl<'a> System<'a> for GearEffectSystem {
     type SystemData = (
-        WriteStorage<'a, EquipmentChanged>,
         Entities<'a>,
         ReadStorage<'a, Item>,
         ReadStorage<'a, InBackpack>,
         ReadStorage<'a, Equipped>,
-        WriteStorage<'a, Pools>,
-        WriteStorage<'a, Attributes>,
         ReadExpect<'a, Entity>,
         ReadStorage<'a, AttributeBonus>,
         ReadStorage<'a, Weapon>,
         ReadStorage<'a, Wearable>,
-        WriteStorage<'a, Skills>,
         ReadStorage<'a, SkillBonus>,
-        ReadExpect<'a, ItemSets>,
         ReadStorage<'a, PartOfSet>,
-        WriteStorage<'a, StatusEffectChanged>
+        ReadExpect<'a, ItemSets>,
+        WriteStorage<'a, StatusEffectChanged>,
+        WriteStorage<'a, EquipmentChanged>,
+        WriteStorage<'a, Pools>,
+        WriteStorage<'a, Attributes>,
+        WriteStorage<'a, Skills>,
+        WriteStorage<'a, RegenBonus>
+
     );
 
     fn run(&mut self, data: Self::SystemData) {
-        let (mut equip_dirty, entities, items, backpacks, wielded,
-            mut pools, mut attributes, player, attribute_bonuses,
-            weapons, wearables, mut skills, skill_bonuses,
-            item_sets, set_pieces, mut status_dirty) = data;
+        let (entities, items, backpacks, equipped, player,
+            attribute_bonuses, weapons, wearables, skill_bonuses,
+            set_pieces, item_sets, mut status_dirty, mut equip_dirty,
+            mut pools, mut attributes, mut skills, mut regen_bonuses) = data;
 
         if equip_dirty.is_empty() { return; }
 
@@ -65,6 +69,8 @@ impl<'a> System<'a> for GearEffectSystem {
                 defence: 0,
                 ranged: 0,
                 magic: 0,
+                health_regen: 0,
+                mana_regen: 0,
                 total_armour_class: 10.0, // TODO use armour class from entity's pools
                 base_damage: "1 - 4".to_string()
             });
@@ -73,9 +79,9 @@ impl<'a> System<'a> for GearEffectSystem {
         equip_dirty.clear();
 
         // total up equipped items
-        for (item, equipped, entity) in (&items, &wielded, &entities).join() {
-            if to_update.contains_key(&equipped.owner) {
-                let totals = to_update.get_mut(&equipped.owner).unwrap();
+        for (item, equip, entity) in (&items, &equipped, &entities).join() {
+            if to_update.contains_key(&equip.owner) {
+                let totals = to_update.get_mut(&equip.owner).unwrap();
                 totals.weight += item.weight_lbs;
                 totals.initiative += item.initiative_penalty;
                 if let Some(attr) = attribute_bonuses.get(entity) {
@@ -90,22 +96,30 @@ impl<'a> System<'a> for GearEffectSystem {
                     totals.ranged += skill.ranged.unwrap_or(0);
                     totals.magic += skill.magic.unwrap_or(0);
                 }
+                if let Some(regen_bonus) = regen_bonuses.get(entity) {
+                    if let Some(health_regen) = regen_bonus.health {
+                        totals.health_regen = health_regen;
+                    }
+                    if let Some(mana_regen) = regen_bonus.mana {
+                        totals.mana_regen = mana_regen;
+                    }
+                }
             }
         }
 
         // calculate base damage
-        for (weapon, equipped) in (&weapons, &wielded).join() {
-            if to_update.contains_key(&equipped.owner) {
-                let totals = to_update.get_mut(&equipped.owner).unwrap();
+        for (weapon, equip) in (&weapons, &equipped).join() {
+            if to_update.contains_key(&equip.owner) {
+                let totals = to_update.get_mut(&equip.owner).unwrap();
                 totals.base_damage = format!("{} - {}", weapon.damage_n_dice + weapon.damage_bonus, weapon.damage_n_dice * weapon.damage_die_type + weapon.damage_bonus);
             }
             // TODO display extra damage from attributes and skills
         }
 
         // calculate total armour class
-        for (wearable, equipped) in (&wearables, &wielded).join() {
-            if to_update.contains_key(&equipped.owner) {
-                let totals = to_update.get_mut(&equipped.owner).unwrap();
+        for (wearable, equip) in (&wearables, &equipped).join() {
+            if to_update.contains_key(&equip.owner) {
+                let totals = to_update.get_mut(&equip.owner).unwrap();
                 totals.total_armour_class += wearable.armour_class;
             }
             // TODO display extra armour class from attributes and skills
@@ -122,8 +136,8 @@ impl<'a> System<'a> for GearEffectSystem {
         // item set bonuses
         // determine equipped set piece count for each item set
         let mut set_counts: HashMap<String, i32> = HashMap::new();
-        for (equipped, set_piece) in (&wielded, &set_pieces).join() {
-            if equipped.owner == *player && to_update.contains_key(&equipped.owner) {
+        for (equip, set_piece) in (&equipped, &set_pieces).join() {
+            if equip.owner == *player && to_update.contains_key(&equip.owner) {
                 // only count set pieces for the player
                 if item_sets.item_sets.get(&set_piece.set_name).is_some() {
                     if set_counts.contains_key(&set_piece.set_name) {
@@ -157,7 +171,7 @@ impl<'a> System<'a> for GearEffectSystem {
             }
         }
 
-        // apply to pools
+        // apply to the entities
         for (entity, item) in to_update.iter() {
             if let Some(pool) = pools.get_mut(*entity) {
                 pool.total_weight = item.weight;
@@ -203,6 +217,24 @@ impl<'a> System<'a> for GearEffectSystem {
                     skill.ranged.item_modifiers = item.ranged;
                     skill.magic.item_modifiers = item.magic;
                 }
+            }
+
+            if item.health_regen == 0 && item.mana_regen == 0 {
+                if regen_bonuses.get(*entity).is_some() {
+                    regen_bonuses.remove(*entity).expect("Unable to remove");
+                }
+                continue;
+            }
+
+            // apply regen bonuses from items to the entity
+            if let Some(current_regen_bonus) = regen_bonuses.get_mut(*entity) {
+                current_regen_bonus.health = if item.health_regen > 0 { Some(item.health_regen) } else { None };
+                current_regen_bonus.mana = if item.mana_regen > 0 { Some(item.mana_regen) } else { None };
+            } else {
+                regen_bonuses.insert(*entity, RegenBonus{
+                    health: Some(item.health_regen).filter(|&v| v > 0),
+                    mana: Some(item.mana_regen).filter(|&v| v > 0)
+                }).expect("Unable to insert");
             }
         }
     }
