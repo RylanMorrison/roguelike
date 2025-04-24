@@ -228,12 +228,12 @@ impl<'a> System<'a> for GearEffectSystem {
 
             // apply regen bonuses from items to the entity
             if let Some(current_regen_bonus) = regen_bonuses.get_mut(*entity) {
-                current_regen_bonus.health = if item.health_regen > 0 { Some(item.health_regen) } else { None };
-                current_regen_bonus.mana = if item.mana_regen > 0 { Some(item.mana_regen) } else { None };
+                current_regen_bonus.health = Some(item.health_regen).filter(|&v| v != 0);
+                current_regen_bonus.mana = Some(item.mana_regen).filter(|&v| v != 0);
             } else {
                 regen_bonuses.insert(*entity, RegenBonus{
-                    health: Some(item.health_regen).filter(|&v| v > 0),
-                    mana: Some(item.mana_regen).filter(|&v| v > 0)
+                    health: Some(item.health_regen).filter(|&v| v != 0),
+                    mana: Some(item.mana_regen).filter(|&v| v != 0)
                 }).expect("Unable to insert");
             }
         }

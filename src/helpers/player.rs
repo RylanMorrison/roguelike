@@ -302,8 +302,8 @@ pub fn skip_turn(ecs: &mut World) -> RunState {
     let positions = ecs.read_storage::<Position>();
     let mut particle_builder = ecs.fetch_mut::<ParticleBuilder>();
 
-    // prevent skip turn healing if enemies are nearby
-    let mut can_heal = true;
+    let mut can_restore = true;
+    // can't restore if enemies are nearby
     let viewshed = viewsheds.get(*player_entity).unwrap();
     for tile in viewshed.visible_tiles.iter() {
         let idx = worldmap.xy_idx(tile.x, tile.y);
@@ -318,32 +318,33 @@ pub fn skip_turn(ecs: &mut World) -> RunState {
                         &RAWS.lock().unwrap()
                     );
                     if reaction == Reaction::Attack {
-                        can_heal = false;
+                        can_restore = false;
                     }
                 }
             }
         });
     }
 
+    // can't restore if hungry
     let hunger_clocks = ecs.read_storage::<HungerClock>();
     let hunger = hunger_clocks.get(*player_entity);
     if let Some(hunger) = hunger {
         match hunger.state {
-            HungerState::Hungry => can_heal = false,
-            HungerState::Starving => can_heal = false,
+            HungerState::Hungry => can_restore = false,
+            HungerState::Starving => can_restore = false,
             _ => {}
         }
     }
 
-    // heal player when turn is skipped
-    if can_heal {
+    if can_restore {
         let mut pools = ecs.write_storage::<Pools>();
         let player_pool = pools.get_mut(*player_entity).unwrap();
         let (health_modifier, mana_modifier) = regen_bonus_modifiers(ecs, *player_entity);
 
+        // always restore health
         if player_pool.hit_points.current < player_pool.hit_points.max {
             player_pool.hit_points.current = i32::min(
-                player_pool.hit_points.current + 1 + health_modifier,
+                player_pool.hit_points.current + i32::max(0, 1 + health_modifier),
                 player_pool.hit_points.max
             );
             let pos = positions.get(*player_entity);
@@ -366,7 +367,7 @@ pub fn skip_turn(ecs: &mut World) -> RunState {
             let die_type = i32::max(1, 6 - (player_attributes.intelligence.bonus / 2));
             if rng::roll_dice(1, die_type) == 1 {
                 player_pool.mana.current = i32::min(
-                    player_pool.mana.current + 1 + mana_modifier,
+                    player_pool.mana.current + i32::max(0, 1 + mana_modifier),
                     player_pool.mana.max
                 );
             }

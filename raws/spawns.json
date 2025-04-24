@@ -1532,6 +1532,9 @@
             },
             "attribute_bonuses": {
                 "intelligence": 1
+            },
+            "regen_bonuses": {
+                "mana": 1
             }
         },
         {
@@ -1558,6 +1561,9 @@
             },
             "attribute_bonuses": {
                 "intelligence": 2
+            },
+            "regen_bonuses": {
+                "mana": 1
             }
         },
         {
@@ -1586,6 +1592,10 @@
             },
             "attribute_bonuses": {
                 "intelligence": 4
+            },
+            "regen_bonuses": {
+                "health": 1,
+                "mana": 1
             }
         },
         {
@@ -1617,6 +1627,9 @@
                 "strength": -3,
                 "dexterity": -3,
                 "constitution": -2
+            },
+            "regen_bonuses": {
+                "mana": 2
             }
         },
         {
@@ -2287,6 +2300,9 @@
             "skill_bonuses": {
                 "defence": 1,
                 "magic": -2
+            },
+            "regen_bonuses": {
+                "health": 1
             }
         },
         {
@@ -2374,6 +2390,9 @@
             "attribute_bonuses": {
                 "intelligence": 1,
                 "constitution": -1
+            },
+            "regen_bonuses": {
+                "mana": 1
             }
         },
         {
@@ -2399,6 +2418,9 @@
             },
             "attribute_bonuses": {
                 "intelligence": 3
+            },
+            "regen_bonuses": {
+                "mana": 2
             }
         },
         {
