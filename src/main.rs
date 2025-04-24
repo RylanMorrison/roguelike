@@ -418,6 +418,15 @@ impl GameState for State {
                         gamelog::Logger::new().append("Your attributes increase by 1").log();
                         newrunstate = RunState::Ticking;
                     }
+                    gui::CheatMenuResult::DamageSelf => {
+                        let player = self.ecs.fetch::<Entity>();
+                        let mut pools = self.ecs.write_storage::<Pools>();
+                        let player_pools = pools.get_mut(*player).unwrap();
+                        let damage = player_pools.hit_points.max / 10;
+                        player_pools.hit_points.current -= damage;
+                        gamelog::Logger::new().append(format!("You take {} damage", damage)).log();
+                        newrunstate = RunState::Ticking;
+                    }
                 }
             }
             RunState::ShowVendor{vendor, mode} => {

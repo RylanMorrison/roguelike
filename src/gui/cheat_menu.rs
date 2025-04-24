@@ -12,12 +12,13 @@ pub enum CheatMenuResult {
     LevelUp,
     MakeRich,
     QuestComplete,
-    IncreaseAttributes
+    IncreaseAttributes,
+    DamageSelf
 }
 
 pub fn show_cheat_menu(ctx: &mut Rltk) -> CheatMenuResult {
     let mut draw_batch = DrawBatch::new();
-    let count = 8;
+    let count = 9;
     let mut y = (25 - (count / 2)) as i32;
     menu_box(&mut draw_batch, 15, y, 40, (count*2+3) as i32, "Cheating!");
 
@@ -37,6 +38,8 @@ pub fn show_cheat_menu(ctx: &mut Rltk) -> CheatMenuResult {
     menu_option(&mut draw_batch, 17, y, rltk::to_cp437('Q'), "Quest complete", None);
     y += 2;
     menu_option(&mut draw_batch, 17, y, rltk::to_cp437('A'), "Set attributes", None);
+    y += 2;
+    menu_option(&mut draw_batch, 17, y, rltk::to_cp437('D'), "Damage Self", None);
 
     draw_batch.submit(1000).expect("Draw batch submission failed");
 
@@ -52,6 +55,7 @@ pub fn show_cheat_menu(ctx: &mut Rltk) -> CheatMenuResult {
                 VirtualKeyCode::M => CheatMenuResult::MakeRich,
                 VirtualKeyCode::Q => CheatMenuResult::QuestComplete,
                 VirtualKeyCode::A => CheatMenuResult::IncreaseAttributes,
+                VirtualKeyCode::D => CheatMenuResult::DamageSelf,
                 VirtualKeyCode::Escape => CheatMenuResult::Cancel,
                 _ => CheatMenuResult::NoResponse
             }
