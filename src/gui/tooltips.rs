@@ -84,10 +84,10 @@ pub fn draw_map_tooltips(ecs: &World, ctx : &mut Rltk) {
     let mut mouse_map_pos = mouse_pos;
     mouse_map_pos.0 += min_x - 1;
     mouse_map_pos.1 += min_y - 1;
-    if mouse_pos.0 < 1 || mouse_pos.0 > 69 || mouse_pos.1 < 1 || mouse_pos.1 > 60 { return; }
-    if mouse_map_pos.0 >= map.width-1 || mouse_map_pos.1 >= map.height-1 
-        || mouse_map_pos.0 < 1 || mouse_map_pos.1 < 1 { 
-            return; 
+    if mouse_pos.0 < 1 || mouse_pos.0 > 99 || mouse_pos.1 < 1 || mouse_pos.1 > 80 { return; }
+    if mouse_map_pos.0 >= map.width-1 || mouse_map_pos.1 >= map.height-1
+        || mouse_map_pos.0 < 1 || mouse_map_pos.1 < 1 {
+            return;
     }
     if !map.visible_tiles[map.xy_idx(mouse_map_pos.0, mouse_map_pos.1)] { return; }
 
@@ -135,7 +135,11 @@ pub fn draw_map_tooltips(ecs: &World, ctx : &mut Rltk) {
         arrow = to_cp437('←');
         arrow_x = mouse_pos.0 + 1;
     }
-    draw_batch.set(Point::new(arrow_x, arrow_y), ColorPair::new(white(), box_gray()), arrow);
+    draw_batch.set(
+        Point::new(arrow_x, arrow_y),
+        ColorPair::new(white(), box_gray()),
+        arrow
+    );
 
     let mut total_height = 0;
     for tt in tip_boxes.iter() {
@@ -151,9 +155,9 @@ pub fn draw_map_tooltips(ecs: &World, ctx : &mut Rltk) {
     // actually draw
     for tt in tip_boxes.iter() {
         let x = if mouse_pos.0 < 50 {
-            mouse_pos.0 - (1 + tt.width())
+            mouse_pos.0 - (3 + tt.width())
         } else {
-            mouse_pos.0 + (1 + tt.width())
+            mouse_pos.0 + 2
         };
         tt.render(&mut draw_batch, x, y);
         y += tt.height();

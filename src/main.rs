@@ -230,7 +230,7 @@ impl GameState for State {
                         intent.insert(*self.ecs.fetch::<Entity>(), WantsToUnequipItem{ item: item_entity }).expect("Unable to insert intent");
                         newrunstate = RunState::Ticking;
                     }
-                } 
+                }
             }
             RunState::ShowTargeting{min_range, max_range, source} => {
                 let result = gui::ranged_target(self, ctx, min_range, max_range, source);
@@ -438,12 +438,12 @@ impl GameState for State {
                         vendor::sell_item(self, result.1.unwrap());
                     }
                     gui::VendorResult::Buy => {
-                        vendor::buy_item(self, 
+                        vendor::buy_item(self,
                             result.2.unwrap(), result.3.unwrap()
                         );
                     }
                     gui::VendorResult::Improve => {
-                        vendor::improve_item(self, 
+                        vendor::improve_item(self,
                             result.1.unwrap(), result.3.unwrap()
                         );
                     }
@@ -530,7 +530,7 @@ impl GameState for State {
 
         rltk::render_draw_buffer(ctx).expect("Render error");
         if SHOW_FPS {
-            ctx.print(1, 79, &format!("FPS: {}", ctx.fps));
+            ctx.print(1, 99, &format!("FPS: {}", ctx.fps));
         }
     }
 }
@@ -545,12 +545,12 @@ macro_rules! register_components {
 
 fn main() -> rltk::BError {
     use rltk::RltkBuilder;
-    let mut context = RltkBuilder::simple(100, 80)
+    let mut context = RltkBuilder::simple(120, 100)
         .unwrap()
         .with_title("Roguelike")
         .with_fps_cap(30.0)
         .with_font("vga8x16.png", 8, 16)
-        .with_sparse_console(100, 40, "vga8x16.png")
+        .with_sparse_console(120, 42, "vga8x16.png")
         .build()?;
     context.with_post_scanlines(true);
     let mut gs = State {

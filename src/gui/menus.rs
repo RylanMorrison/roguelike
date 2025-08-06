@@ -52,16 +52,16 @@ pub fn item_result_menu<T: ToString>(ctx: &mut Rltk, draw_batch: &mut DrawBatch,
     let mut y = y_start(count);
     let height = box_height(count);
     draw_batch.draw_box(
-        Rect::with_size(15, y - 2, 35, height + 1),
+        Rect::with_size(25, y - 2, 35, height + 1),
         ColorPair::new(RGB::named(rltk::WHITE), RGB::named(rltk::BLACK))
     );
     draw_batch.print_color(
-        Point::new(18, y - 2),
+        Point::new(28, y - 2),
         &title.to_string(),
         ColorPair::new(RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK))
     );
     draw_batch.print_color(
-        Point::new(18, y + height - 1),
+        Point::new(28, y + height - 1),
         "ESCAPE to cancel",
         ColorPair::new(RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK))
     );
@@ -73,10 +73,10 @@ pub fn item_result_menu<T: ToString>(ctx: &mut Rltk, draw_batch: &mut DrawBatch,
     y += 1;
     for item in items {
         let colour = Some(raws::get_item_colour(&item.1, &raws::RAWS.lock().unwrap()));
-        menu_option(draw_batch, 17, y, 97+j as FontCharType, &item.2, colour);
+        menu_option(draw_batch, 27, y, 97+j as FontCharType, &item.2, colour);
         item_list.push(item.0);
 
-        if tooltip.is_none() && mouse_pos.0 >= 18 && mouse_pos.0 <= 50 && mouse_pos.1 == y {
+        if tooltip.is_none() && mouse_pos.0 >= 32 && mouse_pos.0 < 60 && mouse_pos.1 == y {
             tooltip = Some((item.0, item.2.clone(), 30, y));
         }
 

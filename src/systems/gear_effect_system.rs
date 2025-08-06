@@ -148,6 +148,7 @@ impl<'a> System<'a> for GearEffectSystem {
                 }
             }
         }
+
         // apply set bonuses depending on number of set pieces equipped
         for set in set_counts.keys() {
             // only the player gets set bonuses for now
@@ -171,7 +172,7 @@ impl<'a> System<'a> for GearEffectSystem {
             }
         }
 
-        // apply to the entities
+        // apply the gear effect changes
         for (entity, item) in to_update.iter() {
             if let Some(pool) = pools.get_mut(*entity) {
                 pool.total_weight = item.weight;

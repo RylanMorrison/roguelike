@@ -2,9 +2,9 @@ use rltk::prelude::*;
 use super::{menu_option, menu_box};
 
 #[derive(PartialEq, Copy, Clone)]
-pub enum CheatMenuResult { 
-    NoResponse, 
-    Cancel, 
+pub enum CheatMenuResult {
+    NoResponse,
+    Cancel,
     TeleportToExit,
     FullHeal,
     RevealMap,
@@ -20,26 +20,26 @@ pub fn show_cheat_menu(ctx: &mut Rltk) -> CheatMenuResult {
     let mut draw_batch = DrawBatch::new();
     let count = 9;
     let mut y = (25 - (count / 2)) as i32;
-    menu_box(&mut draw_batch, 15, y, 40, (count*2+3) as i32, "Cheating!");
+    menu_box(&mut draw_batch, 25, y, 40, (count*2+3) as i32, "Cheating!");
 
     y += 1;
-    menu_option(&mut draw_batch, 17, y, rltk::to_cp437('T'), "Teleport to next level", None);
+    menu_option(&mut draw_batch, 27, y, rltk::to_cp437('T'), "Teleport to next level", None);
     y += 2;
-    menu_option(&mut draw_batch, 17, y, rltk::to_cp437('H'), "Heal to full", None);
+    menu_option(&mut draw_batch, 27, y, rltk::to_cp437('H'), "Heal to full", None);
     y += 2;
-    menu_option(&mut draw_batch, 17, y, rltk::to_cp437('R'), "Reveal the map", None);
+    menu_option(&mut draw_batch, 27, y, rltk::to_cp437('R'), "Reveal the map", None);
     y += 2;
-    menu_option(&mut draw_batch, 17, y, rltk::to_cp437('G'), "God mode", None);
+    menu_option(&mut draw_batch, 27, y, rltk::to_cp437('G'), "God mode", None);
     y += 2;
-    menu_option(&mut draw_batch, 17, y, rltk::to_cp437('L'), "Level up", None);
+    menu_option(&mut draw_batch, 27, y, rltk::to_cp437('L'), "Level up", None);
     y += 2;
-    menu_option(&mut draw_batch, 17, y, rltk::to_cp437('M'), "Make rich", None);
+    menu_option(&mut draw_batch, 27, y, rltk::to_cp437('M'), "Make rich", None);
     y += 2;
-    menu_option(&mut draw_batch, 17, y, rltk::to_cp437('Q'), "Quest complete", None);
+    menu_option(&mut draw_batch, 27, y, rltk::to_cp437('Q'), "Quest complete", None);
     y += 2;
-    menu_option(&mut draw_batch, 17, y, rltk::to_cp437('A'), "Set attributes", None);
+    menu_option(&mut draw_batch, 27, y, rltk::to_cp437('A'), "Set attributes", None);
     y += 2;
-    menu_option(&mut draw_batch, 17, y, rltk::to_cp437('D'), "Damage Self", None);
+    menu_option(&mut draw_batch, 27, y, rltk::to_cp437('D'), "Damage Self", None);
 
     draw_batch.submit(1000).expect("Draw batch submission failed");
 

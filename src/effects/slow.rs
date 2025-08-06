@@ -4,8 +4,9 @@ use crate::components::{StatusEffect, StatusEffectChanged, Slow, Duration, Name,
 
 pub fn apply_slow(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     if let EffectType::Slow{initiative_penalty, duration} = &effect.effect_type {
-        delete_duplicate_effect(ecs, target);
+        if *initiative_penalty == 0.0 { return; }
 
+        delete_duplicate_effect(ecs, target);
         ecs.create_entity()
             .with(StatusEffect{ target, is_debuff: *initiative_penalty > 0.0 })
             .with(Slow{ initiative_penalty: *initiative_penalty })

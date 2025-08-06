@@ -18,8 +18,8 @@ pub fn show_levelup_menu(gs: &mut State, ctx: &mut Rltk) -> LevelUpMenuResult {
     let player_class = character_classes.get(*player).unwrap();
     let level_up = level_ups.get_mut(*player).unwrap();
     let mut draw_batch = DrawBatch::new();
-    
-    draw_batch.draw_box(Rect::with_size(0, 0, 99, 79), ColorPair::new(white(), black()));
+
+    draw_batch.draw_box(Rect::with_size(0, 0, 119, 99), ColorPair::new(white(), black()));
     draw_batch.print_color(Point::new(2, 2), "Level Up", ColorPair::new(yellow(), black()));
     draw_batch.print_color(
         Point::new(2, 4),
@@ -37,7 +37,7 @@ pub fn show_levelup_menu(gs: &mut State, ctx: &mut Rltk) -> LevelUpMenuResult {
         draw_passive_choice(&mut draw_batch, &gs.ecs, &mut y, passive, format!("({})", selection), passive_selected(level_up, passive));
         j += 1;
     }
-    draw_batch.print_color(Point::new(82, 77), "ENTER when done", ColorPair::new(yellow(), black()));
+    draw_batch.print_color(Point::new(102, 97), "ENTER when done", ColorPair::new(yellow(), black()));
 
     draw_batch.submit(5000).expect("Draw batch submission failed");
 

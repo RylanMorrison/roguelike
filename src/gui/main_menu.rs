@@ -25,16 +25,16 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
 
         if save_exists {
             if selection == MainMenuSelection::LoadGame {
-                draw_batch.print_color_centered(25, "Load Game", ColorPair::new(magenta(), black()));
+                draw_batch.print_color_centered(28, "Load Game", ColorPair::new(magenta(), black()));
             } else {
-                draw_batch.print_color_centered(25, "Load Game", ColorPair::new(white(), black()));
+                draw_batch.print_color_centered(28, "Load Game", ColorPair::new(white(), black()));
             }
         }
 
         if selection == MainMenuSelection::Quit {
-            draw_batch.print_color_centered(26, "Quit", ColorPair::new(magenta(), black()));
+            draw_batch.print_color_centered(32, "Quit", ColorPair::new(magenta(), black()));
         } else {
-            draw_batch.print_color_centered(26, "Quit", ColorPair::new(white(), black()));
+            draw_batch.print_color_centered(32, "Quit", ColorPair::new(white(), black()));
         }
 
         draw_batch.submit(2000).expect("Draw batch submission failed");

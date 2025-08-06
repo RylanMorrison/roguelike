@@ -639,6 +639,7 @@
                         "area_of_effect": "4",
                         "stun": "2",
                         "slow": "12",
+                        "duration": "6",
                         "particle" : "*;#00FFFF;400.0",
                         "repeat": "2"
                     }
@@ -3633,6 +3634,10 @@
                 "bg": "#000000",
                 "order": 2
             },
+            "map_marker": {
+                "glyph": "?",
+                "fg": "#5cc9e4"
+            },
             "loot_table": "Epic Chest",
             "gold": "6d10+4",
             "capacity": 10
@@ -3644,6 +3649,10 @@
                 "fg": "#f2ee10",
                 "bg": "#000000",
                 "order": 2
+            },
+            "map_marker": {
+                "glyph": "?",
+                "fg": "#f2ee10"
             },
             "loot_table": "Legendary Chest",
             "gold": "8d10+10",

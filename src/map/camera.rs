@@ -4,7 +4,7 @@ use crate::tile_glyph;
 use crate::{Map, Position, Renderable, World, TileSize, Target};
 
 const SHOW_BOUNDARIES: bool = true;
-const WINDOW_BOUNDARIES: (i32, i32) = (68, 64);
+const WINDOW_BOUNDARIES: (i32, i32) = (88, 80);
 
 pub fn get_screen_bounds(ecs: &World, _ctx: &mut Rltk) -> (i32, i32, i32, i32) {
     let player_pos = ecs.fetch::<Point>();
@@ -71,7 +71,7 @@ pub fn render_camera(ecs: &World, ctx: &mut Rltk) {
                     if map.visible_tiles[idx] {
                         let entity_screen_x = tile_x - min_x;
                         let entity_screen_y = tile_y - min_y;
-                        if entity_screen_x > 0 && entity_screen_x < map_width 
+                        if entity_screen_x > 0 && entity_screen_x < map_width
                         && entity_screen_y > 0 && entity_screen_y < map_height {
                             draw_batch.set(
                                 Point::new(entity_screen_x + 1, entity_screen_y + 1),
