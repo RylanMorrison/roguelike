@@ -20,7 +20,7 @@ impl DoorPlacement {
             for hall in halls.iter() {
                 if hall.len() > 2 { // ignore tiny corridors
                     if self.door_possible(build_data, hall[0]) {
-                        build_data.spawn_list.push((hall[0], "Door".to_string()));
+                        build_data.map.spawn_list.push((hall[0], "Door".to_string()));
                     }
                 }
             }
@@ -28,7 +28,7 @@ impl DoorPlacement {
             let tiles = build_data.map.tiles.clone();
             for (i, tile) in tiles.iter().enumerate() {
                 if *tile == TileType::Floor && self.door_possible(build_data, i) && rng::roll_dice(1,3) == 1 {
-                    build_data.spawn_list.push((i, "Door".to_string()));
+                    build_data.map.spawn_list.push((i, "Door".to_string()));
                 }
             }
         }
@@ -36,16 +36,16 @@ impl DoorPlacement {
 
     fn door_possible(&self, build_data: &mut BuilderMap, idx: usize) -> bool {
         let mut blocked = false;
-        for spawn in build_data.spawn_list.iter() {
+        for spawn in build_data.map.spawn_list.iter() {
             if spawn.0 == idx { blocked = true; }
         }
         if blocked { return false; }
-        
+
         let x = idx % build_data.map.width as usize;
         let y = idx / build_data.map.width as usize;
 
         // check for east-west doors
-        if build_data.map.tiles[idx] == TileType::Floor 
+        if build_data.map.tiles[idx] == TileType::Floor
             && (x > 1 && build_data.map.tiles[idx-1] == TileType::Floor)
             && (x < build_data.map.width as usize - 2 && build_data.map.tiles[idx+1] == TileType::Floor)
             && (y > 1 && build_data.map.tiles[idx - build_data.map.width as usize] == TileType::Wall)

@@ -40,7 +40,6 @@ impl BspInteriorBuilder {
                     }
                 }
             }
-            build_data.take_snapshot();
         }
 
         // build corridors
@@ -52,7 +51,6 @@ impl BspInteriorBuilder {
             let end_x = next_room.x1 + (rng::roll_dice(1, i32::abs(next_room.x1 - next_room.x2))-1);
             let end_y = next_room.y1 + (rng::roll_dice(1, i32::abs(next_room.y1 - next_room.y2))-1);
             draw_corridor(&mut build_data.map, start_x, start_y, end_x, end_y, 1);
-            build_data.take_snapshot();
         }
         build_data.rooms = Some(rooms);
     }
@@ -67,7 +65,7 @@ impl BspInteriorBuilder {
         let height = rect.y2 - rect.y1;
         let half_width = width / 2;
         let half_height = height / 2;
-        
+
         let split = rng::roll_dice(1, 2);
         match split {
             1 => { // horizontal split

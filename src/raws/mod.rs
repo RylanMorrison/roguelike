@@ -10,6 +10,7 @@ mod chest_structs;
 mod character_class_structs;
 mod quest_structs;
 mod species_structs;
+mod map_structs;
 mod rawmaster;
 
 pub use item_structs::*;
@@ -24,6 +25,7 @@ pub use chest_structs::*;
 pub use character_class_structs::*;
 pub use quest_structs::*;
 pub use species_structs::*;
+pub use map_structs::*;
 pub use rawmaster::*;
 
 use serde::Deserialize;
@@ -89,7 +91,8 @@ pub struct Raws {
     pub chests: Vec<ChestData>,
     pub character_classes: Vec<CharacterClassData>,
     pub quests: Vec<QuestData>,
-    pub species: Vec<SpeciesData>
+    pub species: Vec<SpeciesData>,
+    pub maps: Vec<MapData>
 }
 
 pub fn load_raws() {

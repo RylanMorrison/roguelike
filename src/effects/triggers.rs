@@ -1,8 +1,8 @@
 use rltk::RGB;
 use specs::prelude::*;
 use super::*;
-use crate::{determine_roll, gamelog, raws, Attributes, Chest, Confusion, Consumable, Damage, DamageOverTime, Duration, Food, Fortress, 
-    FrostShield, Healing, Item, KnownAbility, LootTable, MagicMapping, Map, Name, Pools, Rage, RestoresMana, RunState, SelfDamage, 
+use crate::{determine_roll, gamelog, raws, Attributes, Chest, Confusion, Consumable, Damage, DamageOverTime, Duration, Food, Fortress,
+    FrostShield, Healing, Item, KnownAbility, LootTable, MagicMapping, Map, Name, Pools, Rage, RestoresMana, RunState, SelfDamage,
     SingleActivation, Skills, Slow, SpawnParticleBurst, SpawnParticleLine, Stun, TeleportTo, TownPortal, ItemQuality};
 
 pub fn item_trigger(ecs: &mut World, creator: Option<Entity>, item_entity: Entity, targets: &Targets) {
@@ -18,7 +18,7 @@ pub fn item_trigger(ecs: &mut World, creator: Option<Entity>, item_entity: Entit
             return;
         }
     }
-    
+
     let did_something = event_trigger(ecs, creator, item_entity, targets);
 
     // delete consumables after use
@@ -102,7 +102,7 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
         if let Some(start_pos) = targeting::find_item_position(ecs, entity, creator) {
             match targets {
                 Targets::Tile{tile_idx} => spawn_line_particles(ecs, start_pos, *tile_idx, particle),
-                Targets::Tiles{tiles} => tiles.iter().for_each(|tile_idx| spawn_line_particles(ecs, start_pos, *tile_idx, particle)), 
+                Targets::Tiles{tiles} => tiles.iter().for_each(|tile_idx| spawn_line_particles(ecs, start_pos, *tile_idx, particle)),
                 Targets::Single{target} => {
                     if let Some(end_pos) = entity_position(ecs, *target) {
                         spawn_line_particles(ecs, start_pos, end_pos, particle);
@@ -142,7 +142,7 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
     // town portal
     if ecs.read_storage::<TownPortal>().get(entity).is_some() {
         let map = ecs.fetch::<Map>();
-        if map.depth == 0 {
+        if map.is_town {
             gamelog::Logger::new().append("You are already in town, the scroll has no effect.").log();
         } else {
             gamelog::Logger::new().append("You are teleported back to town.").log();
@@ -250,7 +250,7 @@ fn event_trigger(ecs: &mut World, creator: Option<Entity>, entity: Entity, targe
             EffectType::TeleportTo {
                 x: teleport.x,
                 y: teleport.y,
-                depth: teleport.depth,
+                map_name: teleport.map_name.clone(),
                 player_only: teleport.player_only
             },
             targets.clone()

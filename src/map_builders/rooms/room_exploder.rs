@@ -32,15 +32,11 @@ impl RoomExploder {
                     let mut drunk_y = start.1;
 
                     let mut drunk_life = 20;
-                    let mut did_something = false;
 
                     while drunk_life > 0 {
                         let drunk_idx = build_data.map.xy_idx(drunk_x, drunk_y);
-                        if build_data.map.tiles[drunk_idx] == TileType::Wall {
-                            did_something = true;
-                        }
                         paint(&mut build_data.map, Symmetry::None, 1, drunk_x, drunk_y);
-                        build_data.map.tiles[drunk_idx] = TileType::DownStairs;
+                        build_data.map.tiles[drunk_idx] = TileType::Placeholder;
 
                         let stagger_direction = rng::roll_dice(1, 4);
                         match stagger_direction {
@@ -51,12 +47,9 @@ impl RoomExploder {
                         }
                         drunk_life -= 1;
                     }
-                    if did_something {
-                        build_data.take_snapshot();
-                    }
 
                     for t in build_data.map.tiles.iter_mut() {
-                        if *t == TileType::DownStairs {
+                        if *t == TileType::Placeholder {
                             *t = TileType::Floor;
                         }
                     }

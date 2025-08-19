@@ -16,9 +16,9 @@ impl CullUnreachable {
 
     fn build(&mut self, build_data: &mut BuilderMap) {
         // use central starting point for culling unreachable areas
-        AreaStartingPosition::new(XStart::CENTER, YStart::CENTER).build_map(build_data);
+        AreaStartingPosition::new(XStart::CENTER, YStart::CENTER, true).build_map(build_data);
 
-        let starting_pos = build_data.starting_position.as_ref().unwrap().clone();
+        let starting_pos = build_data.map.starting_position.as_ref().unwrap().clone();
         let start_idx = build_data.map.xy_idx(
             starting_pos.x,
             starting_pos.y

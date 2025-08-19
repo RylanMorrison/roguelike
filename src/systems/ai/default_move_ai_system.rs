@@ -6,7 +6,7 @@ use crate::spatial::is_blocked;
 pub struct DefaultMoveAI {}
 
 impl<'a> System<'a> for DefaultMoveAI {
-    type SystemData = ( 
+    type SystemData = (
         WriteStorage<'a, MyTurn>,
         WriteStorage<'a, MoveMode>,
         WriteStorage<'a, Position>,
@@ -65,7 +65,7 @@ impl<'a> System<'a> for DefaultMoveAI {
                         let target_x = rng::roll_dice(1, map.width - 2);
                         let target_y = rng::roll_dice(1, map.height - 2);
                         let idx = map.xy_idx(target_x, target_y);
-                        if tile_walkable(map.tiles[idx]) {
+                        if tile_walkable(&map.tiles[idx]) {
                             // store the path to the location as the new path if possible to walk to the location
                             let path = rltk::a_star_search(
                                 map.xy_idx(pos.x, pos.y) as i32,

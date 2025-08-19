@@ -34,7 +34,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
     let vendors = ecs.read_storage::<Vendor>();
     let chests = ecs.read_storage::<Chest>();
     let quest_givers = ecs.read_storage::<QuestGiver>();
-    
+
     for (entity, _player, pos, viewshed) in (&entities, &players, &mut positions, &mut viewsheds).join() {
         if pos.x + delta_x < 1 || pos.x + delta_x > map.width-1 || pos.y + delta_y < 1 || pos.y + delta_y > map.height-1 { return RunState::AwaitingInput; }
         let destination_idx = map.xy_idx(pos.x + delta_x, pos.y + delta_y);
@@ -76,7 +76,7 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) -> RunState 
                     return Some(RunState::Ticking);
                 }
             }
-            
+
             if let Some(door) = doors.get_mut(potential_target) {
                 if !door.open {
                     door.open = true;
@@ -284,9 +284,9 @@ pub fn try_transition_level(ecs: &mut World) -> RunState {
     let map = ecs.fetch::<Map>();
     let player_idx = map.xy_idx(player_pos.x, player_pos.y);
 
-    match map.tiles[player_idx] {
-        TileType::DownStairs => RunState::NextLevel,
-        TileType::UpStairs => RunState::PreviousLevel,
+    match &map.tiles[player_idx] {
+        TileType::NextArea { map_name } | TileType::PreviousArea { map_name }
+            => RunState::TransitionMap { map_name: map_name.to_string() },
         _ => {
             gamelog::Logger::new().append("There is nowhere to go from here.").log();
             RunState::Ticking

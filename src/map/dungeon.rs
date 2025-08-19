@@ -1,129 +1,65 @@
 use std::collections::HashMap;
 use serde::{Serialize, Deserialize};
 use specs::prelude::*;
-use super::{World, Map, Point, Entity, TileType};
-use crate::components::{Position, Viewshed, OtherLevelPosition};
-use crate::map_builders::level_builder;
+use super::{World, Map, Point, Entity};
+use crate::{components::{OtherLevelPosition, Position, Viewshed}, spawner};
 
-#[derive(Default, Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct MasterDungeonMap {
-    maps: HashMap<i32, Map>
+    maps: HashMap<String, Map>,
+    visited: Vec<String>
 }
 
 impl MasterDungeonMap {
     pub fn new() -> MasterDungeonMap {
-        MasterDungeonMap{ maps: HashMap::new() }
+        MasterDungeonMap {
+            maps: HashMap::new(),
+            visited: Vec::new()
+        }
     }
 
     pub fn store_map(&mut self, map: &Map) {
-        self.maps.insert(map.depth, map.clone());
+        self.maps.insert(map.name.clone(), map.clone());
     }
 
-    pub fn get_map(&self, depth: i32) -> Option<Map> {
-        if self.maps.contains_key(&depth) {
-            let result = self.maps[&depth].clone();
+    pub fn get_map(&self, name: &str) -> Option<Map> {
+        if self.maps.contains_key(name) {
+            let result = self.maps[name].clone();
             return Some(result)
         }
         None
     }
 
+    pub fn store_visited(&mut self, map_name: &str) {
+        self.visited.push(map_name.to_string());
+    }
+
+    pub fn has_visited(&self, map_name: &str) -> bool {
+        self.visited.contains(&map_name.to_string())
+    }
+
     pub fn reset(&mut self) {
-        self.maps = HashMap::new();
+        self.visited = Vec::new();
     }
 }
 
-pub fn level_transition(ecs: &mut World, new_depth: i32, offset: i32) -> Option<Vec<Map>> {
-    let dungeon_master = ecs.read_resource::<MasterDungeonMap>();
+fn change_player_position(ecs: &mut World, new_position: (i32, i32)) {
+    let (new_x, new_y) = new_position;
 
-    if dungeon_master.get_map(new_depth).is_some() {
-        std::mem::drop(dungeon_master); // drop to remove the borrow on ecs
-        transition_to_existing_map(ecs, new_depth, offset);
-        None
-    } else {
-        std::mem::drop(dungeon_master);
-        Some(transition_to_new_map(ecs, new_depth))
+    let mut player_point = ecs.write_resource::<Point>();
+    player_point.x = new_x;
+    player_point.y = new_y;
+
+    let player_entity = ecs.read_resource::<Entity>();
+    let mut positions = ecs.write_storage::<Position>();
+    if let Some(player_position) = positions.get_mut(*player_entity) {
+        player_position.x = new_x;
+        player_position.y = new_y;
     }
 }
 
-/// Transition the player down to a new depth
-fn transition_to_new_map(ecs: &mut World, new_depth: i32) -> Vec<Map> {
-    let mut builder = level_builder(new_depth, 100, 80);
-    builder.build_map();
-
-    if new_depth > 0 {
-        if let Some(pos) = &builder.build_data.starting_position {
-            let up_idx = builder.build_data.map.xy_idx(pos.x, pos.y);
-            builder.build_data.map.tiles[up_idx] = TileType::UpStairs;
-        }
-    }
-    
-    let mapgen_history = builder.build_data.history.clone();
-    let player_start;
-    {
-        let mut worldmap_resource = ecs.write_resource::<Map>();
-        if new_depth > 4 {
-            builder.build_data.map.name = format!("Depth: {}", new_depth - 1);
-        }
-        *worldmap_resource = builder.build_data.map.clone();
-        player_start = builder.build_data.starting_position.as_mut().unwrap().clone();
-    }
-
-    builder.spawn_entites(ecs);
-
-    // Place the player and update resources
-    let (player_x, player_y) = (player_start.x, player_start.y);
-    let mut player_position = ecs.write_resource::<Point>();
-    *player_position = Point::new(player_x, player_y);
-    let mut position_components = ecs.write_storage::<Position>();
+fn reset_player_visibility(ecs: &mut World) {
     let player_entity = ecs.fetch::<Entity>();
-    let player_pos_comp = position_components.get_mut(*player_entity);
-    if let Some(player_pos_comp) = player_pos_comp {
-        player_pos_comp.x = player_x;
-        player_pos_comp.y = player_y;
-    }
-
-    if builder.build_data.map.depth > 0 {
-        // reset the player's visibility
-        let mut viewshed_components = ecs.write_storage::<Viewshed>();
-        let player_viewshed = viewshed_components.get_mut(*player_entity);
-        if let Some(player_viewshed) = player_viewshed {
-            player_viewshed.dirty = true;
-        }
-    }
-
-    let mut dungeon_master = ecs.write_resource::<MasterDungeonMap>();
-    dungeon_master.store_map(&builder.build_data.map);
-
-    mapgen_history
-}
-
-/// Transition the player back up to a previous depth
-fn transition_to_existing_map(ecs: &mut World, new_depth: i32, offset: i32) {
-    let mut dungeon_master = ecs.write_resource::<MasterDungeonMap>();
-    let map = dungeon_master.get_map(new_depth).unwrap();
-    let mut worldmap_resource = ecs.write_resource::<Map>();
-    let player_entity = ecs.fetch::<Entity>();
-
-    // Place the player and update resources
-    let w = map.width;
-    let stair_type = if offset < 0 { TileType::DownStairs } else { TileType::UpStairs };
-    for (idx, tt) in map.tiles.iter().enumerate() {
-        if *tt == stair_type {
-            // put the player on the downstairs tile
-            let mut player_point = ecs.write_resource::<Point>();
-            *player_point = Point::new(idx as i32 % w, idx as i32 / w);
-            let mut positions = ecs.write_storage::<Position>();
-            let player_pos = positions.get_mut(*player_entity);
-            if let Some(player_pos) = player_pos {
-                player_pos.x = idx as i32 % w;
-                player_pos.y = idx as i32 / w;
-            }
-        }
-    }
-    dungeon_master.store_map(&worldmap_resource.clone());
-    *worldmap_resource = map;
-
-    // reset player visibility
     let mut viewsheds = ecs.write_storage::<Viewshed>();
     let player_viewshed = viewsheds.get_mut(*player_entity);
     if let Some(viewshed) = player_viewshed {
@@ -131,12 +67,59 @@ fn transition_to_existing_map(ecs: &mut World, new_depth: i32, offset: i32) {
     }
 }
 
+pub fn transition_map(ecs: &mut World, map_name: &str, player_position: Option<(i32, i32)>) {
+    let dungeon_master = ecs.read_resource::<MasterDungeonMap>();
+    if let Some(new_map) = dungeon_master.get_map(&map_name) {
+        let visited = dungeon_master.has_visited(&new_map.name);
+        std::mem::drop(dungeon_master);
+
+        // Place the player and update resources
+        let current_map_name = ecs.read_resource::<Map>().name.clone();
+        if let Some(position) = player_position {
+            change_player_position(ecs, position);
+        } else if let Some(entrance_point) = new_map.transitions.get(&current_map_name) {
+            change_player_position(ecs, (entrance_point.x, entrance_point.y));
+        } else if let Some(start_position) = &new_map.starting_position {
+            change_player_position(ecs, (start_position.x, start_position.y));
+        }
+        reset_player_visibility(ecs);
+
+        // update stored map and current map
+        let mut current_map = ecs.write_resource::<Map>();
+        let mut dungeon_master = ecs.write_resource::<MasterDungeonMap>();
+        dungeon_master.store_map(&current_map);
+        *current_map = new_map.clone();
+        std::mem::drop(current_map);
+        std::mem::drop(dungeon_master);
+
+        if visited {
+            thaw_level_entities(ecs);
+        } else {
+            spawn_entities(ecs);
+            let mut dungeon_master = ecs.write_resource::<MasterDungeonMap>();
+            dungeon_master.visited.push(new_map.name);
+        }
+    }
+}
+
+pub fn spawn_entities(ecs: &mut World) {
+    let spawn_list = ecs.fetch::<Map>().spawn_list.clone();
+    for (location, name) in spawn_list.iter() {
+        spawner::spawn_entity(ecs, &(location, name));
+    }
+
+    // update the stored map
+    let map = ecs.fetch::<Map>();
+    let mut dungeon_master = ecs.fetch_mut::<MasterDungeonMap>();
+    dungeon_master.store_map(&map);
+}
+
 pub fn freeze_level_entities(ecs: &mut World) {
     let entities = ecs.entities();
     let mut positions = ecs.write_storage::<Position>();
     let mut other_level_positions = ecs.write_storage::<OtherLevelPosition>();
     let player_entity = ecs.fetch::<Entity>();
-    let map_depth = ecs.fetch::<Map>().depth;
+    let map = ecs.fetch::<Map>();
 
     // store level positions of entities as OtherLevelPositions
     let mut pos_to_delete: Vec<Entity> = Vec::new();
@@ -145,7 +128,7 @@ pub fn freeze_level_entities(ecs: &mut World) {
             other_level_positions.insert(entity, OtherLevelPosition{
                 x: pos.x,
                 y: pos.y,
-                depth: map_depth
+                map_name: map.name.clone()
             }).expect("Failed to insert");
             pos_to_delete.push(entity);
         }
@@ -162,12 +145,12 @@ pub fn thaw_level_entities(ecs: &mut World) {
     let mut positions = ecs.write_storage::<Position>();
     let mut other_level_positions = ecs.write_storage::<OtherLevelPosition>();
     let player_entity = ecs.fetch::<Entity>();
-    let map_depth = ecs.fetch::<Map>().depth;
+    let map = ecs.fetch::<Map>();
 
     // restore level positions from OtherLevelPositions
     let mut pos_to_delete: Vec<Entity> = Vec::new();
     for (entity, pos) in (&entities, &other_level_positions).join() {
-        if entity != *player_entity && pos.depth == map_depth {
+        if entity != *player_entity && pos.map_name == map.name {
             positions.insert(entity, Position{ x: pos.x, y: pos.y }).expect("Failed to insert");
             pos_to_delete.push(entity);
         }

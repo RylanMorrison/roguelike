@@ -8,8 +8,9 @@ mod dungeon;
 pub mod camera;
 use super::spatial;
 pub use tile_type::{TileType, tile_walkable, tile_opaque, tile_cost};
-pub use dungeon::{MasterDungeonMap, level_transition, freeze_level_entities, thaw_level_entities};
+pub use dungeon::{MasterDungeonMap, transition_map, spawn_entities, freeze_level_entities, thaw_level_entities};
 pub use themes::*;
+use crate::{raws::MapData, Position};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Marker {
@@ -18,43 +19,55 @@ pub struct Marker {
     pub bg: RGB
 }
 
-#[derive(Default, Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct Map {
     pub name: String,
+    pub starting_position: Option<Position>,
+    pub spawn_list: Vec<(usize, String)>,
     pub tiles: Vec<TileType>,
+    pub transitions: HashMap<String, Point>,
     pub width: i32,
     pub height: i32,
     pub revealed_tiles: Vec<bool>,
     pub visible_tiles: Vec<bool>,
-    pub depth: i32,
+    pub depth: Option<i32>,
+    pub area_level: i32,
     pub bloodstains: HashSet<usize>,
     pub view_blocked: HashSet<usize>,
-    pub outdoors: bool,
+    pub indoors: bool,
     pub light: Vec<RGB>,
-    pub markers: HashMap<usize, Marker>
+    pub markers: HashMap<usize, Marker>,
+    pub is_start: bool,
+    pub is_town: bool
 }
 
 impl Map {
     // generates an empty map consisting of solid walls
-    pub fn new<S: ToString>(name: S, new_depth: i32, width: i32, height: i32) -> Map {
-        let map_tile_count = (width*height) as usize;
+    pub fn new(map_data: &MapData) -> Map {
+        let map_tile_count = (map_data.width*map_data.height) as usize;
         spatial::set_size(map_tile_count);
-        Map{
-            name: name.to_string(),
+        Map {
+            name: map_data.name.to_string(),
+            starting_position: None,
+            spawn_list: Vec::new(),
             tiles: vec![TileType::Wall; map_tile_count],
-            width,
-            height,
+            transitions: HashMap::new(),
+            width: map_data.width,
+            height: map_data.height,
             revealed_tiles: vec![false; map_tile_count],
             visible_tiles: vec![false; map_tile_count],
-            depth: new_depth,
+            depth: None,
+            area_level: map_data.area_level,
             bloodstains: HashSet::new(),
             view_blocked: HashSet::new(),
-            outdoors: true,
+            indoors: map_data.indoors,
             light: vec![RGB::named(rltk::BLACK); map_tile_count],
-            markers: HashMap::new()
+            markers: HashMap::new(),
+            is_start: map_data.start,
+            is_town: map_data.town
         }
     }
-    
+
     pub fn xy_idx(&self, x: i32, y: i32) -> usize {
         (y as usize * self.width as usize) + x as usize
     }
@@ -101,13 +114,20 @@ impl Map {
     pub fn clear_content_index(&mut self) {
         spatial::clear();
     }
+
+    pub fn add_transition(&mut self, map_name: &str, point: Point) {
+        if self.transitions.contains_key(map_name) {
+            rltk::console::log(format!("WARNING - Transition already defined for {} - {}", self.name, map_name));
+        }
+        self.transitions.insert(map_name.to_string(), point);
+    }
 }
 
 impl BaseMap for Map {
     // each method here is an implementation of a method in BaseMap
     fn is_opaque(&self, idx: usize) -> bool {
         if idx > 0 && idx < self.tiles.len() {
-            return tile_opaque(self.tiles[idx]) || self.view_blocked.contains(&idx)
+            return tile_opaque(&self.tiles[idx]) || self.view_blocked.contains(&idx)
         }
         true
     }
@@ -124,7 +144,7 @@ impl BaseMap for Map {
         let x = idx as i32 % self.width;
         let y = idx as i32 / self.width;
         let w = self.width as usize;
-        let tt = self.tiles[idx];
+        let tt = &self.tiles[idx];
         const DIAGONAL_COST: f32 = 1.45;
 
         // cardinal directions

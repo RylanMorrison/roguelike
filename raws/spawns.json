@@ -1,4 +1,56 @@
 {
+    "maps": [
+        {
+            "name": "Landfall",
+            "width": 100,
+            "height": 80,
+            "area_level": 1,
+            "start": true,
+            "town": true,
+            "next_maps": ["Forest"]
+        },
+        {
+            "name": "Forest",
+            "width": 100,
+            "height": 80,
+            "area_level": 1,
+            "prev_maps": ["Landfall"],
+            "next_maps": ["Dark Forest"]
+        },
+        {
+            "name": "Dark Forest",
+            "width": 100,
+            "height": 80,
+            "area_level": 2,
+            "prev_maps": ["Forest"],
+            "next_maps": ["Orc Camp"]
+        },
+        {
+            "name": "Orc Camp",
+            "width": 100,
+            "height": 80,
+            "area_level": 2,
+            "prev_maps": ["Dark Forest"],
+            "next_maps": ["Warboss Den"]
+        },
+        {
+            "name": "Warboss Den",
+            "width": 100,
+            "height": 80,
+            "area_level": 3,
+            "indoors": true,
+            "prev_maps": ["Orc Camp"],
+            "next_maps": ["Caverns"]
+        },
+        {
+            "name": "Caverns",
+            "width": 100,
+            "height": 80,
+            "area_level": 3,
+            "indoors": true,
+            "prev_maps": ["Warboss Den"]
+        }
+    ],
     "quests": [
         {
             "name": "Cold the bold",
@@ -21,7 +73,7 @@
         {
             "name": "This is a stick up",
             "description": "Bandits are terrorising villagers moving through the forest. Send them a message.",
-            "rewards": [ 
+            "rewards": [
                 {
                     "gold": "5d10+100",
                     "xp": 1000
@@ -45,7 +97,7 @@
                     "xp": 1600
                 }
             ],
-            "requirements": [ 
+            "requirements": [
                 {
                     "goal": "kill_count",
                     "targets": ["Wolf"],
@@ -98,22 +150,93 @@
         }
     ],
 
-    "spawn_table": [ 
-        { "name": "Common Chest", "weight": 3, "min_depth": 3, "max_depth": 100 },
-        { "name": "Rare Chest", "weight": 2, "min_depth": 5, "max_depth": 100 },
-        { "name": "Wolf", "weight": 13, "min_depth": 2, "max_depth": 3 },
-        { "name": "Bandit", "weight": 10, "min_depth": 1, "max_depth": 2 },
-        { "name": "Kobold", "weight": 12, "min_depth": 1, "max_depth": 3 },
-        { "name": "Large Spider", "weight": 6, "min_depth": 2, "max_depth": 3 },
-        { "name": "Goblin Warrior", "weight": 10, "min_depth": 2, "max_depth": 5 },
-        { "name": "Goblin Archer", "weight": 2, "min_depth": 2, "max_depth": 5 },
-        { "name": "Orc Warrior", "weight": 10, "min_depth": 3, "max_depth": 5 },
-        { "name": "Orc Archer", "weight": 2, "min_depth": 3, "max_depth": 5 },
-        { "name": "Gelatinous Cube", "weight": 10, "min_depth": 6, "max_depth": 7 },
-        { "name": "Lizard Warrior", "weight": 3, "min_depth": 6, "max_depth": 100 },
-        { "name": "Ogre", "weight": 2, "min_depth": 4, "max_depth": 100 },
-        { "name": "Imp", "weight": 3, "min_depth": 8, "max_depth": 100, "add_map_depth_to_weight": true },
-        { "name": "Demon", "weight": 1, "min_depth": 9, "max_depth": 100, "add_map_depth_to_weight": true }
+    "spawn_table": [
+        {
+            "name": "Common Chest",
+            "weights": {
+                "all": 2
+            }
+        },
+        {
+            "name": "Rare Chest",
+            "weights": {
+                "all": 1
+            }
+        },
+        {
+            "name": "Wolf",
+            "weights": {
+                "Forest": 10,
+                "Dark Forest": 14,
+                "Orc Camp": 4
+            }
+        },
+        {
+            "name": "Bandit",
+            "weights": {
+                "Forest": 10,
+                "Dark Forest": 6
+            }
+        },
+        {
+            "name": "Kobold",
+            "weights": {
+                "Forest": 12,
+                "Dark Forest": 8
+            }
+        },
+        {
+            "name": "Large Spider",
+            "weights": {
+                "Dark Forest": 4,
+                "Caverns": 12
+            }
+        },
+        {
+            "name": "Goblin Warrior",
+            "weights": {
+                "Dark Forest": 6,
+                "Orc Camp": 12,
+                "Warboss Den": 10,
+                "Caverns": 6
+            }
+        },
+        {
+            "name": "Goblin Archer",
+            "weights": {
+                "Orc Camp": 8 ,
+                "Warboss Den": 6,
+                "Caverns": 6
+            }
+        },
+        {
+            "name": "Orc Warrior",
+            "weights": {
+                "Orc Camp": 10,
+                "Warboss Den": 12,
+                "Caverns": 8
+            }
+        },
+        {
+            "name": "Orc Archer",
+            "weights": {
+                "Orc Camp": 6,
+                "Warboss Den": 8,
+                "Caverns": 4
+            }
+        },
+        {
+            "name": "Gelatinous Cube",
+            "weights": {
+                "Caverns": 14
+            }
+        },
+        {
+            "name": "Ogre",
+            "weights": {
+                "Warboss Den": 4
+            }
+        }
     ],
 
     "loot_tables": [
@@ -122,7 +245,7 @@
             "drops": [
                 { "name": "Hide", "weight": 4 },
                 { "name": "Meat", "weight": 10 }
-            ] 
+            ]
         },
         {
             "name": "Lesser Monster",
@@ -992,7 +1115,7 @@
             ]
         }
     ],
-    
+
     "items": [
         {
             "name": "Meat",
@@ -1174,7 +1297,7 @@
             "vendor_category": "magic",
             "class": "common"
         },
-        
+
         {
             "name": "Magic Mapping Scroll",
             "renderable": {
@@ -2113,7 +2236,7 @@
             "initiative_penalty": 4,
             "class": "common"
         },
-            
+
         {
             "name": "Leather Helmet",
             "renderable": {
@@ -2711,7 +2834,7 @@
             "natural" : {
                 "attacks" : [
                     { "name" : "bite", "hit_bonus" : 0, "damage" : "1d4" }
-                ]   
+                ]
             },
             "species": "Vermin"
         },
@@ -2737,7 +2860,7 @@
                 "armour_class": 12,
                 "attacks" : [
                     { "name" : "bite", "hit_bonus" : 1, "damage" : "1d6" }
-                ]   
+                ]
             },
             "loot_table": "Animal",
             "species": "Canine"
@@ -2817,8 +2940,8 @@
             "attributes": {
                 "constitution": 9
             },
-            "equipped": [ 
-                "Dagger", 
+            "equipped": [
+                "Dagger",
                 "Leather Armour",
                 "Leather Boots",
                 "Leather Gloves"
@@ -3284,7 +3407,7 @@
             "faction": "Townsfolk",
             "quips": [
                 "Lovely day, eh?",
-                "Nice weather.", 
+                "Nice weather.",
                 "Hello!"
             ],
             "attributes": {},
@@ -3304,7 +3427,7 @@
             "faction": "Townsfolk",
             "quips": [
                 "Lovely day, eh?",
-                "Nice weather.", 
+                "Nice weather.",
                 "Hello!"
             ],
             "attributes": {},
@@ -3342,9 +3465,9 @@
             "vision_range": 3,
             "movement": "static",
             "faction": "Townsfolk",
-            "quips": [ 
+            "quips": [
                 "Arrr!",
-                "Grog!", 
+                "Grog!",
                 "Booze!"
             ],
             "attributes": {},

@@ -47,10 +47,10 @@ pub fn show_quest_giver_menu(gs: &mut State, ctx: &mut Rltk, quest_giver: Entity
   let names = gs.ecs.read_storage::<Name>();
   let mut draw_batch = DrawBatch::new();
 
-  draw_batch.draw_box(Rect::with_size(0, 0, 99, 79), ColorPair::new(white(), black()));
-  draw_batch.draw_box(Rect::with_size(0, 0, 99, 4), ColorPair::new(white(), black()));
+  draw_batch.draw_box(Rect::with_size(0, 0, 119, 99), ColorPair::new(white(), black()));
+  draw_batch.draw_box(Rect::with_size(0, 0, 119, 4), ColorPair::new(white(), black()));
   draw_batch.set(Point::new(0, 4), ColorPair::new(white(), black()), to_cp437('├'));
-  draw_batch.set(Point::new(99, 4), ColorPair::new(white(), black()), to_cp437('┤'));
+  draw_batch.set(Point::new(119, 4), ColorPair::new(white(), black()), to_cp437('┤'));
   draw_batch.print_color(
     Point::new(2, 2),
     names.get(quest_giver).unwrap().name.clone(),
@@ -128,12 +128,12 @@ pub fn show_quest_giver_menu(gs: &mut State, ctx: &mut Rltk, quest_giver: Entity
     }
 
     if index > 0 {
-      draw_batch.print_color(Point::new(57, 77), "(p)", ColorPair::new(yellow(), black()));
-      draw_batch.print_color(Point::new(61, 77), "Previous quest", ColorPair::new(white(), black()));
+      draw_batch.print_color(Point::new(77, 97), "(p)", ColorPair::new(yellow(), black()));
+      draw_batch.print_color(Point::new(81, 97), "Previous quest", ColorPair::new(white(), black()));
     }
     if index < max_index {
-      draw_batch.print_color(Point::new(81, 77), "(n)", ColorPair::new(yellow(), black()));
-      draw_batch.print_color(Point::new(85, 77), "Next quest", ColorPair::new(white(), black()));
+      draw_batch.print_color(Point::new(101, 97), "(n)", ColorPair::new(yellow(), black()));
+      draw_batch.print_color(Point::new(105, 97), "Next quest", ColorPair::new(white(), black()));
     }
   }
 

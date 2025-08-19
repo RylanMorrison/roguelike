@@ -57,7 +57,6 @@ impl RoomDrawer {
                 1 => self.circle(build_data, room),
                 _ => self.rectangle(build_data, room)
             }
-            build_data.take_snapshot();
         }
     }
 }

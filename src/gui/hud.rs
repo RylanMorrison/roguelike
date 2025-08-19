@@ -1,7 +1,9 @@
 use specs::prelude::*;
 use rltk::prelude::*;
 use super::{black, blue, box_gray, cyan, draw_requirement, draw_map_tooltips, gold, green, light_gray, orange, red, white, yellow};
-use crate::{carry_capacity_lbs, player, player_xp_for_level, AbilityType, ActiveQuests, Attribute, Attributes, Consumable, Duration, Entity, Equipped, HungerClock, HungerState, InBackpack, Item, KnownAbilities, KnownAbility, Map, Name, Pools, Quest, Skill, Skills, StatusEffect};
+use crate::{carry_capacity_lbs, player_xp_for_level, AbilityType, ActiveQuests, Attribute, Attributes, Consumable, Duration, Entity,
+    Equipped, HungerClock, HungerState, InBackpack, Item, KnownAbilities, KnownAbility, Map, Name, Pools, Quest, Skill, Skills, StatusEffect
+};
 use crate::raws;
 use crate::gamelog;
 

@@ -1,7 +1,7 @@
 use specs::prelude::*;
 use specs_derive::*;
 /*
-    Latest specs_derive package is using old code for ConvertSaveLoad (see bottom of lib.rs in specs_derive) 
+    Latest specs_derive package is using old code for ConvertSaveLoad (see bottom of lib.rs in specs_derive)
     so can't completely switch from error::NoError to std::convert::Infallible yet
 */
 use specs::{Entity, saveload::{ConvertSaveload, Marker}, error::NoError};
@@ -12,7 +12,7 @@ use super::{attr_bonus, Map, MasterDungeonMap};
 use std::{collections::{BTreeMap, HashMap}, convert::Infallible};
 use crate::effects::{EffectType, Targets};
 
-#[derive(Component, Serialize, Deserialize, Clone)]
+#[derive(Component, Serialize, Deserialize, Clone, Debug)]
 pub struct Position {
     pub x: i32,
     pub y: i32,
@@ -479,7 +479,7 @@ pub struct Attributes {
 
 impl Attributes {
     pub fn default() -> Attributes {
-        Attributes { 
+        Attributes {
             strength: Attribute{ base: 11, item_modifiers: 0, status_effect_modifiers: 0, bonus: attr_bonus(11) },
             dexterity: Attribute{ base: 11, item_modifiers: 0, status_effect_modifiers: 0, bonus: attr_bonus(11) },
             constitution: Attribute{ base: 11, item_modifiers: 0, status_effect_modifiers: 0, bonus: attr_bonus(11) },
@@ -584,7 +584,7 @@ pub struct LootTable {
 pub struct OtherLevelPosition {
     pub x: i32,
     pub y: i32,
-    pub depth: i32
+    pub map_name: String
 }
 
 #[derive(Component, Serialize, Deserialize, Clone)]
@@ -612,8 +612,8 @@ pub struct WantsToApproach {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq, Hash)]
-pub enum Movement { 
-    Static, 
+pub enum Movement {
+    Static,
     Random,
     RandomWaypoint{ path: Option<Vec<usize>> }
 }
@@ -674,7 +674,8 @@ pub struct EntryTrigger {}
 pub struct TeleportTo {
     pub x: i32,
     pub y: i32,
-    pub depth: i32,
+    pub map_name: String,
+    pub depth: Option<i32>,
     pub player_only: bool
 }
 
@@ -687,7 +688,7 @@ pub struct ApplyMove {
 pub struct ApplyTeleport {
     pub dest_x: i32,
     pub dest_y: i32,
-    pub dest_depth: i32
+    pub dest_map: String
 }
 
 #[derive(Component, Debug, Serialize, Deserialize, Clone)]
@@ -717,7 +718,7 @@ pub struct AttributeBonus {
 
 impl AttributeBonus {
     pub fn is_debuff(&self) -> bool {
-        let total_bonus = self.strength.unwrap_or(0) + self.dexterity.unwrap_or(0) 
+        let total_bonus = self.strength.unwrap_or(0) + self.dexterity.unwrap_or(0)
             + self.constitution.unwrap_or(0) + self.intelligence.unwrap_or(0);
         total_bonus < 0
     }

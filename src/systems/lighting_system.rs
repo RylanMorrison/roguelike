@@ -15,7 +15,7 @@ impl<'a> System<'a> for LightingSystem {
     fn run(&mut self, data: Self::SystemData) {
         let (mut map, viewshed, positions, lighting) = data;
 
-        if map.outdoors {
+        if !map.indoors {
             // no dark outdoors maps yet
             return;
         }

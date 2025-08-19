@@ -22,13 +22,13 @@ impl<'a> System<'a> for MovementSystem {
         let (map, mut positions, entities, mut apply_move,
             mut apply_teleport, mut other_level, mut moved,
             mut viewsheds, player_entity, mut runstate) = data;
-        
+
         // apply teleporting
         for (entity, teleport) in (&entities, &apply_teleport).join() {
-            if teleport.dest_depth == map.depth {
+            if teleport.dest_map == map.name {
                 apply_move.insert(entity, ApplyMove{ dest_idx: map.xy_idx(teleport.dest_x, teleport.dest_y) }).expect("Unable to insert");
             } else if entity == *player_entity {
-                *runstate = RunState::TeleportingToOtherLevel{ x: teleport.dest_x, y: teleport.dest_y, depth: teleport.dest_depth };
+                *runstate = RunState::TeleportingToOtherLevel{ x: teleport.dest_x, y: teleport.dest_y, map_name: teleport.dest_map.clone() };
             } else if let Some(pos) = positions.get(entity) {
                 let idx = map.xy_idx(pos.x, pos.y);
                 let dest_idx = map.xy_idx(teleport.dest_x, teleport.dest_y);
@@ -36,7 +36,7 @@ impl<'a> System<'a> for MovementSystem {
                 other_level.insert(entity, OtherLevelPosition{
                     x: teleport.dest_x,
                     y: teleport.dest_y,
-                    depth: teleport.dest_depth
+                    map_name: teleport.dest_map.clone()
                 }).expect("Unable to insert");
                 positions.remove(entity);
             }

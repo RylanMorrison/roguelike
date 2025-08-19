@@ -82,7 +82,6 @@ impl DLABuilder {
         // create a starting seed
         let starting_position = Position{ x: build_data.map.width/2, y: build_data.map.height/2 };
         let start_idx = build_data.map.xy_idx(starting_position.x, starting_position.y);
-        build_data.take_snapshot();
 
         build_data.map.tiles[start_idx] = TileType::Floor;
         build_data.map.tiles[start_idx-1] = TileType::Floor;
@@ -94,7 +93,6 @@ impl DLABuilder {
         let total_tiles = build_data.map.width * build_data.map.height;
         let desired_floor_tiles = (self.floor_percent * total_tiles as f32) as usize;
         let mut floor_tile_count = build_data.map.tiles.iter().filter(|a| **a == TileType::Floor).count();
-        let mut i = 0;
         while floor_tile_count < desired_floor_tiles {
             match self.algorithm {
                 DLAAlgorithm::WalkInwards => {
@@ -158,10 +156,6 @@ impl DLABuilder {
                 }
             }
             floor_tile_count = build_data.map.tiles.iter().filter(|a| **a == TileType::Floor).count();
-            if i % 50 == 0 {
-                build_data.take_snapshot();
-            }
-            i += 1;
         }
     }
 }

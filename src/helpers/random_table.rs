@@ -1,5 +1,6 @@
 use crate::rng;
 
+#[derive(Debug)]
 pub struct RandomEntry {
     name: String,
     weight: i32
@@ -11,7 +12,7 @@ impl RandomEntry {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct RandomTable {
     entries: Vec<RandomEntry>,
     pub total_weight: i32

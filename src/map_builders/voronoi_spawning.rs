@@ -41,7 +41,7 @@ impl VoronoiSpawning {
 
         // spawn the entities
         for area in noise_areas.iter() {
-            spawner::spawn_region(&build_data.map, area.1, build_data.map.depth, &mut build_data.spawn_list);
+            spawner::spawn_region(&mut build_data.map, area.1);
         }
     }
 }

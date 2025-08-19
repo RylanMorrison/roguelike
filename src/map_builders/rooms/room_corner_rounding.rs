@@ -22,7 +22,7 @@ impl RoomCornerRounder {
         if y > 0 && build_data.map.tiles[idx-w as usize] == TileType::Wall { neighbour_walls += 1; }
         if x < w-2 && build_data.map.tiles[idx+1] == TileType::Wall { neighbour_walls += 1; }
         if y < h-2 && build_data.map.tiles[idx+w as usize] == TileType::Wall { neighbour_walls += 1; }
-        
+
         if neighbour_walls == 2 {
             build_data.map.tiles[idx] = TileType::Wall;
         }
@@ -41,8 +41,6 @@ impl RoomCornerRounder {
             self.fill_if_corner(room.x2, room.y1+1, build_data);
             self.fill_if_corner(room.x1+1, room.y2, build_data);
             self.fill_if_corner(room.x2, room.y2, build_data);
-
-            build_data.take_snapshot();
         }
     }
 }

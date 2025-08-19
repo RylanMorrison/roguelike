@@ -1,29 +1,29 @@
-use super::{BuilderChain, DrunkardsWalkBuilder, XStart, YStart, AreaStartingPosition, 
+use super::{BuilderChain, DrunkardsWalkBuilder, XStart, YStart, AreaStartingPosition,
     CullUnreachable, VoronoiSpawning, MetaMapBuilder, BuilderMap, TileType, DistantExit};
-use crate::rng;
+use crate::{raws::MapData, rng};
 
-pub fn limestone_cavern_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
-    let mut chain = BuilderChain::new("Limestone Caverns", new_depth, width, height);
+pub fn caverns_builder(map_data: &MapData) -> BuilderChain {
+    let mut chain = BuilderChain::new(map_data);
     chain.start_with(DrunkardsWalkBuilder::winding_passages());
     chain.with(CullUnreachable::new());
-    chain.with(AreaStartingPosition::new(XStart::LEFT, YStart::CENTER));
+    chain.with(AreaStartingPosition::new(XStart::LEFT, YStart::CENTER, false));
     chain.with(VoronoiSpawning::new());
-    chain.with(DistantExit::new());
-    chain.with(CaveDecorator::new());
+    // chain.with(DistantExit::new());
+    chain.with(CavernDecorator::new());
     chain
 }
 
-pub struct CaveDecorator {}
+pub struct CavernDecorator {}
 
-impl MetaMapBuilder for CaveDecorator {
+impl MetaMapBuilder for CavernDecorator {
     fn build_map(&mut self, build_data: &mut BuilderMap) {
         self.build(build_data);
     }
 }
 
-impl CaveDecorator {
-    pub fn new() -> Box<CaveDecorator> {
-        Box::new(CaveDecorator{})
+impl CavernDecorator {
+    pub fn new() -> Box<CavernDecorator> {
+        Box::new(CavernDecorator{})
     }
 
     fn build(&mut self, build_data: &mut BuilderMap) {
@@ -49,8 +49,6 @@ impl CaveDecorator {
                 }
             }
         }
-        build_data.take_snapshot();
-        build_data.map.outdoors = false;
     }
 }
 

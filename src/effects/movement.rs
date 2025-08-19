@@ -4,13 +4,13 @@ use crate::components::ApplyTeleport;
 
 pub fn apply_teleport(ecs: &mut World, effect: &EffectSpawner, target: Entity) {
     let player_entity = ecs.fetch::<Entity>();
-    if let EffectType::TeleportTo{x, y, depth, player_only} = &effect.effect_type {
+    if let EffectType::TeleportTo{x, y, map_name, player_only} = &effect.effect_type {
         if !player_only || target == *player_entity {
             let mut apply_teleport = ecs.write_storage::<ApplyTeleport>();
             apply_teleport.insert(target, ApplyTeleport{
                 dest_x: *x,
                 dest_y: *y,
-                dest_depth: *depth
+                dest_map: map_name.clone()
             }).expect("Unable to insert");
         }
     }

@@ -56,7 +56,6 @@ impl StraightLineCorridors {
                 }
                 corridors.push(corridor);
                 connected.insert(i);
-                build_data.take_snapshot();
             }
         }
         build_data.corridors = Some(corridors);

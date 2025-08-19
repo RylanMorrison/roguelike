@@ -51,14 +51,13 @@ impl PrefabBuilder {
             mode: PrefabMode::RoomVaults,
         })
     }
- 
+
     fn build(&mut self, build_data: &mut BuilderMap) {
         match self.mode {
             PrefabMode::Constant{level} => self.load_ascii_map(&level, build_data),
             PrefabMode::Sectional{section} => self.apply_sectional(&section, build_data),
             PrefabMode::RoomVaults => self.apply_room_vaults(build_data)
         }
-        build_data.take_snapshot();
     }
 
     fn char_to_map(&mut self, ch: char, idx: usize, build_data: &mut BuilderMap) {
@@ -66,64 +65,63 @@ impl PrefabBuilder {
             ' ' => build_data.map.tiles[idx] = TileType::Floor,
             '#' => build_data.map.tiles[idx] = TileType::TownWall,
             '@' => {
-                let x = idx as i32 % build_data.map.width;
-                let y = idx as i32 / build_data.map.width;
+                let (x, y) = build_data.map.idx_xy(idx);
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.starting_position = Some(Position{ x: x as i32, y: y as i32 });
+                build_data.map.starting_position = Some(Position{ x: x as i32, y: y as i32 });
             }
-            '>' => build_data.map.tiles[idx] = TileType::DownStairs,
+            '>' => build_data.add_next_exit(idx),
             'g' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, random_goblin()));
+                build_data.map.spawn_list.push((idx, random_goblin()));
             }
             'o' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, random_orc()));
+                build_data.map.spawn_list.push((idx, random_orc()));
             }
             'O' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, "Ogre".to_string()));
+                build_data.map.spawn_list.push((idx, "Ogre".to_string()));
             }
             'D' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, "Demon".to_string()));
+                build_data.map.spawn_list.push((idx, "Demon".to_string()));
             }
             'w' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, "Wolf".to_string()));
+                build_data.map.spawn_list.push((idx, "Wolf".to_string()));
             }
             'W' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, "Alpha Wolf".to_string()));
+                build_data.map.spawn_list.push((idx, "Alpha Wolf".to_string()));
             }
             'B' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, "Warboss".to_string()));
+                build_data.map.spawn_list.push((idx, "Warboss".to_string()));
             }
-            
+
             '%' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, "Food Ration".to_string()));
+                build_data.map.spawn_list.push((idx, "Food Ration".to_string()));
             }
             '!' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, "Health Potion".to_string()));
+                build_data.map.spawn_list.push((idx, "Health Potion".to_string()));
             }
             '/' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, random_melee_weapon()));
+                build_data.map.spawn_list.push((idx, random_melee_weapon()));
             }
             '0' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, random_shield()));
+                build_data.map.spawn_list.push((idx, random_shield()));
             }
             '+' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, "Door".to_string()));
+                build_data.map.spawn_list.push((idx, "Door".to_string()));
             }
             '◘' => {
                 build_data.map.tiles[idx] = TileType::Floor;
-                build_data.spawn_list.push((idx, random_chest()));
+                build_data.map.spawn_list.push((idx, random_chest()));
             }
             _ => {
                 rltk::console::log(format!("Unknown glyph loading map: {}", ch));
@@ -141,7 +139,7 @@ impl PrefabBuilder {
 
     fn load_ascii_map(&mut self, level: &prefab_levels::PrefabLevel, build_data: &mut BuilderMap) {
         let string_vec = PrefabBuilder::read_ascii_to_vec(level.template);
-        
+
         let mut i = 0;
         for ty in 0..level.height {
             for tx in 0..level.width {
@@ -177,7 +175,6 @@ impl PrefabBuilder {
             x < chunk_x || x > (chunk_x + section.width as i32) ||
             y < chunk_y || y > (chunk_y + section.height as i32)
         }, build_data);
-        build_data.take_snapshot();
 
         let mut i = 0;
         for ty in 0..section.height {
@@ -189,7 +186,6 @@ impl PrefabBuilder {
                 i += 1;
             }
         }
-        build_data.take_snapshot();
     }
 
     fn apply_previous_iteration<F>(&mut self, mut filter: F, build_data: &mut BuilderMap)
@@ -197,42 +193,30 @@ impl PrefabBuilder {
     {
         // build the map
         let width = build_data.map.width;
-        build_data.spawn_list.retain(|(idx, _name)| {
+        build_data.map.spawn_list.retain(|(idx, _name)| {
             let x = *idx as i32 % width;
             let y = *idx as i32 / width;
             filter(x, y)
         });
-        build_data.take_snapshot();
     }
 
     fn apply_room_vaults(&mut self, build_data: &mut BuilderMap) {
         // apply the previous builder and keep all entities it spawns
         self.apply_previous_iteration(|_x,_y| true, build_data);
 
-        // chance of encountering room vault dependent on depth
-        let vault_roll = rng::roll_dice(1, 6) + build_data.map.depth;
+        // chance of encountering room vault dependent on area level
+        let vault_roll = rng::roll_dice(1, 6 + build_data.map.area_level);
+        let mut n_vaults = 1;
         if vault_roll < 4 { return; }
+        if vault_roll > 6 { n_vaults += 1; }
+        if vault_roll > 12 { n_vaults += 1; }
 
-        let master_vault_list = vec![GUARDED_WEAPON, GUARDED_SHIELD, OGRE_TRIO];
-
-        // filter the vault list down to ones that are applicable to the current depth
-        let mut possible_vaults: Vec<&PrefabRoom> = master_vault_list
-            .iter()
-            .filter(|v| { build_data.map.depth >= v.first_depth && build_data.map.depth <= v.last_depth })
-            .collect();
-
-        if possible_vaults.is_empty() { return; }
-
-        let n_vaults = i32::min(rng::roll_dice(1, 3), possible_vaults.len() as i32);
+        let mut vault_list = vec![GUARDED_WEAPON, GUARDED_SHIELD, OGRE_TRIO];
         let mut used_tiles: HashSet<usize> = HashSet::new();
 
         for _i in 0..n_vaults {
-            let vault_index = if possible_vaults.len() == 1 {
-                0
-            } else {
-                (rng::roll_dice(1, possible_vaults.len() as i32)-1) as usize
-            };
-            let vault = possible_vaults[vault_index];
+            let vault_index = (rng::roll_dice(1, vault_list.len() as i32)-1) as usize;
+            let vault = vault_list[vault_index];
 
             // find all possible places where the vault could fit
             let mut vault_positions: Vec<Position> = Vec::new();
@@ -283,7 +267,7 @@ impl PrefabBuilder {
                 // can't use `self` in `retain`
                 let width = build_data.map.width;
                 let height = build_data.map.height;
-                build_data.spawn_list.retain(|e| {
+                build_data.map.spawn_list.retain(|e| {
                     let idx = e.0 as i32;
                     let x = idx % width;
                     let y = idx / height;
@@ -301,13 +285,12 @@ impl PrefabBuilder {
                         i += 1;
                     }
                 }
-                build_data.take_snapshot();
-                possible_vaults.remove(vault_index);
+                vault_list.remove(vault_index);
             }
         }
     }
 
-    
+
 }
 
 fn random_melee_weapon() -> String {

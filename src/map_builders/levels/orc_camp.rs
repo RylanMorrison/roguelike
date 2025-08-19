@@ -1,12 +1,14 @@
-use super::{area_starting_points::AreaStartingPosition, prefab_builder, BuilderChain, CellularAutomataBuilder, 
+use crate::raws::MapData;
+
+use super::{area_starting_points::AreaStartingPosition, prefabs, BuilderChain, CellularAutomataBuilder,
     CullUnreachable, PrefabBuilder, VoronoiSpawning, XStart, YStart};
 
-pub fn orc_camp_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
-    let mut chain = BuilderChain::new("Orc Camp", new_depth, width, height);
+pub fn orc_camp_builder(map_data: &MapData) -> BuilderChain {
+    let mut chain = BuilderChain::new(map_data);
     chain.start_with(CellularAutomataBuilder::new());
     chain.with(VoronoiSpawning::new());
     chain.with(CullUnreachable::new());
-    chain.with(AreaStartingPosition::new(XStart::LEFT, YStart::CENTER));
-    chain.with(PrefabBuilder::sectional(prefab_builder::prefab_sections::ORC_CAMP));
+    chain.with(AreaStartingPosition::new(XStart::LEFT, YStart::CENTER, false));
+    chain.with(PrefabBuilder::sectional(prefabs::prefab_sections::ORC_CAMP));
     chain
 }

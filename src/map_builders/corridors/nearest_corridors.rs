@@ -50,7 +50,6 @@ impl NearestCorridors {
                     1
                 );
                 connected.insert(i);
-                build_data.take_snapshot();
                 corridors.push(corridor);
             }
         }

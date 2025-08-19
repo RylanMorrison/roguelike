@@ -36,7 +36,7 @@ pub enum EffectType {
     ItemUse { item: Entity },
     WellFed,
     Confusion { duration: i32 },
-    TeleportTo { x: i32, y: i32, depth: i32, player_only: bool },
+    TeleportTo { x: i32, y: i32, map_name: String, player_only: bool },
     TriggerFire { trigger: Entity },
     AttributeEffect { bonus: AttributeBonus, name: String, duration: i32 },
     AbilityUse { ability: Entity, is_repeat: bool },

@@ -6,7 +6,8 @@ pub enum YStart { TOP, CENTER, BOTTOM }
 
 pub struct AreaStartingPosition {
     x: XStart,
-    y: YStart
+    y: YStart,
+    temporary: bool
 }
 
 impl MetaMapBuilder for AreaStartingPosition {
@@ -16,8 +17,8 @@ impl MetaMapBuilder for AreaStartingPosition {
 }
 
 impl AreaStartingPosition {
-    pub fn new(x: XStart, y: YStart) -> Box<AreaStartingPosition> {
-        Box::new(AreaStartingPosition{x,y})
+    pub fn new(x: XStart, y: YStart, temporary: bool) -> Box<AreaStartingPosition> {
+        Box::new(AreaStartingPosition{ x, y, temporary })
     }
 
     fn build(&mut self, build_data: &mut BuilderMap) {
@@ -60,6 +61,10 @@ impl AreaStartingPosition {
         let start_x = available_floors[0].0 as i32 % build_data.map.width;
         let start_y = available_floors[0].0 as i32 / build_data.map.width;
 
-        build_data.starting_position = Some(Position{ x: start_x, y: start_y });
+        build_data.map.starting_position = Some(Position{ x: start_x, y: start_y });
+        if !self.temporary {
+            let start_idx = build_data.map.xy_idx(start_x, start_y);
+            build_data.add_next_entrance(start_idx);
+        }
     }
 }

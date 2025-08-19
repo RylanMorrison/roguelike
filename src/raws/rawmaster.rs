@@ -2,11 +2,18 @@ use std::collections::{HashMap, HashSet, BTreeMap};
 use specs::prelude::*;
 use rltk::RGB;
 use crate::components::*;
+use crate::raws::item_set_structs::ItemSetData;
+use crate::raws::AbilityData;
+use crate::raws::MapData;
+use crate::raws::QuestData;
+use crate::Map;
+use crate::MasterDungeonMap;
 use super::{Raws, Reaction, RenderableData, SpawnTableEntry, MapMarkerData, ItemData};
 use crate::{attr_bonus, hp_at_level, mana_at_level, parse_dice_string, determine_roll};
 use specs::saveload::{MarkedBuilder, SimpleMarker};
 use crate::rng;
 use crate::helpers::*;
+use crate::map_builders::level_builder;
 
 pub enum SpawnType {
     AtPosition { x: i32, y: i32 },
@@ -32,7 +39,7 @@ pub struct RawMaster {
 impl RawMaster {
     pub fn empty() -> RawMaster {
         RawMaster{
-            raws: Raws { 
+            raws: Raws {
                 items: Vec::new(),
                 item_sets: Vec::new(),
                 item_class_colours: HashMap::new(),
@@ -45,7 +52,8 @@ impl RawMaster {
                 chests: Vec::new(),
                 character_classes: Vec::new(),
                 quests: Vec::new(),
-                species: Vec::new()
+                species: Vec::new(),
+                maps: Vec::new()
             },
             item_index: HashMap::new(),
             item_set_index: HashMap::new(),
@@ -69,10 +77,10 @@ impl RawMaster {
         // items
         for (i, item) in self.raws.items.iter().enumerate() {
             if used_names.contains(&item.name) {
-                rltk::console::log(format!("WARNING - duplicate item name in raws [{}]", item.name));
+                panic!("ERROR - duplicate item name in raws [{}]", &item.name);
             }
             if !self.raws.item_class_colours.contains_key(&item.class) {
-                rltk::console::log(format!("WARNING - unknown item class in raws [{}]", &item.class));
+                rltk::console::log(format!("ERROR - unknown item class in raws [{}]", &item.class));
             }
             self.item_index.insert(item.name.clone(), i);
             used_names.insert(item.name.clone());
@@ -80,7 +88,7 @@ impl RawMaster {
         // item sets
         for (i, item_set) in self.raws.item_sets.iter().enumerate() {
             if used_names.contains(&item_set.name) {
-                rltk::console::log(format!("WARNING - duplicate item set name in raws [{}]", &item_set.name));
+                panic!("ERROR - duplicate item set name in raws [{}]", &item_set.name);
             }
             self.item_set_index.insert(item_set.name.clone(), i);
             used_names.insert(item_set.name.clone());
@@ -88,7 +96,7 @@ impl RawMaster {
         // mobs
         for (i, mob) in self.raws.mobs.iter().enumerate() {
             if used_names.contains(&mob.name) {
-                rltk::console::log(format!("WARNING - duplicate mob name in raws [{}]", mob.name));
+                panic!("ERROR - duplicate mob name in raws [{}]", mob.name);
             }
             self.mob_index.insert(mob.name.clone(), i);
             used_names.insert(mob.name.clone());
@@ -96,33 +104,54 @@ impl RawMaster {
         // props
         for (i, prop) in self.raws.props.iter().enumerate() {
             if used_names.contains(&prop.name) {
-                rltk::console::log(format!("WARNING - duplicate prop name in raws [{}]", prop.name));
+                panic!("ERROR - duplicate prop name in raws [{}]", prop.name);
             }
             self.prop_index.insert(prop.name.clone(), i);
             used_names.insert(prop.name.clone());
         }
         // abilities
         for (i, ability) in self.raws.abilities.iter().enumerate() {
+            if self.ability_index.contains_key(&ability.name) {
+                panic!("ERROR - duplicate ability name in raws [{}]", &ability.name);
+            }
             self.ability_index.insert(ability.name.clone(), i);
         }
         // loot tables
         for (i, loot) in self.raws.loot_tables.iter().enumerate() {
+            if self.loot_index.contains_key(&loot.name) {
+                panic!("ERROR - duplicate loot table name in raws [{}]", &loot.name);
+            }
             self.loot_index.insert(loot.name.clone(), i);
         }
         // chests
         for (i, chest) in self.raws.chests.iter().enumerate() {
+
             if let Some(loot_table) = &chest.loot_table {
                 if !self.loot_index.contains_key(loot_table) {
-                    rltk::console::log(format!("WARNING - chest references unspecified loot table {}", loot_table));
+                    panic!("ERROR - chest references unspecified loot table [{}]", loot_table);
                 }
             }
             self.chest_index.insert(chest.name.clone(), i);
             used_names.insert(chest.name.clone());
         }
+        // maps
+        for map in self.raws.maps.iter().rev() {
+            if used_names.contains(&map.name) {
+                panic!("ERROR - duplicate map name in raws [{}]", map.name);
+            }
+            if let Some(next_maps) = &map.next_maps {
+                for next_map in next_maps.iter() {
+                    if !used_names.contains(next_map) {
+                        panic!("ERROR - undefined map [{}] in next_maps for [{}]", next_map, map.name);
+                    }
+                }
+            }
+            used_names.insert(map.name.clone());
+        }
         // spawn table
         for spawn in self.raws.spawn_table.iter() {
             if !used_names.contains(&spawn.name) {
-                rltk::console::log(format!("WARNING - Spawn table references unspecified entity {}", spawn.name));
+                panic!("ERROR - Spawn table references unspecified entity {}", spawn.name);
             }
         }
         // faction table
@@ -141,35 +170,34 @@ impl RawMaster {
         }
         // character classes
         for (i, character_class) in self.raws.character_classes.iter().enumerate() {
-            if used_names.contains(&character_class.name) {
-                rltk::console::log(format!("WARNING - duplicate character class name in raws [{}]", character_class.name));
+            if self.character_class_index.contains_key(&character_class.name) {
+                panic!("ERROR - duplicate character class name in raws [{}]", character_class.name);
             }
             self.character_class_index.insert(character_class.name.clone(), i);
-            used_names.insert(character_class.name.clone());
         }
         // species
         for (i, species) in self.raws.species.iter().enumerate() {
             if self.species_index.contains_key(&species.name) {
-                rltk::console::log(format!("WARNING - duplicate species name in raws [{}]", species.name));
+                panic!("ERROR - duplicate species name in raws [{}]", species.name);
             }
             self.species_index.insert(species.name.clone(), i);
             used_names.insert(species.name.clone());
         }
         // quests
         for (i, quest) in self.raws.quests.iter().enumerate() {
-            if used_names.contains(&quest.name) {
-                rltk::console::log(format!("WARNING - duplicate quest name in raws [{}]", quest.name));
+            if self.quest_index.contains_key(&quest.name) {
+                panic!("ERROR - duplicate quest name in raws [{}]", quest.name);
             }
             for requirement in quest.requirements.iter() {
                 for target in requirement.targets.iter() {
                     if !used_names.contains(target) {
-                        rltk::console::log(format!("WARNING - quest ({}) target references unspecified entity {}", quest.name, target));
+                        panic!("ERROR - quest ({}) target references unspecified entity {}", quest.name, target);
                     }
                 }
             }
             self.quest_index.insert(quest.name.clone(), i);
-            used_names.insert(quest.name.clone());
         }
+
     }
 }
 
@@ -545,7 +573,7 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
         mana: Pool{ current: mob_mana, max: mob_mana },
         total_weight: 0.0,
         initiative_penalty: InitiativePenalty::initial(),
-        gold: 
+        gold:
         if let Some(gold) = &mob_template.gold {
             determine_roll(&gold)
         } else {
@@ -595,7 +623,7 @@ pub fn spawn_named_mob(raws: &RawMaster, ecs: &mut World, key: &str, pos: SpawnT
     }
 
     // visibility
-    eb = eb.with(Viewshed{ 
+    eb = eb.with(Viewshed{
         visible_tiles: Vec::new(),
         range: mob_template.vision_range,
         dirty: true
@@ -684,7 +712,7 @@ pub fn spawn_named_prop(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
     if let Some(marker) = &prop_template.map_marker {
         eb = eb.with(get_map_marker_component(marker));
     }
-    
+
     eb = eb.with(Name{ name: prop_template.name.clone() });
 
     if let Some(blocks_tile) = prop_template.blocks_tile {
@@ -732,35 +760,6 @@ pub fn spawn_named_chest(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spaw
     eb = eb.with(SingleActivation{});
 
     Some(eb.build())
-}
-
-pub fn spawn_named_ability(raws: &RawMaster, ecs: &mut World, key: &str) -> Option<Entity> {
-    if raws.ability_index.contains_key(key) {
-        let ability_template = &raws.raws.abilities[raws.ability_index[key]];
-
-        let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
-        let mut levels: HashMap<i32, AbilityLevel> = HashMap::new();
-        for level in &ability_template.levels {
-            levels.insert(level.0.parse::<i32>().unwrap(), AbilityLevel{
-                mana_cost: level.1.mana_cost,
-                effects: level.1.effects.clone()
-            });
-        }
-
-        eb = eb.with(Ability{
-            name: ability_template.name.clone(),
-            description: ability_template.description.clone(),
-            levels,
-            ability_type: match ability_template.ability_type.as_str() {
-                "passive" => AbilityType::Passive,
-                _ => AbilityType::Active
-            }
-        });
-        eb = eb.with(Name{ name: ability_template.name.clone() });
-
-        return Some(eb.build());
-    }
-    None
 }
 
 pub fn get_character_class_description(raws: &RawMaster, key: &str) -> Option<String> {
@@ -849,102 +848,118 @@ fn initialise_character_class(ecs: &mut World, raws: &RawMaster, equipment: &Vec
 pub fn store_all_quests(ecs: &mut World) {
     let raws = &super::RAWS.lock().unwrap();
     for quest in raws.raws.quests.iter() {
-        store_named_quest(raws, ecs, &quest.name);
+        store_named_quest(ecs, &quest);
     }
 }
 
-pub fn store_named_quest(raws: &RawMaster, ecs: &mut World, key: &str) {
-    if raws.quest_index.contains_key(key) {
-        let quest_template = &raws.raws.quests[raws.quest_index[key]];
-
-        let mut quests = ecs.fetch_mut::<Quests>();
-        let mut requirements: Vec<QuestRequirement> = Vec::new();
-        for requirement in quest_template.requirements.iter() {
-            let mut target_count = 1;
-            let mut requirement_goal = QuestRequirementGoal::None;
-            match requirement.goal.as_str() {
-                "kill_count" => {
-                    target_count = requirement.count.unwrap();
-                    requirement_goal = QuestRequirementGoal::KillCount;
-                }
-                _ => {
-                    rltk::console::log(format!("WARNING - Unknown quest requirement goal [{}]", requirement.goal));
-                }
+pub fn store_named_quest(ecs: &mut World, quest_template: &QuestData) {
+    let mut quests = ecs.fetch_mut::<Quests>();
+    let mut requirements: Vec<QuestRequirement> = Vec::new();
+    for requirement in quest_template.requirements.iter() {
+        let mut target_count = 1;
+        let mut requirement_goal = QuestRequirementGoal::None;
+        match requirement.goal.as_str() {
+            "kill_count" => {
+                target_count = requirement.count.unwrap();
+                requirement_goal = QuestRequirementGoal::KillCount;
             }
+            _ => {
+                rltk::console::log(format!("WARNING - Unknown quest requirement goal [{}]", requirement.goal));
+            }
+        }
 
-            requirements.push(QuestRequirement {
-                requirement_goal,
-                targets: requirement.targets.clone(),
-                count: 0,
-                target_count,
-                complete: false
-            });
-        }
-        let mut rewards: Vec<QuestReward> = Vec::new();
-        for reward in quest_template.rewards.iter() {
-            rewards.push(QuestReward {
-                gold: reward.gold.clone(),
-                xp: reward.xp
-            });
-        }
-        quests.quests.push(Quest {
-            name: quest_template.name.clone(),
-            description: quest_template.description.clone(),
-            rewards,
-            requirements,
-            status: if let Some(initial) = quest_template.initial {
-                if initial { QuestStatus::Available } else { QuestStatus::Unavailable }
-            } else { QuestStatus::Unavailable },
-            next_quests: quest_template.next_quests.clone().unwrap_or(Vec::new())
+        requirements.push(QuestRequirement {
+            requirement_goal,
+            targets: requirement.targets.clone(),
+            count: 0,
+            target_count,
+            complete: false
         });
     }
+    let mut rewards: Vec<QuestReward> = Vec::new();
+    for reward in quest_template.rewards.iter() {
+        rewards.push(QuestReward {
+            gold: reward.gold.clone(),
+            xp: reward.xp
+        });
+    }
+    quests.quests.push(Quest {
+        name: quest_template.name.clone(),
+        description: quest_template.description.clone(),
+        rewards,
+        requirements,
+        status: if let Some(initial) = quest_template.initial {
+            if initial { QuestStatus::Available } else { QuestStatus::Unavailable }
+        } else { QuestStatus::Unavailable },
+        next_quests: quest_template.next_quests.clone().unwrap_or(Vec::new())
+    });
 }
 
 pub fn store_all_item_sets(ecs: &mut World) {
     let raws = &super::RAWS.lock().unwrap();
     for item_set in raws.raws.item_sets.iter() {
-        store_named_item_set(raws, ecs, &item_set.name);
+        store_named_item_set(ecs, &item_set);
     }
 }
 
-pub fn store_named_item_set(raws: &RawMaster, ecs: &mut World, key: &str) {
-    if raws.item_set_index.contains_key(key) {
-        let item_set_template = &raws.raws.item_sets[raws.item_set_index[key]];
-
-        let mut item_sets = ecs.fetch_mut::<ItemSets>();
-        let mut set_bonuses: HashMap<i32, ItemSetBonus> = HashMap::new();
-        for set_bonus in item_set_template.set_bonuses.iter() {
-            let required_pieces = set_bonus.required_pieces;
-            let mut attribute_bonus: Option<AttributeBonus> = None;
-            if let Some(attr_bonus) = &set_bonus.attribute_bonuses {
-                attribute_bonus = Some(AttributeBonus{
-                    strength: attr_bonus.strength,
-                    dexterity: attr_bonus.dexterity,
-                    constitution: attr_bonus.constitution,
-                    intelligence: attr_bonus.intelligence
-                });
-            }
-            let mut skill_bonus: Option<SkillBonus> = None;
-            if let Some(sk_bonus) = &set_bonus.skill_bonuses {
-                skill_bonus = Some(SkillBonus{
-                    melee: sk_bonus.melee,
-                    defence: sk_bonus.defence,
-                    ranged: sk_bonus.ranged,
-                    magic: sk_bonus.magic
-                });
-            }
-            set_bonuses.insert(required_pieces, ItemSetBonus{ attribute_bonus, skill_bonus });
+pub fn store_named_item_set(ecs: &mut World, item_set_template: &ItemSetData) {
+    let mut item_sets = ecs.fetch_mut::<ItemSets>();
+    let mut set_bonuses: HashMap<i32, ItemSetBonus> = HashMap::new();
+    for set_bonus in item_set_template.set_bonuses.iter() {
+        let required_pieces = set_bonus.required_pieces;
+        let mut attribute_bonus: Option<AttributeBonus> = None;
+        if let Some(attr_bonus) = &set_bonus.attribute_bonuses {
+            attribute_bonus = Some(AttributeBonus{
+                strength: attr_bonus.strength,
+                dexterity: attr_bonus.dexterity,
+                constitution: attr_bonus.constitution,
+                intelligence: attr_bonus.intelligence
+            });
         }
-        let item_set = ItemSet{ total_pieces: item_set_template.total_pieces, set_bonuses };
-        item_sets.item_sets.insert(item_set_template.name.clone(), item_set);
+        let mut skill_bonus: Option<SkillBonus> = None;
+        if let Some(sk_bonus) = &set_bonus.skill_bonuses {
+            skill_bonus = Some(SkillBonus{
+                melee: sk_bonus.melee,
+                defence: sk_bonus.defence,
+                ranged: sk_bonus.ranged,
+                magic: sk_bonus.magic
+            });
+        }
+        set_bonuses.insert(required_pieces, ItemSetBonus{ attribute_bonus, skill_bonus });
     }
+    let item_set = ItemSet{ total_pieces: item_set_template.total_pieces, set_bonuses };
+    item_sets.item_sets.insert(item_set_template.name.clone(), item_set);
 }
 
-pub fn spawn_all_abilities(ecs: &mut World) {
+pub fn store_all_abilities(ecs: &mut World) {
     let raws = &super::RAWS.lock().unwrap();
     for ability in raws.raws.abilities.iter() {
-        spawn_named_ability(raws, ecs, &ability.name);
+        store_named_ability(ecs, &ability);
     }
+}
+
+pub fn store_named_ability(ecs: &mut World, ability_template: &AbilityData) -> Option<Entity> {
+    let mut eb = ecs.create_entity().marked::<SimpleMarker<SerializeMe>>();
+    let mut levels: HashMap<i32, AbilityLevel> = HashMap::new();
+    for level in &ability_template.levels {
+        levels.insert(level.0.parse::<i32>().unwrap(), AbilityLevel{
+            mana_cost: level.1.mana_cost,
+            effects: level.1.effects.clone()
+        });
+    }
+
+    eb = eb.with(Ability{
+        name: ability_template.name.clone(),
+        description: ability_template.description.clone(),
+        levels,
+        ability_type: match ability_template.ability_type.as_str() {
+            "passive" => AbilityType::Passive,
+            _ => AbilityType::Active
+        }
+    });
+    eb = eb.with(Name{ name: ability_template.name.clone() });
+
+    return Some(eb.build());
 }
 
 pub fn find_ability_by_name<'a>(name: &str, abilities: &'a ReadStorage::<Ability>, entities: &Entities) -> Option<&'a Ability> {
@@ -956,21 +971,20 @@ pub fn find_ability_by_name<'a>(name: &str, abilities: &'a ReadStorage::<Ability
     None
 }
 
-pub fn get_spawn_table_for_depth(raws: &RawMaster, depth: i32) -> RandomTable {
+pub fn get_spawn_table_for_map(raws: &RawMaster, map_name: &str) -> RandomTable {
     let available_options: Vec<&SpawnTableEntry> = raws.raws.spawn_table
         .iter()
-        .filter(|a| depth >= a.min_depth && depth <= a.max_depth)
+        .filter(|a| a.weights.contains_key(map_name))
         .collect();
 
     let mut rt = RandomTable::new();
     for e in available_options.iter() {
-        let mut weight = e.weight;
-        if e.add_map_depth_to_weight.is_some() {
-            weight += depth - e.min_depth;
+        if let Some(weight) = e.weights.get(map_name) {
+            rt = rt.add(e.name.clone(), *weight);
+        } else if let Some(weight) = e.weights.get("all") {
+            rt = rt.add(e.name.clone(), *weight);
         }
-        rt = rt.add(e.name.clone(), weight);
     }
-
     rt
 }
 
@@ -1141,4 +1155,32 @@ fn item_skill_bonus(item_quality: &ItemQuality, item_template: &ItemData) -> Opt
     }
 
     Some(SkillBonus { melee, defence, ranged, magic })
+}
+
+pub fn store_world_maps(ecs: &mut World) {
+    let map_data: Vec<MapData>;
+    {
+        let raws = &super::RAWS.lock().unwrap();
+        map_data = raws.raws.maps.clone();
+    }
+
+    let mut dungeon_master = MasterDungeonMap::new();
+
+    let mut start: Option<Map> = None;
+    for data in map_data.iter() {
+        let mut builder = level_builder(data);
+        builder.build_map();
+        let map = builder.build_data.map;
+        dungeon_master.store_map(&map);
+        if map.is_start {
+            start = Some(map.clone());
+        }
+    }
+
+    if start.is_none() {
+        panic!("No start map set!");
+    }
+
+    ecs.insert(start.unwrap());
+    ecs.insert(dungeon_master);
 }

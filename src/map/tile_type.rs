@@ -1,23 +1,11 @@
 use serde::{Serialize, Deserialize};
 
-const WALKABLE_TILES: [TileType; 9]  = [
-    TileType::Floor,
-    TileType::DownStairs,
-    TileType::UpStairs,
-    TileType::Road,
-    TileType::Grass,
-    TileType::ShallowWater,
-    TileType::WoodFloor,
-    TileType::Bridge,
-    TileType::Gravel
-];
-
-#[derive(PartialEq, Eq, Hash, Serialize, Deserialize, Copy, Clone)]
+#[derive(PartialEq, Eq, Hash, Serialize, Deserialize, Clone, Debug)]
 pub enum TileType {
     Wall,
     Floor,
-    DownStairs,
-    UpStairs,
+    NextArea { map_name: String },
+    PreviousArea { map_name: String },
     Road,
     Grass,
     ShallowWater,
@@ -25,22 +13,32 @@ pub enum TileType {
     WoodFloor,
     Bridge,
     Gravel,
-    TownWall
+    TownWall,
+    Placeholder
 }
 
-pub fn tile_walkable(tt: TileType) -> bool {
-    if WALKABLE_TILES.contains(&tt) { return true; }
-    false
+pub fn tile_walkable(tt: &TileType) -> bool {
+    matches!(tt,
+        TileType::Floor |
+        TileType::NextArea{..} |
+        TileType::PreviousArea{..} |
+        TileType::Road |
+        TileType::Grass |
+        TileType::ShallowWater |
+        TileType::WoodFloor |
+        TileType::Bridge |
+        TileType::Gravel
+    )
 }
 
-pub fn tile_opaque(tt: TileType) -> bool {
+pub fn tile_opaque(tt: &TileType) -> bool {
     match tt {
         TileType::Wall | TileType::TownWall => true,
         _ => false
     }
 }
 
-pub fn tile_cost(tt: TileType) -> f32 {
+pub fn tile_cost(tt: &TileType) -> f32 {
     // cost checking only makes sense for walkable tiles
     match tt {
         TileType::Road => 0.8,
@@ -50,4 +48,3 @@ pub fn tile_cost(tt: TileType) -> f32 {
         _ => 1.0
     }
 }
-

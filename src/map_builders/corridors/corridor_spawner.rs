@@ -16,12 +16,9 @@ impl CorridorSpawner {
     fn build(&mut self, build_data: &mut BuilderMap) {
         if let Some(corridors) = &build_data.corridors {
             for c in corridors.iter() {
-                if c.len() > 6 { // only consider long corridors for spawning
-                    let depth = build_data.map.depth;
-                    spawner::spawn_region(&build_data.map,
-                        &c,
-                        depth,
-                        &mut build_data.spawn_list);
+                // only consider long corridors for spawning
+                if c.len() > 6 {
+                    spawner::spawn_region(&mut build_data.map, &c);
                 }
             }
         } else {

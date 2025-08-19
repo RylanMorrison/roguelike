@@ -37,9 +37,9 @@ impl DrunkardsWalkBuilder {
 
     pub fn open_area() -> Box<DrunkardsWalkBuilder> {
         Box::new(DrunkardsWalkBuilder::new(
-            DrunkardSettings { 
-                spawn_mode: DrunkSpawnMode::StartingPoint, 
-                drunken_lifetime: 400, 
+            DrunkardSettings {
+                spawn_mode: DrunkSpawnMode::StartingPoint,
+                drunken_lifetime: 400,
                 floor_percent: 0.5,
                 symmetry: Symmetry::None,
                 brush_size: 1
@@ -49,9 +49,9 @@ impl DrunkardsWalkBuilder {
 
     pub fn open_halls() -> Box<DrunkardsWalkBuilder> {
         Box::new(DrunkardsWalkBuilder::new(
-            DrunkardSettings { 
-                spawn_mode: DrunkSpawnMode::Random, 
-                drunken_lifetime: 400, 
+            DrunkardSettings {
+                spawn_mode: DrunkSpawnMode::Random,
+                drunken_lifetime: 400,
                 floor_percent: 0.5,
                 symmetry: Symmetry::None,
                 brush_size: 1
@@ -61,9 +61,9 @@ impl DrunkardsWalkBuilder {
 
     pub fn winding_passages() -> Box<DrunkardsWalkBuilder> {
         Box::new(DrunkardsWalkBuilder::new(
-            DrunkardSettings { 
-                spawn_mode: DrunkSpawnMode::Random, 
-                drunken_lifetime: 100, 
+            DrunkardSettings {
+                spawn_mode: DrunkSpawnMode::Random,
+                drunken_lifetime: 100,
                 floor_percent: 0.4,
                 symmetry: Symmetry::None,
                 brush_size: 1
@@ -107,7 +107,6 @@ impl DrunkardsWalkBuilder {
         let mut digger_count = 0;
 
         while floor_tile_count < desired_floor_tiles {
-            let mut did_something = false;
             let mut drunk_x;
             let mut drunk_y;
 
@@ -130,11 +129,11 @@ impl DrunkardsWalkBuilder {
             let mut drunk_life = self.settings.drunken_lifetime;
             while drunk_life > 0 {
                 let drunk_idx = build_data.map.xy_idx(drunk_x, drunk_y);
-                if build_data.map.tiles[drunk_idx] == TileType::Wall {
-                    did_something = true;
-                }
+                // if build_data.map.tiles[drunk_idx] == TileType::Wall {
+                //     did_something = true;
+                // }
                 paint(&mut build_data.map, self.settings.symmetry, self.settings.brush_size, drunk_x, drunk_y);
-                build_data.map.tiles[drunk_idx] = TileType::DownStairs;
+                build_data.map.tiles[drunk_idx] = TileType::Placeholder;
 
                 let stagger_direction = rng::roll_dice(1, 4);
                 match stagger_direction {
@@ -146,13 +145,9 @@ impl DrunkardsWalkBuilder {
                 drunk_life -= 1;
             }
 
-            if did_something {
-                build_data.take_snapshot();
-            }
-
             digger_count += 1;
             for t in build_data.map.tiles.iter_mut() {
-                if *t == TileType::DownStairs {
+                if *t == TileType::Placeholder {
                     *t = TileType::Floor;
                 }
             }

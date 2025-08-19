@@ -102,7 +102,6 @@ impl VoronoiCellBuilder {
                     build_data.map.tiles[my_idx] = TileType::Floor;
                 } // otherwise leave the tile as a wall
             }
-            build_data.take_snapshot();
         }
     }
 }

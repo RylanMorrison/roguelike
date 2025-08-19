@@ -38,7 +38,6 @@ impl DoglegCorridors {
                     c1.append(&mut c2);
                     corridors.push(c1);
                 }
-                build_data.take_snapshot();
             }
         }
         build_data.corridors = Some(corridors);

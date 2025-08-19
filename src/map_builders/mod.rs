@@ -1,6 +1,7 @@
-use super::{spawner, Map, Position, Rect, TileType, SHOW_MAPGEN_VISUALIZER};
-use crate::rng;
-use specs::prelude::*;
+use std::collections::VecDeque;
+
+use super::{spawner, Map, Position, Rect, TileType};
+use crate::{raws::MapData, rng};
 mod area_starting_points;
 mod bsp_dungeon;
 mod bsp_interior;
@@ -14,7 +15,7 @@ mod door_placement;
 mod drunkard;
 mod levels;
 mod maze;
-mod prefab_builder;
+mod prefabs;
 mod rooms;
 mod simple_map;
 mod voronoi;
@@ -33,31 +34,40 @@ use door_placement::DoorPlacement;
 use drunkard::DrunkardsWalkBuilder;
 use levels::*;
 use maze::MazeBuilder;
-use prefab_builder::PrefabBuilder;
+use prefabs::PrefabBuilder;
+use rltk::Point;
 use rooms::*;
 use simple_map::SimpleMapBuilder;
 use voronoi::VoronoiCellBuilder;
 use voronoi_spawning::VoronoiSpawning;
 
 pub struct BuilderMap {
-    pub spawn_list: Vec<(usize, String)>,
     pub map: Map,
-    pub starting_position: Option<Position>,
     pub rooms: Option<Vec<Rect>>,
     pub corridors: Option<Vec<Vec<usize>>>,
     pub history: Vec<Map>,
-    pub width: i32,
-    pub height: i32
+    pub prev_maps: VecDeque<String>,
+    pub next_maps: VecDeque<String>
 }
 
 impl BuilderMap {
-    fn take_snapshot(&mut self) {
-        if SHOW_MAPGEN_VISUALIZER {
-            let mut snapshot = self.map.clone();
-            for v in snapshot.revealed_tiles.iter_mut() {
-                *v = true;
-            }
-            self.history.push(snapshot);
+    pub fn add_next_exit(&mut self, idx: usize) {
+        let (x, y) = self.map.idx_xy(idx);
+        if let Some(next_map_name) = self.next_maps.pop_front() {
+            self.map.tiles[idx] = TileType::NextArea { map_name: next_map_name.clone() };
+            self.map.add_transition(&next_map_name, Point::new(x, y));
+        } else {
+            panic!("ERROR - next map for {} not set!", self.map.name);
+        }
+    }
+
+    pub fn add_next_entrance(&mut self, idx: usize) {
+        let (x, y) = self.map.idx_xy(idx);
+        if let Some(prev_map_name) = self.prev_maps.pop_front() {
+            self.map.tiles[idx] = TileType::PreviousArea { map_name: prev_map_name.clone() };
+            self.map.add_transition(&prev_map_name, Point::new(x, y));
+        } else {
+            panic!("ERROR - previous map for {} not set!", self.map.name);
         }
     }
 }
@@ -77,19 +87,17 @@ pub struct BuilderChain {
 }
 
 impl BuilderChain {
-    pub fn new<S: ToString>(name: S, new_depth: i32, width: i32, height: i32) -> BuilderChain {
+    pub fn new(map_data: &MapData) -> BuilderChain {
         BuilderChain {
             starter: None,
             builders: Vec::new(),
             build_data: BuilderMap {
-                spawn_list: Vec::new(),
-                map: Map::new(name, new_depth, width, height),
-                starting_position: None,
+                map: Map::new(map_data),
                 rooms: None,
                 corridors: None,
                 history: Vec::new(),
-                width,
-                height
+                prev_maps: map_data.prev_maps.clone().unwrap_or(VecDeque::new()),
+                next_maps: map_data.next_maps.clone().unwrap_or(VecDeque::new())
             }
         }
     }
@@ -119,36 +127,26 @@ impl BuilderChain {
             metabuilder.build_map(&mut self.build_data);
         }
     }
+}
 
-    pub fn spawn_entites(&mut self, ecs: &mut World) {
-        for (location, name) in self.build_data.spawn_list.iter() {
-            spawner::spawn_entity(ecs, &(location, name));
-        }
-
-        // update builder with markers created from spawning entities
-        let map = ecs.fetch::<Map>();
-        self.build_data.map.markers = map.markers.clone();
+pub fn level_builder(map_data: &MapData) -> BuilderChain {
+    match map_data.name.as_str() {
+        "Landfall" => landfall_builder(map_data),
+        "Forest" => forest_builder(map_data),
+        "Dark Forest" => dark_forest_builder(map_data),
+        "Orc Camp" => orc_camp_builder(map_data),
+        "Warboss Den" => warboss_den_builder(map_data),
+        "Caverns" => caverns_builder(map_data),
+        _ => random_builder(map_data)
     }
 }
 
-pub fn level_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
-    match new_depth {
-        0 => town_builder(new_depth, width, height),
-        1 => forest_builder(new_depth, width, height),
-        2 => dark_forest_builder(new_depth, width, height),
-        3 => orc_camp_builder(new_depth, width, height),
-        4 => warboss_den_builder(new_depth, width, height),
-        5 => limestone_cavern_builder(new_depth, width, height),
-        _ => random_builder(new_depth, width, height)
-    }
-}
-
-pub fn random_builder(new_depth: i32, width: i32, height: i32) -> BuilderChain {
-    let mut builder = BuilderChain::new("New Map", new_depth, width, height);
+pub fn random_builder(map_data: &MapData) -> BuilderChain {
+    let mut builder = BuilderChain::new(map_data);
     let type_roll = rng::roll_dice(1, 2);
     match type_roll {
         1 => random_room_builder(&mut builder),
-        _ => random_shape_builder(new_depth, &mut builder)
+        _ => random_shape_builder(&mut builder)
     }
 
     builder.with(DoorPlacement::new());
@@ -211,7 +209,7 @@ fn random_room_builder(builder: &mut BuilderChain) {
         1 => builder.with(RoomBasedStartingPosition::new()),
         _ => {
             let (start_x, start_y) = random_start_position();
-            builder.with(AreaStartingPosition::new(start_x, start_y));
+            builder.with(AreaStartingPosition::new(start_x, start_y, false));
         }
     }
 
@@ -230,9 +228,9 @@ fn random_room_builder(builder: &mut BuilderChain) {
     }
 }
 
-fn random_shape_builder(new_depth: i32, builder: &mut BuilderChain) {
+fn random_shape_builder(builder: &mut BuilderChain) {
     // start with the first 5 map types and add the next one every depth
-    let builder_roll = rng::roll_dice(1, new_depth + 4);
+    let builder_roll = rng::roll_dice(1, 14);
     let starter: Box<dyn InitialMapBuilder>;
     match builder_roll {
         // order is important!
@@ -258,7 +256,7 @@ fn random_shape_builder(new_depth: i32, builder: &mut BuilderChain) {
 
     // reset the player start to a random position
     let (start_x, start_y) = random_start_position();
-    builder.with(AreaStartingPosition::new(start_x, start_y));
+    builder.with(AreaStartingPosition::new(start_x, start_y, false));
 
     // spawn the exit and entities
     builder.with(DistantExit::new());

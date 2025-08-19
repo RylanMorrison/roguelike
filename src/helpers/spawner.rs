@@ -4,13 +4,13 @@ use specs::saveload::{SimpleMarker, MarkedBuilder};
 use std::collections::HashMap;
 use crate::raws::*;
 use crate::{MasterDungeonMap, OtherLevelPosition, StatusEffectChanged};
-use crate::{Pools, Player, Renderable, Name, Position, Viewshed, 
-    Rect, SerializeMe, random_table::RandomTable, HungerClock, HungerState, 
+use crate::{Pools, Player, Renderable, Name, Position, Viewshed,
+    Rect, SerializeMe, random_table::RandomTable, HungerClock, HungerState,
     Map, TileType, Attributes, Skills, Pool, LightSource, Faction,
-    Initiative, EquipmentChanged, Point, EntryTrigger, TeleportTo, 
+    Initiative, EquipmentChanged, Point, EntryTrigger, TeleportTo,
     SingleActivation, mana_at_level, hp_at_level, StatusEffect,
     Duration, AttributeBonus, KnownAbilities, EntityVec, InitiativePenalty,
-    MapMarker
+    MapMarker, ItemQuality
 };
 use crate::rng;
 use crate::map::Marker;
@@ -81,14 +81,14 @@ pub fn player(ecs: &mut World, player_x: i32, player_y: i32) -> Entity {
 pub fn spawn_starting_gear(ecs: &mut World, raws: &RawMaster, equipment: &Vec<String>, items: &Vec<String>) {
     let player = *ecs.read_resource::<Entity>();
     for item in equipment.iter() {
-        spawn_named_entity(raws, ecs, item.as_str(), SpawnType::Equipped{ by: player });
+        spawn_named_item(raws, ecs, item.as_str(), SpawnType::Equipped{ by: player }, ItemQuality::Worn);
     }
     for item in items.iter() {
         spawn_named_entity(raws, ecs, item.as_str(), SpawnType::Carried { by: player });
     }
 }
 
-pub fn spawn_room(map: &Map, room: &Rect, map_depth: i32, spawn_list: &mut Vec<(usize, String)>) {
+pub fn spawn_room(map: &mut Map, room: &Rect) {
     let mut possible_targets: Vec<usize> = Vec::new();
     {
         for y in room.y1 + 1 .. room.y2 {
@@ -100,22 +100,22 @@ pub fn spawn_room(map: &Map, room: &Rect, map_depth: i32, spawn_list: &mut Vec<(
             }
         }
     }
-    spawn_region(map, &possible_targets, map_depth, spawn_list);
+    spawn_region(map, &possible_targets);
 }
 
-pub fn spawn_region(_map: &Map, area: &[usize], map_depth: i32, spawn_list: &mut Vec<(usize, String)>) {
-    let spawn_table = room_table(map_depth);
+pub fn spawn_region(map: &mut Map, area: &[usize]) {
+    let spawn_table = room_table(&map.name);
     let mut spawn_points: HashMap<usize, String> = HashMap::new();
     let mut areas: Vec<usize> = Vec::from(area);
 
     {
         // use min to avoid spawning more entites than we have room for
-        let num_spawns = i32::min(areas.len() as i32 / 3, rng::roll_dice(1, 7) + (map_depth / 2) - 3);
+        let num_spawns = i32::min(areas.len() as i32 / 3, rng::roll_dice(1, 7) + (map.area_level / 2) - 3);
         if num_spawns == 0 { return; }
 
         for _ in 0 .. num_spawns {
-            let array_index = if areas.len() == 1 { 
-                0usize 
+            let array_index = if areas.len() == 1 {
+                0usize
             } else {
                 (rng::roll_dice(1, areas.len() as i32)-1) as usize
             };
@@ -130,7 +130,7 @@ pub fn spawn_region(_map: &Map, area: &[usize], map_depth: i32, spawn_list: &mut
 
     // store where and what to spawn
     for spawn in spawn_points.iter() {
-        spawn_list.push((*spawn.0, spawn.1.to_string()));
+        map.spawn_list.push((*spawn.0, spawn.1.to_string()));
     }
 }
 
@@ -165,21 +165,22 @@ pub fn spawn_entity(ecs: &mut World, spawn: &(&usize, &String)) -> Option<Entity
     spawn_result
 }
 
-pub fn spawn_town_portal(ecs: &mut World) {
+pub fn spawn_town_portal(ecs: &mut World) -> (i32, i32) {
     let map = ecs.fetch::<Map>();
-    let player_depth = map.depth;
     let player_pos = ecs.fetch::<Point>();
     let player_x = player_pos.x;
     let player_y = player_pos.y;
+    let current_map_name = map.name.clone();
     std::mem::drop(player_pos);
     std::mem::drop(map);
 
     // find a place to put the portal, close to the town exit
     let dm = ecs.fetch::<MasterDungeonMap>();
-    let town_map = dm.get_map(0).unwrap();
+    // TODO find closest town map
+    let town_map = dm.get_map("Landfall").unwrap();
     let mut stairs_idx = 0;
     for (idx, tt) in town_map.tiles.iter().enumerate() {
-        if *tt == TileType::DownStairs {
+        if matches!(*tt, TileType::NextArea{..}) {
             stairs_idx = idx;
         }
     }
@@ -189,7 +190,7 @@ pub fn spawn_town_portal(ecs: &mut World) {
 
     // spawn the portal
     ecs.create_entity()
-        .with(OtherLevelPosition{ x: portal_x, y: portal_y, depth: 0 })
+        .with(OtherLevelPosition{ x: portal_x, y: portal_y, map_name: town_map.name })
         .with(Renderable{
             glyph: rltk::to_cp437('Ω'),
             fg: RGB::named(rltk::CYAN),
@@ -197,13 +198,15 @@ pub fn spawn_town_portal(ecs: &mut World) {
             render_order: 0
         })
         .with(EntryTrigger{})
-        .with(TeleportTo{ x: player_x, y: player_y, depth: player_depth, player_only: true })
+        .with(TeleportTo{ x: player_x, y: player_y, map_name: current_map_name, depth: None, player_only: true })
         .with(Name{ name: "Town Portal".to_string() })
         .with(SingleActivation{})
         .build();
+
+    (portal_x, portal_y)
 }
 
 // spawn table
-fn room_table(map_depth: i32) -> RandomTable {
-    get_spawn_table_for_depth(&RAWS.lock().unwrap(), map_depth)
+fn room_table(map_name: &str) -> RandomTable {
+    get_spawn_table_for_map(&RAWS.try_lock().unwrap(), map_name)
 }

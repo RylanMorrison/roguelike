@@ -4,6 +4,7 @@ use rltk::{GameState, Rltk, Point};
 use specs::prelude::*;
 use specs::saveload::{SimpleMarker, SimpleMarkerAllocator};
 use std::collections::HashMap;
+use std::ops::Deref;
 
 pub mod components;
 pub mod map;
@@ -23,19 +24,19 @@ pub use map::*;
 pub use systems::*;
 pub use rng::*;
 
+use crate::effects::{add_effect, EffectType, Targets};
+
 #[macro_use]
 extern crate lazy_static;
 
-const SHOW_MAPGEN_VISUALIZER: bool = true;
 const SHOW_FPS: bool = true;
 
-#[derive(PartialEq, Copy, Clone, Debug)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum RunState {
     PreRun,
     AwaitingInput,
     Ticking,
-    NextLevel,
-    PreviousLevel,
+    TransitionMap { map_name: String },
     ShowInventory,
     ShowUnequipItem,
     ShowDropItem,
@@ -46,21 +47,16 @@ pub enum RunState {
     SaveGame,
     MagicMapReveal { row: i32 },
     GameOver,
-    MapGeneration,
     ShowCheatMenu,
     ShowVendor { vendor: Entity, mode: gui::VendorMode },
     TownPortal,
-    TeleportingToOtherLevel { x: i32, y: i32, depth: i32 },
+    TeleportingToOtherLevel { x: i32, y: i32, map_name: String },
     LevelUp,
     ShowQuestMenu { quest_giver: Entity, index: i32}
 }
 
 pub struct State {
     pub ecs: World,
-    mapgen_next_state : Option<RunState>,
-    mapgen_history : Vec<Map>,
-    mapgen_index : usize,
-    mapgen_timer : f32,
     dispatcher: Box<dyn systems::UnifiedDispatcher + 'static>
 }
 
@@ -70,25 +66,17 @@ impl State {
         self.ecs.maintain();
     }
 
-    fn generate_world_map(&mut self, new_depth: i32, offset: i32) {
-        self.mapgen_index = 0;
-        self.mapgen_timer = 0.0;
-        self.mapgen_history.clear();
-        let map_building_info = map::level_transition(&mut self.ecs, new_depth, offset);
-        if let Some(history) = map_building_info {
-            self.mapgen_history = history;
-        } else {
-            map::thaw_level_entities(&mut self.ecs);
-        }
-        gamelog::clear_log();
+    fn transition_to_start_map(&mut self) {
+        let map = self.ecs.read_resource::<Map>();
+        let start_map_name = map.name.to_string().clone();
+        std::mem::drop(map);
+        transition_map(&mut self.ecs, &start_map_name, None);
     }
 
-    fn change_level(&mut self, offset: i32) {
+    fn change_map(&mut self, map_name: &str, player_position: Option<(i32, i32)>) {
         freeze_level_entities(&mut self.ecs);
 
-        // build a new map and place the player
-        let current_depth = self.ecs.fetch::<Map>().depth;
-        self.generate_world_map(current_depth + offset, offset);
+        transition_map(&mut self.ecs, map_name, player_position);
 
         gamelog::Logger::new().append("You change floor.").log();
     }
@@ -117,7 +105,7 @@ impl GameState for State {
         let mut newrunstate;
         {
             let runstate = self.ecs.fetch::<RunState>();
-            newrunstate = *runstate;
+            newrunstate = runstate.deref().clone();
         }
 
         ctx.set_active_console(1);
@@ -138,25 +126,6 @@ impl GameState for State {
         }
 
         match newrunstate {
-            RunState::MapGeneration => {
-                if SHOW_MAPGEN_VISUALIZER {
-                    ctx.cls();
-                    if self.mapgen_index < self.mapgen_history.len() {
-                        camera::render_debug_map(&self.mapgen_history[self.mapgen_index], ctx);
-                    }
-
-                    self.mapgen_timer += ctx.frame_time_ms;
-                    if self.mapgen_timer > 200.0 {
-                        self.mapgen_timer = 0.0;
-                        self.mapgen_index += 1;
-                        if self.mapgen_index >= self.mapgen_history.len() {
-                            newrunstate = self.mapgen_next_state.unwrap();
-                        }
-                    }
-                } else {
-                    newrunstate = self.mapgen_next_state.unwrap();
-                }
-            }
             RunState::PreRun => {
                 self.run_systems();
                 newrunstate = RunState::AwaitingInput;
@@ -171,14 +140,17 @@ impl GameState for State {
                 let mut should_change_target = false;
                 while newrunstate == RunState::Ticking {
                     self.run_systems();
-                    match *self.ecs.fetch::<RunState>() {
+                    let runstate = self.ecs.fetch::<RunState>().clone();
+                    match runstate.deref() {
                         RunState::AwaitingInput => {
                             newrunstate = RunState::AwaitingInput;
                             should_change_target = true;
                         }
                         RunState::MagicMapReveal { .. } => newrunstate = RunState::MagicMapReveal { row: 0 },
                         RunState::TownPortal => newrunstate = RunState::TownPortal,
-                        RunState::TeleportingToOtherLevel{ x, y, depth } => newrunstate = RunState::TeleportingToOtherLevel { x, y, depth },
+                        RunState::TeleportingToOtherLevel{ x, y, map_name } => {
+                            newrunstate = RunState::TeleportingToOtherLevel { x: *x, y: *y, map_name: map_name.clone() }
+                        }
                         RunState::LevelUp => newrunstate = RunState::LevelUp,
                         _ => newrunstate = RunState::Ticking
                     }
@@ -309,9 +281,9 @@ impl GameState for State {
                                 raws::spawn_named_character_class(&raws::RAWS.lock().unwrap(), &mut self.ecs, "Ranger");
                             }
                         }
-                        self.mapgen_next_state = Some(RunState::PreRun);
-                        self.generate_world_map(0, 0);
-                        newrunstate = RunState::MapGeneration;
+                        gamelog::clear_log();
+                        self.transition_to_start_map();
+                        newrunstate = RunState::PreRun;
                     }
                 }
             }
@@ -319,15 +291,9 @@ impl GameState for State {
                 saveload_system::save_game(&mut self.ecs);
                 newrunstate = RunState::InGameMenu{ menu_selection : gui::InGameMenuSelection::Continue };
             }
-            RunState::NextLevel => {
-                self.change_level(1);
-                self.mapgen_next_state = Some(RunState::PreRun);
-                newrunstate = RunState::MapGeneration;
-            }
-            RunState::PreviousLevel => {
-                self.change_level(-1);
-                self.mapgen_next_state = Some(RunState::PreRun);
-                newrunstate = RunState::MapGeneration;
+            RunState::TransitionMap { map_name } => {
+                self.change_map(&map_name, None);
+                newrunstate = RunState::PreRun;
             }
             RunState::GameOver => {
                 let result = gui::game_over(ctx);
@@ -345,10 +311,25 @@ impl GameState for State {
                     gui::CheatMenuResult::Cancel => newrunstate = RunState::AwaitingInput,
                     gui::CheatMenuResult::NoResponse => {}
                     gui::CheatMenuResult::TeleportToExit => {
-                        self.change_level(1);
-                        self.mapgen_next_state = Some(RunState::PreRun);
-                        gamelog::Logger::new().append("You teleport to the next level").log();
-                        newrunstate = RunState::MapGeneration;
+                        let map = self.ecs.fetch::<Map>();
+                        let player = self.ecs.fetch::<Entity>();
+                        for (idx, tt) in map.tiles.iter().enumerate() {
+                            if matches!(*tt, TileType::NextArea{..}) {
+                                let (x, y) = map.idx_xy(idx);
+                                add_effect(
+                                    Some(*player),
+                                    EffectType::TeleportTo {
+                                        x,
+                                        y,
+                                        map_name: map.name.clone(),
+                                        player_only: true
+                                    },
+                                    Targets::Single { target: *player }
+                                );
+                            }
+                        }
+                        gamelog::Logger::new().append("You teleport to an exit").log();
+                        newrunstate = RunState::Ticking;
                     }
                     gui::CheatMenuResult::FullHeal => {
                         let player = self.ecs.fetch::<Entity>();
@@ -491,27 +472,15 @@ impl GameState for State {
                 }
             }
             RunState::TownPortal => {
-                spawner::spawn_town_portal(&mut self.ecs);
+                let (portal_x, portal_y) = spawner::spawn_town_portal(&mut self.ecs);
 
-                // transition
-                let map_depth = self.ecs.fetch::<Map>().depth;
-                let destination_offset = 0 - map_depth; // town is depth 0
-                self.change_level(destination_offset);
-                self.mapgen_next_state = Some(RunState::PreRun);
-                newrunstate = RunState::MapGeneration;
+                // TODO find nearest town
+                self.change_map("Landfall", Some((portal_x, portal_y)));
+                newrunstate = RunState::PreRun;
             }
-            RunState::TeleportingToOtherLevel { x, y, depth } => {
-                self.change_level(depth);
-                let player_entity = self.ecs.fetch::<Entity>();
-                if let Some(pos) = self.ecs.write_storage::<Position>().get_mut(*player_entity) {
-                    pos.x = x;
-                    pos.y = y;
-                }
-                let mut ppos = self.ecs.fetch_mut::<Point>();
-                ppos.x = x;
-                ppos.y = y;
-                self.mapgen_next_state = Some(RunState::PreRun);
-                newrunstate = RunState::MapGeneration;
+            RunState::TeleportingToOtherLevel { x, y, map_name } => {
+                self.change_map(&map_name, Some((x, y)));
+                newrunstate = RunState::PreRun;
             }
             RunState::LevelUp => {
                 let result = gui::show_levelup_menu(self, ctx);
@@ -555,10 +524,6 @@ fn main() -> rltk::BError {
     context.with_post_scanlines(true);
     let mut gs = State {
         ecs: World::new(),
-        mapgen_next_state : Some(RunState::MainMenu{ menu_selection: gui::MainMenuSelection::NewGame }),
-        mapgen_index : 0,
-        mapgen_history: Vec::new(),
-        mapgen_timer: 0.0,
         dispatcher: systems::build()
     };
     register_components!(&mut gs.ecs, [
@@ -585,15 +550,14 @@ fn main() -> rltk::BError {
 
 fn initialise_resources(ecs: &mut World) {
     // store global resources
-    ecs.insert(map::MasterDungeonMap::new());
-    ecs.insert(Map::new("New Map", 0, 64, 64)); // w & h don't matter here
     ecs.insert(Point::new(0, 0));
+    let player_entity = spawner::player(ecs, 0, 0);
+    ecs.insert(player_entity);
     ecs.insert(particle_system::ParticleBuilder::new());
     ecs.insert(RunState::MainMenu { menu_selection: gui::MainMenuSelection::NewGame });
 
-    let player_entity = spawner::player(ecs, 0, 0);
-    ecs.insert(player_entity);
-    raws::spawn_all_abilities(ecs);
+    raws::store_world_maps(ecs);
+    raws::store_all_abilities(ecs);
 
     ecs.insert(ItemSets{ item_sets: HashMap::new() });
     raws::store_all_item_sets(ecs);

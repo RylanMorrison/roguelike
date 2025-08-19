@@ -33,7 +33,6 @@ impl CellularAutomataBuilder {
                 }
             }
         }
-        build_data.take_snapshot();
 
         // iteratively apply cellular automata rules
         for _i in 0..15 {
@@ -65,6 +64,5 @@ impl CellularAutomataBuilder {
             }
         }
         build_data.map.tiles = newtiles.clone();
-        build_data.take_snapshot();
     }
 }

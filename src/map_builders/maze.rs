@@ -91,7 +91,7 @@ impl Grid {
 
         grid
     }
-    
+
     fn calculate_index(&self, row: i32, column: i32) -> i32 {
         if row < 0 || column < 0 || column > self.width-1 || row > self.height-1 {
             -1
@@ -157,7 +157,7 @@ impl Grid {
                     //   __lower_part__      __higher_part_
                     //   /            \      /            \
                     // --------cell1------ | cell2-----------
-                    let (lower_part, higher_part) = 
+                    let (lower_part, higher_part) =
                         self.cells.split_at_mut(std::cmp::max(self.current, next));
                     let cell1 = &mut lower_part[std::cmp::min(self.current, next)];
                     let cell2 = &mut higher_part[0];
@@ -175,9 +175,7 @@ impl Grid {
             }
 
             if i % 50 == 0 {
-                // only snapshot every 10th iteration
                 self.copy_to_map(&mut build_data.map);
-                build_data.take_snapshot();
             }
             i += 1;
         }
