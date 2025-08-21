@@ -393,14 +393,18 @@ pub fn spawn_named_item(raws: &RawMaster, ecs: &mut World, key: &str, pos: Spawn
         eb = eb.with(get_renderable_component(renderable, item_class_colours.get(&item_template.class)));
     }
 
-    let item_quality = match quality {
-        ItemQuality::Random => {
-            roll_item_quality(
-                item_template.class.as_str(),
-                item_template.consumable.is_some()
-            )
+    let item_quality = if item_template.class == "unique" || item_template.class == "set" {
+        ItemQuality::Standard
+    } else {
+        match quality {
+            ItemQuality::Random => {
+                roll_item_quality(
+                    item_template.class.as_str(),
+                    item_template.consumable.is_some()
+                )
+            }
+            _ => quality
         }
-        _ => quality
     };
 
     eb = eb.with(Item{
