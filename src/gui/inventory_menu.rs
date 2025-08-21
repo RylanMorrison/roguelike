@@ -23,7 +23,7 @@ pub fn show_inventory(gs: &mut State, ctx: &mut Rltk) -> (ItemMenuResult, Option
         "Inventory",
         &inventory
     );
-    draw_batch.submit(1000).expect("Draw batch submission failed");
+    draw_batch.submit(3200).expect("Draw batch submission failed");
 
     // draw tooltip
     if let Some((entity, name, x, y)) = tooltip {

@@ -129,9 +129,6 @@ impl DrunkardsWalkBuilder {
             let mut drunk_life = self.settings.drunken_lifetime;
             while drunk_life > 0 {
                 let drunk_idx = build_data.map.xy_idx(drunk_x, drunk_y);
-                // if build_data.map.tiles[drunk_idx] == TileType::Wall {
-                //     did_something = true;
-                // }
                 paint(&mut build_data.map, self.settings.symmetry, self.settings.brush_size, drunk_x, drunk_y);
                 build_data.map.tiles[drunk_idx] = TileType::Placeholder;
 

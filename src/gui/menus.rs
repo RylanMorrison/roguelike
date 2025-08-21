@@ -1,8 +1,8 @@
 use rltk::prelude::*;
 use specs::prelude::*;
-use super::{white, black, yellow, green, red, Tooltip};
-use crate::{AttributeBonus, Equippable, Item, SkillBonus, Weapon, Wearable};
-use crate::raws::{self, ItemData};
+use super::{white, black, yellow};
+use crate::Item;
+use crate::raws;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum ItemMenuResult { Cancel, NoResponse, Selected }
@@ -101,109 +101,10 @@ pub fn item_result_menu<T: ToString>(ctx: &mut Rltk, draw_batch: &mut DrawBatch,
     }
 }
 
-pub fn ground_item_tooltip(ecs: &World, name: String, entity: Entity) -> Tooltip<String> {
-    let items = ecs.read_storage::<Item>();
-    let mut tooltip = Tooltip::new();
-
-    if let Some(item) = items.get(entity) {
-        tooltip.set_color(raws::get_item_colour(item, &raws::RAWS.lock().unwrap()));
-    }
-    tooltip.add(name);
-    tooltip
-}
-
-pub fn item_entity_tooltip(ecs: &World, name: String, entity: Entity) -> Tooltip<String> {
-    let weapons = ecs.read_storage::<Weapon>();
-    let wearables = ecs.read_storage::<Wearable>();
-    let equippables = ecs.read_storage::<Equippable>();
-    let items = ecs.read_storage::<Item>();
-    let skill_bonuses = ecs.read_storage::<SkillBonus>();
-    let attribute_bonuses = ecs.read_storage::<AttributeBonus>();
-
-    let mut tooltip = Tooltip::new();
-    if let Some(item) = items.get(entity) {
-        tooltip.set_color(raws::get_item_colour(item, &raws::RAWS.lock().unwrap()));
-    }
-    tooltip.add(name);
-
-    if let Some(weapon) = weapons.get(entity) {
-        tooltip.add(format!("Attribute: {:?}", weapon.attribute));
-        tooltip.add(format!("Damage: {}", weapon.damage()));
-        tooltip.add(format!("Hit bonus: {}", weapon.hit_bonus));
-
-        let range = if let Some(range) = weapon.range { range.to_string() } else { "melee".to_string() };
-        tooltip.add(format!("Range: {}", range));
-    }
-    if let Some(wearable) = wearables.get(entity) {
-        tooltip.add(format!("Armour class: {}", wearable.armour_class));
-    }
-    if let Some(equippable) = equippables.get(entity) {
-        tooltip.add(format!("Slot: {:?}", equippable.slot));
-    }
-
-    if let Some(attribute_bonus) = attribute_bonuses.get(entity) {
-        add_bonus_line(&mut tooltip, attribute_bonus.strength, "Strength".to_string());
-        add_bonus_line(&mut tooltip, attribute_bonus.dexterity, "Dexterity".to_string());
-        add_bonus_line(&mut tooltip, attribute_bonus.constitution, "Constitution".to_string());
-        add_bonus_line(&mut tooltip, attribute_bonus.intelligence, "Intelligence".to_string());
-    }
-    if let Some(skill_bonus) = skill_bonuses.get(entity) {
-        add_bonus_line(&mut tooltip, skill_bonus.melee, "Melee".to_string());
-        add_bonus_line(&mut tooltip, skill_bonus.defence, "Defence".to_string());
-        add_bonus_line(&mut tooltip, skill_bonus.magic, "Magic".to_string());
-        add_bonus_line(&mut tooltip, skill_bonus.ranged, "Ranged".to_string());
-    }
-
-    tooltip
-}
-
-pub fn item_tooltip(item: ItemData) -> Tooltip<String> {
-    let mut tooltip = Tooltip::new();
-    tooltip.set_color(raws::get_item_class_colour(&item.class, &raws::RAWS.lock().unwrap()));
-    tooltip.add(item.name);
-
-    if let Some(weapon) = item.weapon {
-        tooltip.add(format!("Attribute: {}", weapon.attribute));
-        tooltip.add(format!("Damage: {}", weapon.base_damage));
-        tooltip.add(format!("Hit bonus: {}", weapon.hit_bonus));
-        tooltip.add(format!("Range: {}", weapon.range));
-        tooltip.add(format!("Slot: {}", weapon.slot));
-    }
-    if let Some(wearable) = item.wearable {
-        tooltip.add(format!("Armour class: {}", wearable.armour_class));
-        tooltip.add(format!("Slot: {}", wearable.slot));
-    }
-
-    if let Some(attribute_bonus) = item.attribute_bonuses {
-        add_bonus_line(&mut tooltip, attribute_bonus.strength, "Strength".to_string());
-        add_bonus_line(&mut tooltip, attribute_bonus.dexterity, "Dexterity".to_string());
-        add_bonus_line(&mut tooltip, attribute_bonus.constitution, "Constitution".to_string());
-        add_bonus_line(&mut tooltip, attribute_bonus.intelligence, "Intelligence".to_string());
-    }
-    if let Some(skill_bonus) = item.skill_bonuses {
-        add_bonus_line(&mut tooltip, skill_bonus.melee, "Melee".to_string());
-        add_bonus_line(&mut tooltip, skill_bonus.defence, "Defence".to_string());
-        add_bonus_line(&mut tooltip, skill_bonus.magic, "Magic".to_string());
-        add_bonus_line(&mut tooltip, skill_bonus.ranged, "Ranged".to_string());
-    }
-
-    tooltip
-}
-
 pub fn y_start(item_count: usize) -> i32 {
     (20 - (item_count / 2)) as i32
 }
 
 pub fn box_height(item_count: usize) -> i32 {
     (item_count*2+3) as i32
-}
-
-fn add_bonus_line(tooltip: &mut Tooltip<String>, bonus: Option<i32>, name: String) {
-    if let Some(b) = bonus {
-        match b {
-            n if n > 0 => tooltip.add_colored(format!("+{} {}", b, name), green()),
-            n if n < 0 => tooltip.add_colored(format!("{} {}", b, name), red()),
-            _ => {}
-        }
-    }
 }
