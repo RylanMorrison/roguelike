@@ -167,15 +167,12 @@ impl<'a> System<'a> for MeleeCombatSystem {
                     EffectType::Damage{ amount: damage, hits_self: false },
                     Targets::Single{ target: wants_melee.target }
                 );
-                
-                // indicate that damage was done
+
+                // indicate that the attack was successful
                 gamelog::Logger::new()
                     .character_name(&name.name)
                     .append("hits")
                     .character_name(&target_name.name)
-                    .append("dealing")
-                    .damage(damage)
-                    .append("damage.")
                     .log();
 
                 if positions.get(wants_melee.target).is_some() {
